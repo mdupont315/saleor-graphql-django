@@ -23,7 +23,8 @@ from .shop.schema import ShopMutations, ShopQueries
 from .translations.schema import TranslationQueries
 from .warehouse.schema import StockQueries, WarehouseMutations, WarehouseQueries
 from .webhook.schema import WebhookMutations, WebhookQueries
-
+# from .service_time.schema import ServiceTimeMutations, ServiceTimeQueries
+# from .store.schema import StoreMutations, StoreQueries
 
 class Query(
     AccountQueries,
@@ -47,6 +48,8 @@ class Query(
     TranslationQueries,
     WarehouseQueries,
     WebhookQueries,
+    # StoreQueries,
+    # ServiceTimeQueries,
 ):
     pass
 
@@ -73,6 +76,8 @@ class Mutation(
     ShopMutations,
     WarehouseMutations,
     WebhookMutations,
+    # StoreMutations,
+    # ServiceTimeMutations,
 ):
     pass
 
