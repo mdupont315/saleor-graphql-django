@@ -1,5 +1,6 @@
 from typing import Union
-
+from django_multitenant.models import TenantManager
+from saleor.store.models import Store
 from django.conf import settings
 from django.contrib.auth.models import _user_has_perm  # type: ignore
 from django.contrib.auth.models import (
@@ -21,7 +22,7 @@ from django_countries.fields import Country, CountryField
 from phonenumber_field.modelfields import PhoneNumber, PhoneNumberField
 from versatileimagefield.fields import VersatileImageField
 
-from ..core.models import ModelWithMetadata
+from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata
 from ..core.permissions import AccountPermissions, BasePermissionEnum, get_permissions
 from ..core.utils.json_serializer import CustomJsonEncoder
 from ..order.models import Order
@@ -106,7 +107,7 @@ class Address(models.Model):
         return Address.objects.create(**self.as_data())
 
 
-class UserManager(BaseUserManager):
+class UserManager(TenantManager, BaseUserManager):
     def create_user(
         self, email, password=None, is_staff=False, is_active=True, **extra_fields
     ):
@@ -139,7 +140,8 @@ class UserManager(BaseUserManager):
         return self.get_queryset().filter(is_staff=True)
 
 
-class User(PermissionsMixin, ModelWithMetadata, AbstractBaseUser):
+class User(PermissionsMixin, MultitenantModelWithMetadata, AbstractBaseUser):
+    tenant_id='store_id'
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=256, blank=True)
     last_name = models.CharField(max_length=256, blank=True)
@@ -147,6 +149,7 @@ class User(PermissionsMixin, ModelWithMetadata, AbstractBaseUser):
         Address, blank=True, related_name="user_addresses"
     )
     is_staff = models.BooleanField(default=False)
+    is_supplier = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     note = models.TextField(null=True, blank=True)
     date_joined = models.DateTimeField(default=timezone.now, editable=False)
@@ -165,6 +168,13 @@ class User(PermissionsMixin, ModelWithMetadata, AbstractBaseUser):
     USERNAME_FIELD = "email"
 
     objects = UserManager()
+    store = models.ForeignKey(
+        Store,
+        related_name="users",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         ordering = ("email",)
@@ -173,7 +183,7 @@ class User(PermissionsMixin, ModelWithMetadata, AbstractBaseUser):
             (AccountPermissions.MANAGE_STAFF.codename, "Manage staff."),
         )
         indexes = [
-            *ModelWithMetadata.Meta.indexes,
+            *MultitenantModelWithMetadata.Meta.indexes,
             # Orders searching index
             GinIndex(fields=["email", "first_name", "last_name"]),
         ]

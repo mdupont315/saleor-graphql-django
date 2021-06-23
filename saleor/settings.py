@@ -68,7 +68,8 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://saleor:saleor@localhost:5432/saleor", conn_max_age=600
+        default="postgres://postgres:tuanvu123@localhost:5432/orderich", conn_max_age=600,
+        engine="django_multitenant.backends.postgresql"
     )
 }
 
@@ -157,7 +158,7 @@ EMAIL_USE_SSL = email_config["EMAIL_USE_SSL"]
 
 # If enabled, make sure you have set proper storefront address in ALLOWED_CLIENT_HOSTS.
 ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL = get_bool_from_env(
-    "ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL", True
+    "ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL", False
 )
 
 ENABLE_SSL = get_bool_from_env("ENABLE_SSL", False)
@@ -257,6 +258,8 @@ INSTALLED_APPS = [
     "saleor.webhook",
     "saleor.wishlist",
     "saleor.app",
+    "saleor.store",
+    "saleor.service_time",
     # External apps
     "versatileimagefield",
     "django_measurement",

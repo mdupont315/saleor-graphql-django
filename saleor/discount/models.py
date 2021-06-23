@@ -1,13 +1,15 @@
 from decimal import Decimal
 from functools import partial
 from typing import TYPE_CHECKING, Optional
-
+from saleor.core.models import CustomQueryset
+from saleor.store.models import Store
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.db.models import F, Q
 from django.utils import timezone
 from django_countries.fields import CountryField
+from django_multitenant.models import TenantModel
 from django_prices.models import MoneyField
 from django_prices.templatetags.prices import amount
 from prices import Money, TaxedMoney, fixed_discount, percentage_discount
@@ -37,7 +39,7 @@ class NotApplicable(ValueError):
         self.min_checkout_items_quantity = min_checkout_items_quantity
 
 
-class VoucherQueryset(models.QuerySet):
+class VoucherQueryset(CustomQueryset):
     def active(self, date):
         return self.filter(
             Q(usage_limit__isnull=True) | Q(used__lt=F("usage_limit")),
@@ -57,7 +59,15 @@ class VoucherQueryset(models.QuerySet):
         )
 
 
-class Voucher(models.Model):
+class Voucher(TenantModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="vouchers",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     type = models.CharField(
         max_length=20, choices=VoucherType.CHOICES, default=VoucherType.ENTIRE_ORDER
     )
@@ -208,7 +218,7 @@ class VoucherCustomer(models.Model):
         unique_together = (("voucher", "customer_email"),)
 
 
-class SaleQueryset(models.QuerySet):
+class SaleQueryset(CustomQueryset):
     def active(self, date=None):
         if date is None:
             date = timezone.now()
@@ -234,7 +244,15 @@ class VoucherTranslation(models.Model):
         unique_together = (("language_code", "voucher"),)
 
 
-class Sale(models.Model):
+class Sale(TenantModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="sales",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=255)
     type = models.CharField(
         max_length=10,
