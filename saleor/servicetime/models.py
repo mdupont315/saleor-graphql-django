@@ -8,7 +8,7 @@ from ..core.utils.editorjs import clean_editor_js
 class ServiceTime(MultitenantModelWithMetadata):
     store = models.ForeignKey(
         Store,
-        related_name="service_time",
+        related_name="service_times",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -35,7 +35,6 @@ class ServiceTime(MultitenantModelWithMetadata):
 
     class Meta:
         ordering = ("store_id", "pk")
-        app_label = "service_time"
         permissions = (
             (
                 StorePermissions.MANAGE_STORES.codename,

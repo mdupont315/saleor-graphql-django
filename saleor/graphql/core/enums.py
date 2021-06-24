@@ -32,7 +32,7 @@ from ...webhook import error_codes as webhook_error_codes
 from ...wishlist import error_codes as wishlist_error_codes
 from ..shop import error_codes as shop_error_codes
 from ...store import error_codes as store_error_codes
-from ...service_time import error_codes as service_time_error_codes
+from ...servicetime import error_codes as service_time_error_codes
 from .utils import str_to_enum
 
 
