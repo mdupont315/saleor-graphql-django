@@ -4,29 +4,17 @@ from saleor.account.models import User
 
 import graphene
 from django.core.exceptions import ValidationError
-from django.db import transaction
 from django.conf import settings
-from ....attribute import AttributeType
 from ....store import models
-from ...attribute.utils import AttributeAssignmentMixin
 from ...core.mutations import ModelDeleteMutation, ModelMutation
 from ...core.types.common import StoreError
-from ...core.utils import clean_seo_fields, validate_slug_and_generate_if_needed
-from ...core.types import SeoInput, Upload
-# from ...utils.validators import check_for_duplicates
+from ...core.types import Upload
 from ....core.utils.url import validate_storefront_url
 from ....core.permissions import StorePermissions, get_permissions_default
 from ....core.exceptions import PermissionDenied
 from ....store.utils import delete_stores
 from django.contrib.auth import password_validation
 from ..types import Store
-from ...account.enums import CountryCodeEnum
-from ...core.utils import (
-    clean_seo_fields,
-    from_global_id_strict_type,
-    get_duplicated_values,
-    validate_image_file,
-)
 from ....account.error_codes import AccountErrorCode
 from django.contrib.auth.models import Group
 

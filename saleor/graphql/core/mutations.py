@@ -1,4 +1,5 @@
 import os
+from saleor.graphql.core.connection import CountableDjangoObjectType
 import secrets
 from itertools import chain
 from typing import Iterable, Tuple, Union
@@ -392,6 +393,7 @@ class ModelMutation(BaseMutation):
         _meta.return_field_name = return_field_name
         _meta.exclude = exclude
         super().__init_subclass_with_meta__(_meta=_meta, **options)
+        print('cls.get_type_for_model()', cls.get_type_for_model())
 
         model_type = cls.get_type_for_model()
         if not model_type:

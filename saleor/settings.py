@@ -68,8 +68,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:tuanvu123@localhost:5432/orderich", conn_max_age=600,
-        engine="django_multitenant.backends.postgresql"
+        default="postgres://postgres:tuanvu123@localhost:5432/orderich", conn_max_age=600
     )
 }
 
