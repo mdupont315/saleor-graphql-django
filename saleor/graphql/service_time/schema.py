@@ -1,4 +1,4 @@
-from .mutations import ServiceTimeCreate, ServiceTimeUpdate
+from saleor.graphql.service_time.mutations import ServiceTimeCreate
 from .types import ServiceTime
 import graphene
 from ..decorators import permission_required
@@ -14,7 +14,7 @@ class ServiceTimeQueries(graphene.ObjectType):
     def resolve_servie_times(self, **kwargs):
         return resolve_service_time(self, **kwargs)
 
-class ServiceTimeMutations(graphene.ObjectType):
-    # store mutations
-    service_time_create = ServiceTimeCreate.Field()
-    service_time_update = ServiceTimeUpdate.Field()
+# class ServiceTimeMutations(graphene.ObjectType):
+#     # store mutations
+#     service_time_create = ServiceTimeCreate.Field()
+    # service_time_update = ServiceTimeUpdate.Field()
