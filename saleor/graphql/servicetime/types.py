@@ -1,6 +1,5 @@
 import graphene
-
-from ...service_time import models
+from ...servicetime import models
 from ..core.connection import CountableDjangoObjectType
 from ..meta.types import ObjectWithMetadata
 
