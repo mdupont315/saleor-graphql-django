@@ -859,3 +859,43 @@ class CollectionTranslation(SeoModelTranslation):
 
     def __str__(self) -> str:
         return self.name if self.name else str(self.pk)
+
+class Option(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="options",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
+    name = models.CharField(max_length=128)
+    type = models.CharField(max_length=128, blank=True, null=True)
+    required = models.BooleanField(blank=True, null=True, default=False)
+    description = models.TextField(blank=True)
+
+
+    class Meta:
+        ordering = ("name", "pk")
+
+class ProductOption(models.Model):
+    option = models.ForeignKey(
+        Option, related_name="product_options", on_delete=models.CASCADE
+    )
+
+    product = models.ForeignKey(
+        Product, related_name="product_options", on_delete=models.CASCADE
+    )
+
+
+class ProductOptionValue(models.Model):
+    option = models.ForeignKey(
+        Option, related_name="option_values", on_delete=models.CASCADE
+    )
+    channel = models.ForeignKey(
+        Channel, related_name="option_values", on_delete=models.CASCADE
+    )
+    price = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        ordering = ("price", "pk")

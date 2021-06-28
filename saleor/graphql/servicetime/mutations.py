@@ -75,7 +75,7 @@ class ServiceTimeCreate(ModelMutation):
         model = models.ServiceTime
         permissions = (StorePermissions.MANAGE_STORES,)
         error_type_class = ServiceTimeError
-        error_type_field = "store_errors"
+        error_type_field = "service_time_errors"
 
 class ServiceTimeUpdateInput(graphene.InputObjectType):
     # Delivery
@@ -135,4 +135,4 @@ class ServiceTimeUpdate(ModelMutation):
         model = models.ServiceTime
         permissions = (StorePermissions.MANAGE_STORES,)
         error_type_class = ServiceTimeError
-        error_type_field = "store_errors"
+        error_type_field = "service_time_errors"
