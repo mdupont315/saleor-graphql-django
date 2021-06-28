@@ -3,6 +3,8 @@ from graphene_django import DjangoObjectType
 
 from ....delivery import models
 from ..types import Delivery
+from ...core.types.common import DeliveryError
+from ...core.mutations import  ModelMutation
 
 
 class DeliveryInput(graphene.InputObjectType):
@@ -11,9 +13,9 @@ class DeliveryInput(graphene.InputObjectType):
     from_delivery = graphene.Float()
     min_order = graphene.Float()
 
-class CreateDelivery(graphene.Mutation):
+class CreateDelivery(ModelMutation):
     class Argument:
-        input = DeliveryInput(reqiured=True)
+        input = DeliveryInput(required=True)
 
     delivery = graphene.Field(Delivery)
 
@@ -29,9 +31,15 @@ class CreateDelivery(graphene.Mutation):
 
         return DeliveryCreate(delivery=delivery_instance)
 
-class UpdateDelivery(graphene.Mutation):
+    class Meta:
+        description = "Creates a new delivery."
+        model = models.Delivery
+        error_type_class = DeliveryError
+        error_type_field = "delivery_errors"
+
+class UpdateDelivery(ModelMutation):
     class Argument:
-        input = DeliveryInput(reqiured=True)
+        input = DeliveryInput(required=True)
 
     delivery = graphene.Field(Delivery)
 
@@ -49,6 +57,12 @@ class UpdateDelivery(graphene.Mutation):
             return DeliveryUpdate(delivery=delivery_instance)
         
         return DeliveryUpdate(delivery=None)   
+
+    class Meta:
+        description = "Updates a delivery."
+        model = models.Delivery
+        error_type_class = DeliveryError
+        error_type_field = "dilivery_errors"
 
 # class DeliveryDelete(graphene.Mutation):
 #     class Argument:
