@@ -133,3 +133,4 @@ WishlistErrorCode = graphene.Enum.from_enum(wishlist_error_codes.WishlistErrorCo
 TranslationErrorCode = graphene.Enum.from_enum(core_error_codes.TranslationErrorCode)
 StoreErrorCode = graphene.Enum.from_enum(store_error_codes.StoreErrorCode)
 ServiceTimeErrorCode = graphene.Enum.from_enum(service_time_error_codes.ServiceTimeErrorCode)
+OptionErrorCode = graphene.Enum.from_enum(product_error_codes.OptionErrorCode)
