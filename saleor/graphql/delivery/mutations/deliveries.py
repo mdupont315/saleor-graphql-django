@@ -6,18 +6,18 @@ from ..types import Delivery
 
 
 class DeliveryInput(graphene.InputObjectType):
-    delivery_area = graphene.String();
-    delivery_fee = graphene.float();
-    from_delivery = graphene.float();
-    min_order = graphene.float();
+    delivery_area = graphene.String()
+    delivery_fee = graphene.Float()
+    from_delivery = graphene.Float()
+    min_order = graphene.Float()
 
-class DeliveryCreate(graphene.Mutation):
+class CreateDelivery(graphene.Mutation):
     class Argument:
         input = DeliveryInput(reqiured=True)
 
     delivery = graphene.Field(Delivery)
 
-    @classmethod
+    @staticmethod
     def mutate(root, info, input=None):
         delivery_instance = models.Delivery(
             delivery_area = input.delivery_area,
@@ -29,7 +29,7 @@ class DeliveryCreate(graphene.Mutation):
 
         return DeliveryCreate(delivery=delivery_instance)
 
-class DeliveryUpdate(graphene.Mutation):
+class UpdateDelivery(graphene.Mutation):
     class Argument:
         input = DeliveryInput(reqiured=True)
 
@@ -50,15 +50,15 @@ class DeliveryUpdate(graphene.Mutation):
         
         return DeliveryUpdate(delivery=None)   
 
-class DeliveryDelete(graphene.Mutation):
-    class Argument:
-        id = graphene.ID()
+# class DeliveryDelete(graphene.Mutation):
+#     class Argument:
+#         id = graphene.ID()
 
-    delivery =graphene.Field(Delivery)
+#     delivery =graphene.Field(Delivery)
 
-    @staticmethod
-    def mutation(root, info, id):
-        delivery_instance = models.Delivery.objects.get(pk=id)
-        delivery_instance.delete()
+#     @staticmethod
+#     def mutation(root, info, id):
+#         delivery_instance = models.Delivery.objects.get(pk=id)
+#         delivery_instance.delete()
 
-        return None
+#         return None

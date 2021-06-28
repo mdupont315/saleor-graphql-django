@@ -4,18 +4,18 @@ from graphene_django import DjangoObjectType
 from ...delivery import models
 from .types import Delivery
 
-from .types import(
+from .resolvers import(
     resolve_deliveries,
     resolve_delivery
 )
 
 from .mutations.deliveries import(
-    DeliveryCreate,
-    DeliveryUpdate,
-    DeliveryDelete
+    CreateDelivery,
+    UpdateDelivery,
+    # DeliveryDelete
 )
 
-class DeliveryQuery(graphene.ObjectType):
+class DeliveryQueries(graphene.ObjectType):
     delivery = graphene.Field(Delivery, id=graphene.Int())
     deliveries = graphene.List(Delivery)
 
@@ -25,9 +25,11 @@ class DeliveryQuery(graphene.ObjectType):
     def resolve_delivery(self, info, **kwargs):
         id = kwargs.get('id')
 
-        return resolve_delivery(info, **kwargs)
+        return resolve_delivery(info, id = id)
 
-class DeliveryMutation(graphene.ObjectType):
-    create_delivery = DeliveryCreate.Field()
-    update_delivery = DeliveryUpdate.Field()
-    delete_delivery = DeliveryDelete.Field()
+
+        
+class DeliveryMutations(graphene.ObjectType):
+    create_delivery = CreateDelivery.Field()
+    update_delivery = UpdateDelivery.Field()
+    # delete_delivery = DeliveryDelete.Field()
