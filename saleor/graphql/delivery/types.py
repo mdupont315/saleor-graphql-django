@@ -4,4 +4,4 @@ from ...delivery import models
 class Delivery(DjangoObjectType):
     class Meta:
         model = models.Delivery
-        field = '__all__'
+        field = ("id",  "delivery_area", "delivery_fee", "from_delivery", "min_order")
