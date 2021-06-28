@@ -78,6 +78,9 @@ class SitePermissions(BasePermissionEnum):
 class StorePermissions(BasePermissionEnum):
     MANAGE_STORES = "store.manage_stores"
 
+class ServiceTimePermissions(BasePermissionEnum):
+    MANAGE_SERVICE_TIMES = "service_time.manage_service_times"
+
 
 PERMISSIONS_ENUMS = [
     AccountPermissions,
@@ -96,20 +99,8 @@ PERMISSIONS_ENUMS = [
     ShippingPermissions,
     SitePermissions,
     CheckoutPermissions,
-    StorePermissions
-]
-
-PERMISSIONS_ENUMS_INIT = [
-    ChannelPermissions,
-    DiscountPermissions,
-    GiftcardPermissions,
-    MenuPermissions,
-    OrderPermissions,
-    ProductPermissions,
-    ProductTypePermissions,
-    ShippingPermissions,
-    CheckoutPermissions,
-    StorePermissions
+    StorePermissions,
+    ServiceTimePermissions,
 ]
 
 def split_permission_codename(permissions):
@@ -128,7 +119,7 @@ def get_permissions_codename():
 def get_permissions_codename_default():
     permissions_values = [
         enum.codename
-        for permission_enum in PERMISSIONS_ENUMS_INIT
+        for permission_enum in PERMISSIONS_ENUMS
         for enum in permission_enum
     ]
     return permissions_values
