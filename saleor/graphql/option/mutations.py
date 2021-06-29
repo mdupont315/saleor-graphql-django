@@ -127,4 +127,4 @@ class OptionDelete(ModelDeleteMutation):
         error_type_field = "option_errors"
 
 class UpdateOptionValueInput(graphene.InputObjectType):
-    
+    pass

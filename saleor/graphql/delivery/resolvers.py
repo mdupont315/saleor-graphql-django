@@ -1,15 +1,14 @@
 import graphene 
-
-from graphene_django import DjangoObjectType
 from ...delivery import models
 
 def resolve_deliveries(info, **kwargs):
     return models.Delivery.objects.all();
 
-def resolve_delivery( info, **kwargs):
-    id = kwargs.get('id')
+def resolve_delivery( info, deliveryId=None):
 
-    if id is not None:
-        return models.Delivery.objects.get(pk=id)
+    delivery = models.Delivery.objects.get(id=deliveryId)
+    return delivery
 
-    return None
+
+
+
