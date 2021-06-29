@@ -32,6 +32,8 @@ from ...webhook import error_codes as webhook_error_codes
 from ...wishlist import error_codes as wishlist_error_codes
 from ..shop import error_codes as shop_error_codes
 from ...delivery import error_codes as delivery_error_codes
+from ...store import error_codes as store_error_codes
+from ...servicetime import error_codes as service_time_error_codes
 from .utils import str_to_enum
 
 
@@ -131,3 +133,6 @@ WebhookErrorCode = graphene.Enum.from_enum(webhook_error_codes.WebhookErrorCode)
 WishlistErrorCode = graphene.Enum.from_enum(wishlist_error_codes.WishlistErrorCode)
 TranslationErrorCode = graphene.Enum.from_enum(core_error_codes.TranslationErrorCode)
 DeliveryErrorCode = graphene.Enum.from_enum(delivery_error_codes.DeliveryErrorCode)
+StoreErrorCode = graphene.Enum.from_enum(store_error_codes.StoreErrorCode)
+ServiceTimeErrorCode = graphene.Enum.from_enum(service_time_error_codes.ServiceTimeErrorCode)
+OptionErrorCode = graphene.Enum.from_enum(product_error_codes.OptionErrorCode)

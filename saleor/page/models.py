@@ -1,15 +1,23 @@
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
-
+from saleor.store.models import Store
 from ..core.db.fields import SanitizedJSONField
-from ..core.models import ModelWithMetadata, PublishableModel
+from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata, PublishableModel, PublishedQuerySet, PublishedQuerySetMT
 from ..core.permissions import PagePermissions, PageTypePermissions
 from ..core.utils.editorjs import clean_editor_js
 from ..core.utils.translations import TranslationProxy
 from ..seo.models import SeoModel, SeoModelTranslation
 
 
-class Page(ModelWithMetadata, SeoModel, PublishableModel):
+class Page(MultitenantModelWithMetadata, SeoModel, PublishableModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="pages",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     slug = models.SlugField(unique=True, max_length=255)
     title = models.CharField(max_length=250)
     page_type = models.ForeignKey(
@@ -20,10 +28,10 @@ class Page(ModelWithMetadata, SeoModel, PublishableModel):
 
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("slug",)
         permissions = ((PagePermissions.MANAGE_PAGES.codename, "Manage pages."),)
-        indexes = [*ModelWithMetadata.Meta.indexes, GinIndex(fields=["title", "slug"])]
+        indexes = [*MultitenantModelWithMetadata.Meta.indexes, GinIndex(fields=["title", "slug"])]
 
     def __str__(self):
         return self.title
@@ -54,11 +62,19 @@ class PageTranslation(SeoModelTranslation):
         return self.title if self.title else str(self.pk)
 
 
-class PageType(ModelWithMetadata):
+class PageType(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="page_types",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("slug",)
         permissions = (
             (
@@ -66,4 +82,4 @@ class PageType(ModelWithMetadata):
                 "Manage page types and attributes.",
             ),
         )
-        indexes = [*ModelWithMetadata.Meta.indexes, GinIndex(fields=["name", "slug"])]
+        indexes = [*MultitenantModelWithMetadata.Meta.indexes, GinIndex(fields=["name", "slug"])]
