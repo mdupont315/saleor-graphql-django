@@ -1,5 +1,6 @@
 """Checkout-related ORM models."""
 from operator import attrgetter
+from saleor.store.models import Store
 from typing import TYPE_CHECKING, Iterable, Optional
 from uuid import uuid4
 
@@ -12,7 +13,7 @@ from django_prices.models import MoneyField
 from prices import Money
 
 from ..channel.models import Channel
-from ..core.models import ModelWithMetadata
+from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata
 from ..core.permissions import CheckoutPermissions
 from ..core.taxes import zero_money
 from ..core.weight import zero_weight
@@ -32,9 +33,16 @@ def get_default_country():
     return settings.DEFAULT_COUNTRY
 
 
-class Checkout(ModelWithMetadata):
+class Checkout(MultitenantModelWithMetadata):
     """A shopping checkout."""
-
+    store = models.ForeignKey(
+        Store,
+        related_name="checkouts",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     created = models.DateTimeField(auto_now_add=True)
     last_change = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(
@@ -98,7 +106,7 @@ class Checkout(ModelWithMetadata):
         max_length=35, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
     )
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("-last_change", "pk")
         permissions = (
             (CheckoutPermissions.MANAGE_CHECKOUTS.codename, "Manage checkouts"),

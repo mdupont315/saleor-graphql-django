@@ -39,6 +39,9 @@ from ..enums import (
     WeightUnitsEnum,
     WishlistErrorCode,
     DeliveryErrorCode,
+    StoreErrorCode,
+    ServiceTimeErrorCode,
+    OptionErrorCode,
 )
 from .money import VAT
 
@@ -341,6 +344,14 @@ class WishlistError(ProductWithoutVariantError):
 class TranslationError(Error):
     code = TranslationErrorCode(description="The error code.", required=True)
 
+class StoreError(Error):
+    code = StoreErrorCode(description="The error code.", required=True)
+
+class ServiceTimeError(Error):
+    code = ServiceTimeErrorCode(description="The error code.", required=True)
+
+class OptionError(Error):
+    code = OptionErrorCode(description="The error code.", required=True)
 
 class SeoInput(graphene.InputObjectType):
     title = graphene.String(description="SEO title.")

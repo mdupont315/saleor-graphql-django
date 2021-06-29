@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING, Union
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.db.models import F, Q
-
+from saleor.store.models import Store
 from ...account.utils import requestor_is_staff_member_or_app
 from ...core.db.fields import SanitizedJSONField
-from ...core.models import ModelWithMetadata, SortableModel
+from ...core.models import CustomQueryset, ModelWithMetadata, MultitenantModelWithMetadata, SortableModel
 from ...core.units import MeasurementUnits
 from ...core.utils.editorjs import clean_editor_js
 from ...core.utils.translations import TranslationProxy
@@ -45,13 +45,15 @@ class BaseAttributeQuerySet(models.QuerySet):
             return self.all()
         return self.get_public_attributes()
 
+class BaseAttributeMTQuerySet(CustomQueryset, BaseAttributeQuerySet):
+    pass
 
 class AssociatedAttributeQuerySet(BaseAttributeQuerySet):
     def get_public_attributes(self):
         return self.filter(attribute__visible_in_storefront=True)
 
 
-class AttributeQuerySet(BaseAttributeQuerySet):
+class AttributeQuerySet(BaseAttributeMTQuerySet):
     def get_unassigned_product_type_attributes(self, product_type_pk: int):
         return self.product_type_attributes().exclude(
             Q(attributeproduct__product_type_id=product_type_pk)
@@ -102,7 +104,15 @@ class AttributeQuerySet(BaseAttributeQuerySet):
         return self.filter(type=AttributeType.PAGE_TYPE)
 
 
-class Attribute(ModelWithMetadata):
+class Attribute(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="attributes",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     slug = models.SlugField(max_length=250, unique=True, allow_unicode=True)
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=50, choices=AttributeType.CHOICES)
@@ -157,7 +167,7 @@ class Attribute(ModelWithMetadata):
     objects = AttributeQuerySet.as_manager()
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("storefront_search_position", "slug")
 
     def __str__(self) -> str:

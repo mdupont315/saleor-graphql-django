@@ -1,13 +1,21 @@
 import uuid
-
+from saleor.store.models import Store
 from django.db import models
-
+from django_multitenant.models import TenantModel
 from ..account.models import User
 from ..core.tracing import traced_atomic_transaction
 from ..product.models import Product, ProductVariant
 
 
-class Wishlist(models.Model):
+class Wishlist(TenantModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="wishlists",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     user = models.OneToOneField(
         User, related_name="wishlist", on_delete=models.CASCADE, blank=True, null=True

@@ -15,9 +15,9 @@ from django.utils.timezone import now
 from django_measurement.models import MeasurementField
 from django_prices.models import MoneyField, TaxedMoneyField
 from measurement.measures import Weight
-
+from saleor.store.models import Store
 from ..channel.models import Channel
-from ..core.models import ModelWithMetadata
+from ..core.models import CustomQueryset, ModelWithMetadata, MultitenantModelWithMetadata
 from ..core.permissions import OrderPermissions
 from ..core.units import WeightUnits
 from ..core.utils.json_serializer import CustomJsonEncoder
@@ -32,7 +32,7 @@ from ..shipping.models import ShippingMethod
 from . import FulfillmentStatus, OrderEvents, OrderOrigin, OrderStatus
 
 
-class OrderQueryset(models.QuerySet):
+class OrderQueryset(CustomQueryset):
     def get_by_checkout_token(self, token):
         """Return non-draft order with matched checkout token."""
         return self.non_draft().filter(checkout_token=token).first()
@@ -82,7 +82,15 @@ class OrderQueryset(models.QuerySet):
         return self.filter(status=OrderStatus.UNCONFIRMED)
 
 
-class Order(ModelWithMetadata):
+class Order(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="orders",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     created = models.DateTimeField(default=now, editable=False)
     status = models.CharField(
         max_length=32, default=OrderStatus.UNFULFILLED, choices=OrderStatus.CHOICES
@@ -545,7 +553,15 @@ class OrderLine(models.Model):
         return is_digital and has_digital
 
 
-class Fulfillment(ModelWithMetadata):
+class Fulfillment(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="fulfillments",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     fulfillment_order = models.PositiveIntegerField(editable=False)
     order = models.ForeignKey(
         Order, related_name="fulfillments", editable=False, on_delete=models.CASCADE
@@ -571,7 +587,7 @@ class Fulfillment(ModelWithMetadata):
         blank=True,
     )
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("pk",)
 
     def __str__(self):

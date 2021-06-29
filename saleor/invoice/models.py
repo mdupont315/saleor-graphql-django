@@ -1,22 +1,31 @@
+from saleor.store.models import Store
 from django.conf import settings
 from django.db import models
 from django.db.models import JSONField  # type: ignore
 from django.utils.timezone import now
 
 from ..core import JobStatus
-from ..core.models import Job, ModelWithMetadata
+from ..core.models import CustomQueryset, Job, MultitenantModelWithMetadata
 from ..core.utils import build_absolute_uri
 from ..core.utils.json_serializer import CustomJsonEncoder
 from ..order.models import Order
 from . import InvoiceEvents
 
 
-class InvoiceQueryset(models.QuerySet):
+class InvoiceQueryset(CustomQueryset):
     def ready(self):
         return self.filter(job__status=JobStatus.SUCCESS)
 
 
-class Invoice(ModelWithMetadata, Job):
+class Invoice(MultitenantModelWithMetadata, Job):
+    store = models.ForeignKey(
+        Store,
+        related_name="invoices",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     order = models.ForeignKey(
         Order, related_name="invoices", null=True, on_delete=models.SET_NULL
     )

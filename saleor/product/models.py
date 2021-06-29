@@ -34,11 +34,11 @@ from measurement.measures import Weight
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from versatileimagefield.fields import PPOIField, VersatileImageField
-
+from saleor.store.models import Store
 from ..account.utils import requestor_is_staff_member_or_app
 from ..channel.models import Channel
 from ..core.db.fields import SanitizedJSONField
-from ..core.models import ModelWithMetadata, PublishableModel, SortableModel
+from ..core.models import CustomQueryset, ModelWithMetadata, MultitenantModelWithMetadata, PublishableModel, SortableModel
 from ..core.permissions import ProductPermissions, ProductTypePermissions
 from ..core.units import WeightUnits
 from ..core.utils import build_absolute_uri
@@ -60,7 +60,15 @@ if TYPE_CHECKING:
     from ..app.models import App
 
 
-class Category(ModelWithMetadata, MPTTModel, SeoModel):
+class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="categories",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     description = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
@@ -72,7 +80,6 @@ class Category(ModelWithMetadata, MPTTModel, SeoModel):
     )
     background_image_alt = models.CharField(max_length=128, blank=True)
 
-    objects = models.Manager()
     tree = TreeManager()
     translated = TranslationProxy()
 
@@ -104,7 +111,15 @@ class CategoryTranslation(SeoModelTranslation):
         )
 
 
-class ProductType(ModelWithMetadata):
+class ProductType(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="product_types",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     has_variants = models.BooleanField(default=True)
@@ -116,7 +131,7 @@ class ProductType(ModelWithMetadata):
         default=zero_weight,
     )
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("slug",)
         app_label = "product"
         permissions = (
@@ -139,7 +154,7 @@ class ProductType(ModelWithMetadata):
         )
 
 
-class ProductsQueryset(models.QuerySet):
+class ProductsQueryset(CustomQueryset):
     def published(self, channel_slug: str):
         today = datetime.date.today()
         channels = Channel.objects.filter(
@@ -333,7 +348,15 @@ class ProductsQueryset(models.QuerySet):
         return self.prefetch_related("collections", "category", *common_fields)
 
 
-class Product(SeoModel, ModelWithMetadata):
+class Product(SeoModel, MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="products",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     product_type = models.ForeignKey(
         ProductType, related_name="products", on_delete=models.CASCADE
     )
@@ -434,7 +457,7 @@ class ProductTranslation(SeoModelTranslation):
         )
 
 
-class ProductVariantQueryset(models.QuerySet):
+class ProductVariantQueryset(CustomQueryset):
     def annotate_quantities(self):
         return self.annotate(
             quantity=Coalesce(Sum("stocks__quantity"), 0),
@@ -499,7 +522,15 @@ class ProductChannelListing(PublishableModel):
         )
 
 
-class ProductVariant(SortableModel, ModelWithMetadata):
+class ProductVariant(SortableModel, MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="variants",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     sku = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255, blank=True)
     product = models.ForeignKey(
@@ -518,7 +549,7 @@ class ProductVariant(SortableModel, ModelWithMetadata):
     objects = ProductVariantQueryset.as_manager()
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("sort_order", "sku")
         app_label = "product"
 
@@ -629,7 +660,15 @@ class ProductVariantChannelListing(models.Model):
         ordering = ("pk",)
 
 
-class DigitalContent(ModelWithMetadata):
+class DigitalContent(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="digital_contents",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     FILE = "file"
     TYPE_CHOICES = ((FILE, "digital_product"),)
     use_default_settings = models.BooleanField(default=True)
@@ -723,7 +762,7 @@ class CollectionProduct(SortableModel):
         return self.product.collectionproduct.all()
 
 
-class CollectionsQueryset(models.QuerySet):
+class CollectionsQueryset(CustomQueryset):
     def published(self, channel_slug: str):
         today = datetime.date.today()
         return self.filter(
@@ -742,7 +781,15 @@ class CollectionsQueryset(models.QuerySet):
         return self.published(channel_slug)
 
 
-class Collection(SeoModel, ModelWithMetadata):
+class Collection(SeoModel, MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="collections",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=250, unique=True)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     products = models.ManyToManyField(
@@ -762,7 +809,7 @@ class Collection(SeoModel, ModelWithMetadata):
 
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("slug",)
 
     def __str__(self) -> str:
@@ -812,3 +859,43 @@ class CollectionTranslation(SeoModelTranslation):
 
     def __str__(self) -> str:
         return self.name if self.name else str(self.pk)
+
+class Option(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="options",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
+    name = models.CharField(max_length=128)
+    type = models.CharField(max_length=128, blank=True, null=True)
+    required = models.BooleanField(blank=True, null=True, default=False)
+    description = models.TextField(blank=True)
+
+
+    class Meta:
+        ordering = ("name", "pk")
+
+class ProductOption(models.Model):
+    option = models.ForeignKey(
+        Option, related_name="product_options", on_delete=models.CASCADE
+    )
+
+    product = models.ForeignKey(
+        Product, related_name="product_options", on_delete=models.CASCADE
+    )
+
+
+class ProductOptionValue(models.Model):
+    option = models.ForeignKey(
+        Option, related_name="option_values", on_delete=models.CASCADE
+    )
+    channel = models.ForeignKey(
+        Channel, related_name="option_values", on_delete=models.CASCADE
+    )
+    price = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        ordering = ("price", "pk")

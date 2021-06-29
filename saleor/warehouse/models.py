@@ -1,20 +1,21 @@
 import itertools
 import uuid
 from typing import Set
-
+from saleor.core.models import CustomQueryset
+from saleor.store.models import Store
 from django.db import models
 from django.db.models import Exists, F, OuterRef, Sum
 from django.db.models.functions import Coalesce
-
+from django_multitenant.models import TenantModel
 from ..account.models import Address
 from ..channel.models import Channel
-from ..core.models import ModelWithMetadata
+from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata
 from ..order.models import OrderLine
 from ..product.models import Product, ProductVariant
 from ..shipping.models import ShippingZone
 
 
-class WarehouseQueryset(models.QuerySet):
+class WarehouseQueryset(CustomQueryset):
     def prefetch_data(self):
         return self.select_related("address").prefetch_related("shipping_zones")
 
@@ -26,7 +27,15 @@ class WarehouseQueryset(models.QuerySet):
         )
 
 
-class Warehouse(ModelWithMetadata):
+class Warehouse(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="warehouses",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
@@ -38,7 +47,7 @@ class Warehouse(ModelWithMetadata):
 
     objects = WarehouseQueryset.as_manager()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("-slug",)
 
     def __str__(self):
