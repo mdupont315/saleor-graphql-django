@@ -12,9 +12,10 @@ class Store(CountableDjangoObjectType):
     )
     domain = graphene.String(
         description="The store description.",
+        required=False
     )
-    logo = graphene.Field(Image, size=graphene.Int(description="Logo of store."))
-    cover_photo = graphene.Field(Image, size=graphene.Int(description="Background of store."))
+    logo = graphene.Field(Image, size=graphene.Int(description="Logo of store."), required=False)
+    cover_photo = graphene.Field(Image, size=graphene.Int(description="Background of store."), required=False)
 
     class Meta:
         description = (
