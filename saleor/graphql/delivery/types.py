@@ -6,21 +6,21 @@ from ..meta.types import ObjectWithMetadata
 
 class Delivery(CountableDjangoObjectType):
     delivery_area = graphene.String(
-        description="Delivery area setting"
+        description="Delivery area setting."
     )
     delivery_fee = graphene.Float(
-        description="Delivery fee setting"
+        description="Delivery fee setting."
     )
     from_delivery = graphene.Float(
-        description="Fee delivery from setting"
+        description="Fee delivery from setting."
     )
     min_order = graphene.Float(
-        description="Min order value setting"
+        description="Min order value setting."
     )
     
     class Meta:
         description = (
-            "Delivery Setting"
+            "Delivery Setting."
         )
         only_fields = [
             "delivery_area",

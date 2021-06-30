@@ -44,6 +44,16 @@ class ShopSettingsInput(graphene.InputObjectType):
         description="URL of a view where customers can set their password."
     )
 
+    #Emergency feature setting
+    webshop_status = graphene.DateTime(
+        description="Check webshop status"
+    )
+    delivery_status = graphene.DateTime(
+        description="Check delivery status"
+    )
+    pickup_status = graphene.DateTime(
+        description="Check pickup status"
+    )
 
 class SiteDomainInput(graphene.InputObjectType):
     domain = graphene.String(description="Domain name for shop.")
