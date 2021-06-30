@@ -2,14 +2,14 @@ from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from saleor.store.models import Store
 from ..core.db.fields import SanitizedJSONField
-from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata, PublishableModel, PublishedQuerySet, PublishedQuerySetMT
+from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata, PublishableModelMT
 from ..core.permissions import PagePermissions, PageTypePermissions
 from ..core.utils.editorjs import clean_editor_js
 from ..core.utils.translations import TranslationProxy
 from ..seo.models import SeoModel, SeoModelTranslation
 
 
-class Page(MultitenantModelWithMetadata, SeoModel, PublishableModel):
+class Page(PublishableModelMT, MultitenantModelWithMetadata, SeoModel):
     store = models.ForeignKey(
         Store,
         related_name="pages",
