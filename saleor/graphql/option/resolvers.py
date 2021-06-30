@@ -7,11 +7,11 @@ def resolve_options(self, info, **kwargs):
 
 def resolve_option(self, info, id):
     _type , _pk = from_global_id(id)
-    return models.Option.objects.prefetch_related().get(pk=_pk)
+    return models.Option.objects.get(pk=_pk)
 
-def resolve_option_values(self, info, id):
+def resolve_option_values(self, info, id, **kwargs):
     _type , _pk = from_global_id(id)
     option = models.Option.objects.get(pk=_pk)
     if(option):
-        return models.OptionValue.objects.prefetch_related().get(option=option)
+        return models.OptionValue.objects.filter(option=option)
     return []

@@ -1,3 +1,4 @@
+from saleor.core.tracing import traced_resolver
 from saleor.graphql.channel.types import Channel
 from saleor.graphql.core.fields import ChannelContextFilterConnectionField
 import graphene
@@ -23,16 +24,13 @@ class OptionValueChannelListing(CountableDjangoObjectType):
 
 class OptionValue(CountableDjangoObjectType):
     name = graphene.String(description="Name")
-    # option_value_channels = graphene.List(
-    #     OptionValueChannelListing,
-    #     description="List of OptionValueChannel.",
-    # )
 
     class Meta:
         description = (
             "OptionValue"
         )
         only_fields = [
+            "option",
             "name",
             "id",
         ]
@@ -45,7 +43,7 @@ class Option(CountableDjangoObjectType):
     required = graphene.Boolean(description="required")
     description = graphene.String(description="Description")
     option_values = graphene.List(
-        graphene.NonNull(OptionValue),
+        OptionValue,
         description="The main thumbnail for a product.",
     )
 
@@ -54,6 +52,7 @@ class Option(CountableDjangoObjectType):
             "Option"
         )
         only_fields = [
+            "option_values",
             "name",
             "type",
             "required",
@@ -62,3 +61,8 @@ class Option(CountableDjangoObjectType):
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
         model = models.Option
+    
+    @staticmethod
+    @traced_resolver
+    def resolve_option_values(root: models.Option, info, **_kwargs):
+        return root.option_values.all()

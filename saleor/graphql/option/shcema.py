@@ -29,7 +29,7 @@ class OptionQueries(graphene.ObjectType):
         OptionValue,
         id=graphene.Argument(
             graphene.ID,
-            description="ID of the store.",
+            description="ID of the option.",
         ),
         description="List of the servicetime.",
     )
@@ -40,8 +40,8 @@ class OptionQueries(graphene.ObjectType):
     def resolve_option(self, info, id=None):
         return resolve_option(self, info, id)
 
-    def resolve_option_values(self, info, id=None):
-        return resolve_option_values(self, info, id)
+    def resolve_option_values(self, info, id=None, **kwargs):
+        return resolve_option_values(self, info, id, **kwargs)
 
 class OptionMutations(graphene.ObjectType):
     # store mutations
