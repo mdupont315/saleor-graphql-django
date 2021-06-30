@@ -28,7 +28,6 @@ from .utils.error_codes import get_error_code_from_error
 
 registry = get_global_registry()
 
-
 def get_model_name(model):
     """Return name of the model with first letter lowercase."""
     model_name = model.__name__
@@ -393,7 +392,6 @@ class ModelMutation(BaseMutation):
         _meta.return_field_name = return_field_name
         _meta.exclude = exclude
         super().__init_subclass_with_meta__(_meta=_meta, **options)
-        print('cls.get_type_for_model()', cls.get_type_for_model())
 
         model_type = cls.get_type_for_model()
         if not model_type:

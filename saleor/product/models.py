@@ -869,7 +869,7 @@ class Option(MultitenantModelWithMetadata):
         blank=True,
     )
     tenant_id='store_id'
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=256)
     type = models.CharField(max_length=128, blank=True, null=True)
     required = models.BooleanField(blank=True, null=True, default=False)
     description = models.TextField(blank=True)
@@ -880,20 +880,45 @@ class Option(MultitenantModelWithMetadata):
 
 class ProductOption(models.Model):
     option = models.ForeignKey(
-        Option, related_name="product_options", on_delete=models.CASCADE
+        Option, related_name="product_options", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
 
     product = models.ForeignKey(
-        Product, related_name="product_options", on_delete=models.CASCADE
+        Product, related_name="product_options", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
 
 
-class ProductOptionValue(models.Model):
+class OptionValue(models.Model):
+    name = models.CharField(max_length=256)
     option = models.ForeignKey(
-        Option, related_name="option_values", on_delete=models.CASCADE
+        Option, related_name="option_values", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    
+    class Meta:
+        ordering = ("name", "pk")
+
+class OptionValueChannelListing(models.Model):
+    option_value = models.ForeignKey(
+        OptionValue, 
+        related_name="option_value_channels", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     channel = models.ForeignKey(
-        Channel, related_name="option_values", on_delete=models.CASCADE
+        Channel, related_name="option_value_channels", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     price = models.FloatField(blank=True, null=True)
 

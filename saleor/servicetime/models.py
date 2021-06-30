@@ -35,7 +35,7 @@ class ServiceTime(MultitenantModelWithMetadata):
 
     class Meta:
         ordering = ("store_id", "pk")
-        app_label = "service_time"
+        app_label = "servicetime"
         permissions = (
             (
                 ServiceTimePermissions.MANAGE_SERVICE_TIMES.codename,
