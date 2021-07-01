@@ -114,6 +114,10 @@ MenuErrorCode = graphene.Enum.from_enum(menu_error_codes.MenuErrorCode)
 OrderSettingsErrorCode = graphene.Enum.from_enum(
     shop_error_codes.OrderSettingsErrorCode
 )
+NotificationSettingsErrorCode = graphene.Enum.from_enum(
+    shop_error_codes.NotificationSettingsErrorCode
+)
+
 MetadataErrorCode = graphene.Enum.from_enum(core_error_codes.MetadataErrorCode)
 OrderErrorCode = graphene.Enum.from_enum(order_error_codes.OrderErrorCode)
 InvoiceErrorCode = graphene.Enum.from_enum(invoice_error_codes.InvoiceErrorCode)
