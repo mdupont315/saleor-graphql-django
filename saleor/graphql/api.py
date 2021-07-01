@@ -27,6 +27,8 @@ from .servicetime.schema import ServiceTimeQueries, ServiceTimeMutations
 from .store.schema import StoreMutations, StoreQueries
 from .option.shcema import OptionMutations, OptionQueries
 
+from .delivery.schema import DeliveryQueries, DeliveryMutations
+
 
 class Query(
     AccountQueries,
@@ -50,6 +52,7 @@ class Query(
     TranslationQueries,
     WarehouseQueries,
     WebhookQueries,
+    DeliveryQueries,
     StoreQueries,
     ServiceTimeQueries,
     OptionQueries
@@ -79,6 +82,7 @@ class Mutation(
     ShopMutations,
     WarehouseMutations,
     WebhookMutations,
+    DeliveryMutations,
     StoreMutations,
     ServiceTimeMutations,
     OptionMutations

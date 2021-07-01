@@ -38,6 +38,7 @@ from ..enums import (
     WebhookErrorCode,
     WeightUnitsEnum,
     WishlistErrorCode,
+    DeliveryErrorCode,
     StoreErrorCode,
     ServiceTimeErrorCode,
     OptionErrorCode,
@@ -230,6 +231,7 @@ class CollectionError(ProductWithoutVariantError):
     code = CollectionErrorCode(description="The error code.", required=True)
 
 
+
 class ProductChannelListingError(ProductError):
     channels = graphene.List(
         graphene.NonNull(graphene.ID),
@@ -298,7 +300,9 @@ class PageError(Error):
         required=False,
     )
 
-
+class DeliveryError(Error):
+    code = DeliveryErrorCode(description="The error code.", required=True)
+    
 class PaymentError(Error):
     code = PaymentErrorCode(description="The error code.", required=True)
 

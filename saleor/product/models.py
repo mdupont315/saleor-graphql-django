@@ -153,6 +153,43 @@ class ProductType(MultitenantModelWithMetadata):
             self.name,
         )
 
+class Option(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="options",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
+    name = models.CharField(max_length=256)
+    type = models.CharField(max_length=128, blank=True, null=True)
+    required = models.BooleanField(blank=True, null=True, default=False)
+    description = models.TextField(blank=True)
+
+
+    class Meta:
+        ordering = ("name", "pk")
+
+class ProductOption(models.Model):
+    option = models.ForeignKey(
+        Option, 
+        related_name="product_options", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    product = models.ForeignKey(
+        "Product", 
+        related_name="product_options", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        unique_together = [["option", "product"]]
 
 class ProductsQueryset(CustomQueryset):
     def published(self, channel_slug: str):
@@ -389,6 +426,14 @@ class Product(SeoModel, MultitenantModelWithMetadata):
         related_name="+",
     )
     rating = models.FloatField(null=True, blank=True)
+
+    options = models.ManyToManyField(
+        Option,
+        blank=True,
+        related_name="products",
+        through=ProductOption,
+        through_fields=("product", "option"),
+    )
 
     objects = ProductsQueryset.as_manager()
     translated = TranslationProxy()
@@ -860,40 +905,6 @@ class CollectionTranslation(SeoModelTranslation):
     def __str__(self) -> str:
         return self.name if self.name else str(self.pk)
 
-class Option(MultitenantModelWithMetadata):
-    store = models.ForeignKey(
-        Store,
-        related_name="options",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-    tenant_id='store_id'
-    name = models.CharField(max_length=256)
-    type = models.CharField(max_length=128, blank=True, null=True)
-    required = models.BooleanField(blank=True, null=True, default=False)
-    description = models.TextField(blank=True)
-
-
-    class Meta:
-        ordering = ("name", "pk")
-
-class ProductOption(models.Model):
-    option = models.ForeignKey(
-        Option, related_name="product_options", 
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
-
-    product = models.ForeignKey(
-        Product, related_name="product_options", 
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
-
-
 class OptionValue(models.Model):
     name = models.CharField(max_length=256)
     option = models.ForeignKey(
@@ -924,3 +935,4 @@ class OptionValueChannelListing(models.Model):
 
     class Meta:
         ordering = ("price", "pk")
+        unique_together = [["option_value", "channel"]]
