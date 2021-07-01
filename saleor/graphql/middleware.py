@@ -30,10 +30,13 @@ class JWTMiddleware:
 
 class MultipleTenantMiddleware:
     def resolve(self, next, root, info, **kwargs):
+        print('1------')
         request = info.context
         domain = request.META.get('HTTP_ORIGIN')
         s_store = Store.objects.filter(domain=domain).first()
-        if s_store:
+        print('1------', s_store)
+        if s_store and not (hasattr(request, 'user') and request.user.is_superuser):
+            print('2------', s_store)
             set_current_tenant(s_store)
         else:
             unset_current_tenant()

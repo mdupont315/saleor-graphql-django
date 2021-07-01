@@ -8,14 +8,15 @@ from ..meta.types import ObjectWithMetadata
 
 class OptionValueChannelListing(CountableDjangoObjectType):
     price = graphene.Float(description="Price")
-    # channel = graphene.Field(
-    #     type=Channel
-    # )
+    channel = graphene.Field(
+        type=Channel
+    )
     class Meta:
         description = (
             "OptionValueChannelListing"
         )
         only_fields = [
+            "channel",
             "price",
             "id",
         ]
@@ -24,7 +25,10 @@ class OptionValueChannelListing(CountableDjangoObjectType):
 
 class OptionValue(CountableDjangoObjectType):
     name = graphene.String(description="Name")
-
+    channel_listing = graphene.List(
+        OptionValueChannelListing,
+        description="The main thumbnail for a product.",
+    )
     class Meta:
         description = (
             "OptionValue"
@@ -36,6 +40,11 @@ class OptionValue(CountableDjangoObjectType):
         ]
         interfaces = [graphene.relay.Node]
         model = models.OptionValue
+    
+    @staticmethod
+    @traced_resolver
+    def resolve_channel_listing(root: models.OptionValue, info, **_kwargs):
+        return root.option_value_channels.all()
 
 class Option(CountableDjangoObjectType):
     name = graphene.String(description="Name")

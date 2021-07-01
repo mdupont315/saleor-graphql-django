@@ -1,7 +1,7 @@
 from saleor.store.models import Store
 from django.db import models
 from ..core.models import MultitenantModelWithMetadata
-from ..core.permissions import StorePermissions
+from ..core.permissions import ServiceTimePermissions
 from ..core.db.fields import SanitizedJSONField
 from ..core.utils.editorjs import clean_editor_js
 
@@ -38,7 +38,7 @@ class ServiceTime(MultitenantModelWithMetadata):
         app_label = "servicetime"
         permissions = (
             (
-                StorePermissions.MANAGE_STORES.codename,
+                ServiceTimePermissions.MANAGE_SERVICE_TIME.codename,
                 "Service time.",
             ),
         )
