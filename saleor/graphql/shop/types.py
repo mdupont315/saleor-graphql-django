@@ -76,6 +76,19 @@ class LimitInfo(graphene.ObjectType):
         description="Defines the allowed maximum resource usage, null means unlimited.",
     )
 
+#Notification settings
+class NotificationSettings(CountableDjangoObjectType):
+    class Meta:
+        description = (
+            "New order notification settings."
+        )
+        only_fields = [
+            "email_notifications",
+            "email_address"
+        ]
+        model = site_models.SiteSettings
+
+
 
 class Shop(graphene.ObjectType):
     available_payment_gateways = graphene.List(
