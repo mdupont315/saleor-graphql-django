@@ -10,7 +10,7 @@ class ServiceTime(CountableDjangoObjectType):
     dl_allow_preorder = graphene.Boolean(description="allow preorder setting")
     dl_preorder_day = graphene.Int(description="Delivery time setting")
     dl_same_day_order = graphene.Boolean(description="same day ỏder setting")
-    dl_service_time = graphene.String(
+    dl_service_time = graphene.JSONString(
         description="Service time.",
     )
 
@@ -20,7 +20,7 @@ class ServiceTime(CountableDjangoObjectType):
     pu_allow_preorder = graphene.Boolean(description="allow preorder setting")
     pu_preorder_day = graphene.Int(description="Delivery time setting")
     pu_same_day_order = graphene.Boolean(description="same day ỏder setting")
-    pu_service_time = graphene.String(
+    pu_service_time = graphene.JSONString(
         description="Service time.",
     )
     class Meta:
