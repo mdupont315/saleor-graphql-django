@@ -759,18 +759,18 @@ def create_permission_groups():
     group = create_group("Full Access", get_permissions(), super_users)
     yield f"Group: {group}"
 
-    staff_users = create_staff_users()
-    customer_support_codenames = [
-        perm.codename
-        for enum in [CheckoutPermissions, OrderPermissions, GiftcardPermissions]
-        for perm in enum
-    ]
-    customer_support_codenames.append(AccountPermissions.MANAGE_USERS.codename)
-    customer_support_permissions = Permission.objects.filter(
-        codename__in=customer_support_codenames
-    )
-    group = create_group("Customer Support", customer_support_permissions, staff_users)
-    yield f"Group: {group}"
+    # staff_users = create_staff_users()
+    # customer_support_codenames = [
+    #     perm.codename
+    #     for enum in [CheckoutPermissions, OrderPermissions, GiftcardPermissions]
+    #     for perm in enum
+    # ]
+    # customer_support_codenames.append(AccountPermissions.MANAGE_USERS.codename)
+    # customer_support_permissions = Permission.objects.filter(
+    #     codename__in=customer_support_codenames
+    # )
+    # group = create_group("Customer Support", customer_support_permissions, staff_users)
+    # yield f"Group: {group}"
 
 
 def create_staffs():
@@ -866,8 +866,8 @@ def create_channels():
         slug=settings.DEFAULT_CHANNEL_SLUG,
     )
     yield create_channel(
-        channel_name="Channel-PLN",
-        currency_code="PLN",
+        channel_name="Channel-EUR",
+        currency_code="EUR",
     )
 
 
