@@ -78,9 +78,6 @@ class SitePermissions(BasePermissionEnum):
 class StorePermissions(BasePermissionEnum):
     MANAGE_STORES = "store.manage_stores"
 
-class ServiceTimePermissions(BasePermissionEnum):
-    MANAGE_SERVICE_TIMES = "servicetime.manage_service_times"
-
 
 PERMISSIONS_ENUMS = [
     AccountPermissions,
@@ -100,7 +97,6 @@ PERMISSIONS_ENUMS = [
     SitePermissions,
     CheckoutPermissions,
     StorePermissions,
-    ServiceTimePermissions,
 ]
 
 def split_permission_codename(permissions):

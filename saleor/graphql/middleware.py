@@ -8,7 +8,8 @@ from django.utils.functional import SimpleLazyObject
 from ..app.models import App
 from ..core.exceptions import ReadOnlyException
 from .views import API_PATH, GraphQLView
-
+from django_multitenant.utils import set_current_tenant, unset_current_tenant
+from ..store.models import Store
 
 def get_user(request):
     if not hasattr(request, "_cached_user"):
@@ -24,6 +25,19 @@ class JWTMiddleware:
             return get_user(request) or AnonymousUser()
 
         request.user = SimpleLazyObject(lambda: user())
+        
+        return next(root, info, **kwargs)
+
+class MultipleTenantMiddleware:
+    def resolve(self, next, root, info, **kwargs):
+        request = info.context
+        domain = request.META.get('HTTP_ORIGIN')
+        s_store = Store.objects.filter(domain=domain).first()
+        if s_store:
+            set_current_tenant(s_store)
+        else:
+            unset_current_tenant()
+        
         return next(root, info, **kwargs)
 
 
