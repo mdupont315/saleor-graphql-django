@@ -12,9 +12,10 @@ class Store(CountableDjangoObjectType):
     )
     domain = graphene.String(
         description="The store description.",
+        required=False
     )
-    logo = graphene.Field(Image, size=graphene.Int(description="Logo of store."))
-    cover_photo = graphene.Field(Image, size=graphene.Int(description="Background of store."))
+    logo = graphene.Field(Image, size=graphene.Int(description="Logo of store."), required=False)
+    cover_photo = graphene.Field(Image, size=graphene.Int(description="Background of store."), required=False)
 
     class Meta:
         description = (
@@ -30,3 +31,25 @@ class Store(CountableDjangoObjectType):
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
         model = models.Store
+    
+    @staticmethod
+    def resolve_logo(root: models.Store, info, size=None, **_kwargs):
+        if root.logo:
+            return Image.get_adjusted(
+                image=root.logo,
+                alt=None,
+                size=size,
+                rendition_key_set="store_logo",
+                info=info,
+            )
+    
+    @staticmethod
+    def resolve_cover_photo(root: models.Store, info, size=None, **_kwargs):
+        if root.cover_photo:
+            return Image.get_adjusted(
+                image=root.cover_photo,
+                alt=None,
+                size=size,
+                rendition_key_set="store_cover_photo",
+                info=info,
+            )

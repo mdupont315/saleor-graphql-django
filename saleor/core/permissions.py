@@ -79,7 +79,7 @@ class StorePermissions(BasePermissionEnum):
     MANAGE_STORES = "store.manage_stores"
 
 class ServiceTimePermissions(BasePermissionEnum):
-    MANAGE_SERVICE_TIMES = "service_time.manage_service_times"
+    MANAGE_SERVICE_TIMES = "servicetime.manage_service_times"
 
 
 PERMISSIONS_ENUMS = [

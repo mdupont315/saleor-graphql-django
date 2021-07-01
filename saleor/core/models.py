@@ -139,24 +139,12 @@ class CustomQueryset(models.QuerySet):
     as_manager.queryset_only = True
     as_manager = classmethod(as_manager)
 
-class PublishedQuerySetMT(CustomQueryset):
-    def published(self):
-        today = datetime.date.today()
-        return self.filter(
-            Q(publication_date__lte=today) | Q(publication_date__isnull=True),
-            is_published=True,
-        )
-
-    def visible_to_user(self, requestor):
-        from ..account.utils import requestor_is_staff_member_or_app, requestor_is_supplier
-
-        if requestor_is_staff_member_or_app(requestor):
-            return self.all()
-        if requestor_is_supplier(requestor):
-            return self.filter(store_id=requestor.store_id)    
-        return self.published()
+class PublishedQuerySetMT(CustomQueryset, PublishedQuerySet):
+    pass
 
 
-class PublishableModelMT(PublishableModel, MultitenantModelWithMetadata):
+class PublishableModelMT(PublishableModel):
+
+    objects = PublishedQuerySetMT.as_manager()
     class Meta:
         abstract = True
