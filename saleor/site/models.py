@@ -76,6 +76,11 @@ class SiteSettings(MultitenantModelWithMetadata):
     automatically_confirm_all_new_orders = models.BooleanField(default=True)
     translated = TranslationProxy()
 
+    #Emergency setting feature
+    webshop_status = models.DateTimeField(blank=True, null=True)
+    delivery_status = models.DateTimeField(blank=True, null=True)
+    pickup_status = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         permissions = (
             (SitePermissions.MANAGE_SETTINGS.codename, "Manage settings."),

@@ -505,6 +505,11 @@ class ProductInput(graphene.InputObjectType):
         description="List of IDs of collections that the product belongs to.",
         name="collections",
     )
+    options = graphene.List(
+        graphene.ID,
+        description="List of options to be added to the product.",
+        name="options",
+    )
     description = graphene.JSONString(description="Product description (JSON).")
     name = graphene.String(description="Product name.")
     slug = graphene.String(description="Product slug.")
@@ -642,6 +647,10 @@ class ProductCreate(ModelMutation):
         collections = cleaned_data.get("collections", None)
         if collections is not None:
             instance.collections.set(collections)
+
+        options = cleaned_data.get("options", None)
+        if options is not None:
+            instance.options.set(options)
 
     @classmethod
     def post_save_action(cls, info, instance, cleaned_input):
