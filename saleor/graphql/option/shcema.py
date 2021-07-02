@@ -1,3 +1,4 @@
+from .bulk_mutations import OptionBulkDelete
 from .types import Option, OptionValue
 import graphene
 from ..decorators import permission_required
@@ -49,3 +50,4 @@ class OptionMutations(graphene.ObjectType):
     option_update = OptionUpdate.Field()
     option_delete = OptionDelete.Field()
     option_value_update = UpdateOptionValue.Field()
+    option_bulk_delete = OptionBulkDelete.Field()

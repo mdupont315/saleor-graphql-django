@@ -25,18 +25,12 @@ class JWTMiddleware:
             return get_user(request) or AnonymousUser()
 
         request.user = SimpleLazyObject(lambda: user())
-        
-        return next(root, info, **kwargs)
 
-class MultipleTenantMiddleware:
-    def resolve(self, next, root, info, **kwargs):
-        print('1------')
-        request = info.context
-        domain = request.META.get('HTTP_ORIGIN')
-        s_store = Store.objects.filter(domain=domain).first()
-        print('1------', s_store)
-        if s_store and not (hasattr(request, 'user') and request.user.is_superuser):
-            print('2------', s_store)
+        test = request.META.get('HTTP_ORIGIN')
+        s_store = Store.objects.filter(domain=test).first()
+        if hasattr(request, 'user') and request.user.is_superuser:
+            unset_current_tenant()
+        elif s_store and request.user.is_authenticated:
             set_current_tenant(s_store)
         else:
             unset_current_tenant()
