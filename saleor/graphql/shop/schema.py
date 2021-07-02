@@ -12,8 +12,9 @@ from .mutations import (
     StaffNotificationRecipientCreate,
     StaffNotificationRecipientDelete,
     StaffNotificationRecipientUpdate,
+    NotificationSettingsUpdate,
 )
-from .types import OrderSettings, Shop
+from .types import OrderSettings, Shop, NotificationSettings
 
 
 class ShopQueries(graphene.ObjectType):
@@ -26,13 +27,20 @@ class ShopQueries(graphene.ObjectType):
         OrderSettings, description="Order related settings from site settings."
     )
 
+    notification_settings = graphene.Field(
+        NotificationSettings,
+        description="New order notification settings from site settings."
+    )
+
     def resolve_shop(self, _info):
         return Shop()
+    
+    def resolve_notification_settings(self, info, *args, **_kwargs):
+        return info.context.site.settings
 
     @permission_required(OrderPermissions.MANAGE_ORDERS)
     def resolve_order_settings(self, info, *args, **_kwargs):
         return info.context.site.settings
-
 
 class ShopMutations(graphene.ObjectType):
     staff_notification_recipient_create = StaffNotificationRecipientCreate.Field()
@@ -46,3 +54,5 @@ class ShopMutations(graphene.ObjectType):
     shop_address_update = ShopAddressUpdate.Field()
 
     order_settings_update = OrderSettingsUpdate.Field()
+
+    notification_settings_update = NotificationSettingsUpdate.Field()
