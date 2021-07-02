@@ -23,6 +23,7 @@ from ..enums import (
     MetadataErrorCode,
     OrderErrorCode,
     OrderSettingsErrorCode,
+    NotificationSettingsErrorCode,
     PageErrorCode,
     PaymentErrorCode,
     PermissionEnum,
@@ -169,6 +170,8 @@ class MenuError(Error):
 class OrderSettingsError(Error):
     code = OrderSettingsErrorCode(description="The error code.", required=True)
 
+class NotificationSettingsError(Error):
+    code = NotificationSettingsErrorCode(description="The error code.", required=True)
 
 class MetadataError(Error):
     code = MetadataErrorCode(description="The error code.", required=True)

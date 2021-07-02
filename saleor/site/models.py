@@ -81,6 +81,10 @@ class SiteSettings(MultitenantModelWithMetadata):
     delivery_status = models.DateTimeField(blank=True, null=True)
     pickup_status = models.DateTimeField(blank=True, null=True)
 
+    #New order notifications
+    email_notifications = models.BooleanField(default=True)
+    email_address = models.EmailField(blank=True, null=True)
+
     class Meta:
         permissions = (
             (SitePermissions.MANAGE_SETTINGS.codename, "Manage settings."),
