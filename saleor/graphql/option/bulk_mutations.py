@@ -4,7 +4,7 @@ from ...product import models
 from ...core.permissions import ProductPermissions
 from ..core.types.common import OptionError
 
-class AttributeBulkDelete(ModelBulkDeleteMutation):
+class OptionBulkDelete(ModelBulkDeleteMutation):
     class Arguments:
         ids = graphene.List(
             graphene.ID, required=True, description="List of option IDs to delete."
