@@ -72,7 +72,7 @@ class OptionCreate(ModelMutation):
         return option
 
 class OptionUpdateInput(graphene.InputObjectType):
-    name = graphene.String(required=True, description="Name")
+    name = graphene.String(required=False, description="Name")
     add_values = graphene.List(
         OptionValueInput, description="Values"
     )
@@ -82,7 +82,7 @@ class OptionUpdateInput(graphene.InputObjectType):
         description="IDs of values to be removed.",
     )
     required = graphene.Boolean(description="Required")
-    type = graphene.String(required=True, description="Type")
+    type = graphene.String(required=False, description="Type")
 
 
 class OptionUpdate(ModelMutation):
