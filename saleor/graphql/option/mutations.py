@@ -1,7 +1,7 @@
 from graphql_relay.node.node import from_global_id
 from .types import Option
 import graphene
-from ..core.mutations import ModelDeleteMutation, ModelMutation
+from ..core.mutations import ModelDeleteMutation, ModelMutation, ModelBulkDeleteMutation
 from ...product import models
 from ...core.permissions import ProductPermissions
 from ..core.types.common import OptionError
@@ -206,4 +206,20 @@ class UpdateOptionValue(ModelMutation):
             for channel in channel_listing_update:
                 cls.update_option_value_channel(channel, option_value.option_value.id)
             
-        return option_value
+        return option_value    
+class DeleteBulkOptionValue(ModelBulkDeleteMutation):
+    class Arguments:
+        ids = graphene.List(
+            graphene.ID,
+            required=True, 
+            description="List of option value IDs to delete."
+        )
+
+    class Meta:
+        description = "Deletes list of option values."
+        model = models.OptionValue
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = OptionError
+        error_type_field = "option_errors"
+
+

@@ -8,7 +8,8 @@ from .mutations import (
     OptionCreate,
     OptionUpdate,
     OptionDelete,
-    UpdateOptionValue
+    UpdateOptionValue,
+    DeleteBulkOptionValue,
 )
 
 class OptionQueries(graphene.ObjectType):
@@ -51,3 +52,4 @@ class OptionMutations(graphene.ObjectType):
     option_delete = OptionDelete.Field()
     option_value_update = UpdateOptionValue.Field()
     option_bulk_delete = OptionBulkDelete.Field()
+    bulk_option_value_delete = DeleteBulkOptionValue.Field()
