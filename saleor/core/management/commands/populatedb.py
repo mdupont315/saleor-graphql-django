@@ -80,14 +80,14 @@ class Command(BaseCommand):
         create_images = not options["withoutimages"]
         for msg in create_channels():
             self.stdout.write(msg)
-        for msg in create_shipping_zones():
-            self.stdout.write(msg)
+        # for msg in create_shipping_zones():
+        #     self.stdout.write(msg)
         # create_warehouses()
         # self.stdout.write("Created warehouses")
-        for msg in create_page_type():
-            self.stdout.write(msg)
-        for msg in create_pages():
-            self.stdout.write(msg)
+        # for msg in create_page_type():
+        #     self.stdout.write(msg)
+        # for msg in create_pages():
+        #     self.stdout.write(msg)
         # create_products_by_schema(self.placeholders_dir, create_images)
         # self.stdout.write("Created products")
         # for msg in create_product_sales(5):

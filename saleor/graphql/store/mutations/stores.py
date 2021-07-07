@@ -108,6 +108,21 @@ class StoreUpdateInput(graphene.InputObjectType):
     logo = Upload(description="Logo image file.")
     cover_photo = Upload(description="Cover photo image file.")
 
+    #Emergency setting feature
+    webshop_status = graphene.DateTime(
+        description="Webshop status setting."
+    )
+    delivery_status = graphene.DateTime(
+        description="Delivery status setting."
+    )
+    pickup_status =graphene.DateTime(
+        description="Pickup status setting."
+    )
+
+    #New order notifications
+    email_notifications = graphene.Boolean(description="Enable notification")
+    email_address = graphene.String(description="Email for notification")
+
 class StoreUpdate(ModelMutation):
     class Arguments:
         id = graphene.ID(required=True, description="ID of a store to update.")

@@ -12,9 +12,8 @@ from .mutations import (
     StaffNotificationRecipientCreate,
     StaffNotificationRecipientDelete,
     StaffNotificationRecipientUpdate,
-    NotificationSettingsUpdate,
 )
-from .types import OrderSettings, Shop, NotificationSettings
+from .types import OrderSettings, Shop
 
 
 class ShopQueries(graphene.ObjectType):
@@ -25,11 +24,6 @@ class ShopQueries(graphene.ObjectType):
     )
     order_settings = graphene.Field(
         OrderSettings, description="Order related settings from site settings."
-    )
-
-    notification_settings = graphene.Field(
-        NotificationSettings,
-        description="New order notification settings from site settings."
     )
 
     def resolve_shop(self, _info):
@@ -52,7 +46,4 @@ class ShopMutations(graphene.ObjectType):
     shop_fetch_tax_rates = ShopFetchTaxRates.Field()
     shop_settings_translate = ShopSettingsTranslate.Field()
     shop_address_update = ShopAddressUpdate.Field()
-
     order_settings_update = OrderSettingsUpdate.Field()
-
-    notification_settings_update = NotificationSettingsUpdate.Field()
