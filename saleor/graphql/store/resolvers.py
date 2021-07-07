@@ -23,6 +23,7 @@ def resolve_store(info, global_page_id=None, slug=None):
 
 
 def resolve_stores(info, **_kwargs):
-    user = info.context.user
-    return models.Store.objects.visible_to_user(user).all()
+    return models.Store.objects.all()
 
+def resolve_my_store(info, **_kwargs):
+    return models.Store.objects.all().first()
