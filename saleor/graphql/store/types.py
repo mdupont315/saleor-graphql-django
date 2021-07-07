@@ -8,7 +8,7 @@ from ..core.types import Image
 class Store(CountableDjangoObjectType):
     name = graphene.String(
         description="The store name.",
-        required=True,
+        required=False,
     )
     domain = graphene.String(
         description="The store description.",
@@ -16,6 +16,24 @@ class Store(CountableDjangoObjectType):
     )
     logo = graphene.Field(Image, size=graphene.Int(description="Logo of store."), required=False)
     cover_photo = graphene.Field(Image, size=graphene.Int(description="Background of store."), required=False)
+
+    #Emergency setting feature
+    webshop_status = graphene.DateTime(
+        description="Webshop status setting.",
+        required=False
+    )
+    delivery_status = graphene.DateTime(
+        description="Delivery status setting.",
+        required=False
+    )
+    pickup_status =graphene.DateTime(
+        description="Pickup status setting.",
+        required=False
+    )
+
+    #New order notifications
+    email_notifications = graphene.Boolean(description="Enable notification", required=False)
+    email_address = graphene.String(description="Email for notification", required=False)
 
     class Meta:
         description = (
@@ -27,6 +45,11 @@ class Store(CountableDjangoObjectType):
             "domain",
             "logo",
             "cover_photo",
+            "webshop_status",
+            "delivery_status",
+            "pickup_status",
+            "email_notifications",
+            "email_address",
             "id",
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]

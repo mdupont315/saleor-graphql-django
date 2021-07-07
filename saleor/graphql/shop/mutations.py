@@ -9,8 +9,8 @@ from ..account.i18n import I18nMixin
 from ..account.types import AddressInput
 from ..core.enums import WeightUnitsEnum
 from ..core.mutations import BaseMutation, ModelDeleteMutation, ModelMutation
-from ..core.types.common import OrderSettingsError, ShopError, NotificationSettingsError
-from .types import OrderSettings, Shop, NotificationSettings
+from ..core.types.common import OrderSettingsError, ShopError
+from .types import OrderSettings, Shop
 
 
 class ShopSettingsInput(graphene.InputObjectType):
@@ -42,17 +42,6 @@ class ShopSettingsInput(graphene.InputObjectType):
     )
     customer_set_password_url = graphene.String(
         description="URL of a view where customers can set their password."
-    )
-
-    #Emergency feature setting
-    webshop_status = graphene.DateTime(
-        description="Check webshop status"
-    )
-    delivery_status = graphene.DateTime(
-        description="Check delivery status"
-    )
-    pickup_status = graphene.DateTime(
-        description="Check pickup status"
     )
 
 class SiteDomainInput(graphene.InputObjectType):
@@ -292,41 +281,41 @@ class StaffNotificationRecipientDelete(ModelDeleteMutation):
         error_type_class = ShopError
         error_type_field = "shop_errors"
 
-class NotificationSettingsUpdateInput(graphene.InputObjectType):
-    email_notifications = graphene.Boolean(
-        description="Email notifications.",
-        required=True
-    )
-    email_address = graphene.String(
-        description="Email address for notifications."  ,
-        required=True      
-    )
+# class NotificationSettingsUpdateInput(graphene.InputObjectType):
+#     email_notifications = graphene.Boolean(
+#         description="Email notifications.",
+#         required=True
+#     )
+#     email_address = graphene.String(
+#         description="Email address for notifications."  ,
+#         required=True      
+#     )
 
-class NotificationSettingsUpdate(BaseMutation): 
-    notification_settings = graphene.Field(
-        NotificationSettings, 
-        description="Notification settings."
-    )
+# class NotificationSettingsUpdate(BaseMutation): 
+#     notification_settings = graphene.Field(
+#         NotificationSettings, 
+#         description="Notification settings."
+#     )
 
-    class Arguments:
-        input = NotificationSettingsUpdateInput(
-            required=True,
-            description="Fields required to update shop notification settings."
-        )
+#     class Arguments:
+#         input = NotificationSettingsUpdateInput(
+#             required=True,
+#             description="Fields required to update shop notification settings."
+#         )
 
-    class Meta:
-        description = "Updates shop notification settings."
-        error_type_class = NotificationSettingsError
-        error_type_field = "notification_settings_errors"
+#     class Meta:
+#         description = "Updates shop notification settings."
+#         error_type_class = NotificationSettingsError
+#         error_type_field = "notification_settings_errors"
 
-    @classmethod
-    def perform_mutation(cls, _root, info, **data):
-        instance = info.context.site.settings
-        instance.email_notifications = data["input"]["email_notifications"]
-        instance.email_address = data["input"]["email_address"]
-        instance.save(update_fields=["email_notifications","email_address"])
+#     @classmethod
+#     def perform_mutation(cls, _root, info, **data):
+#         instance = info.context.site.settings
+#         instance.email_notifications = data["input"]["email_notifications"]
+#         instance.email_address = data["input"]["email_address"]
+#         instance.save(update_fields=["email_notifications","email_address"])
 
-        return NotificationSettingsUpdate(notification_settings=instance)
+#         return NotificationSettingsUpdate(notification_settings=instance)
 
 class OrderSettingsUpdateInput(graphene.InputObjectType):
     automatically_confirm_all_new_orders = graphene.Boolean(

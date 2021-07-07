@@ -76,17 +76,17 @@ class LimitInfo(graphene.ObjectType):
         description="Defines the allowed maximum resource usage, null means unlimited.",
     )
 
-#Notification settings
-class NotificationSettings(CountableDjangoObjectType):
-    class Meta:
-        description = (
-            "New order notification settings."
-        )
-        only_fields = [
-            "email_notifications",
-            "email_address"
-        ]
-        model = site_models.SiteSettings
+# #Notification settings
+# class NotificationSettings(CountableDjangoObjectType):
+#     class Meta:
+#         description = (
+#             "New order notification settings."
+#         )
+#         only_fields = [
+#             "email_notifications",
+#             "email_address"
+#         ]
+#         model = site_models.SiteSettings
 
 
 
@@ -207,18 +207,6 @@ class Shop(graphene.ObjectType):
         description="Resource limitations and current usage if any set for a shop",
     )
     version = graphene.String(description="Saleor API version.", required=True)
-
-    #Emergency setting feature
-    webshop_status = graphene.DateTime(
-        description="Webshop status setting."
-    )
-    delivery_status = graphene.DateTime(
-        description="Delivery status setting."
-    )
-    pickup_status =graphene.DateTime(
-        description="Pickup status setting."
-    )
-
     class Meta:
         description = (
             "Represents a shop resource containing general shop data and configuration."
@@ -296,19 +284,6 @@ class Shop(graphene.ObjectType):
     @staticmethod
     def resolve_header_text(_, info):
         return info.context.site.settings.header_text
-
-    #Emergency settings
-    @staticmethod
-    def resolve_webshop_status(_, info):
-        return info.context.site.settings.webshop_status
-    
-    @staticmethod
-    def resolve_delivery_status(_, info):
-        return info.context.site.settings.delivery_status
-    
-    @staticmethod
-    def resolve_pickup_status(_, info):
-        return info.context.site.settings.pickup_status
 
     @staticmethod
     def resolve_include_taxes_in_prices(_, info):

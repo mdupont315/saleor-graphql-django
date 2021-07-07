@@ -30,6 +30,15 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     )
     date_joined = models.DateTimeField(default=timezone.now, editable=False)
 
+    #Emergency setting feature
+    webshop_status = models.DateTimeField(blank=True, null=True)
+    delivery_status = models.DateTimeField(blank=True, null=True)
+    pickup_status = models.DateTimeField(blank=True, null=True)
+
+    #New order notifications
+    email_notifications = models.BooleanField(blank=True, null=True,default=False)
+    email_address = models.EmailField(blank=True, null=True)
+
     objects = StoresQueryset.as_manager()
     translated = TranslationProxy()
 
