@@ -123,7 +123,7 @@ class OptionUpdate(ModelMutation):
     
     def delete_option_value(option_id):
         _type , _pk = from_global_id(option_id)
-        option_value = models.ProductOptionValue.objects.get(pk=_pk)
+        option_value = models.OptionValue.objects.get(pk=_pk)
         if(option_value):
             option_value.delete()
 
@@ -204,7 +204,7 @@ class UpdateOptionValue(ModelMutation):
         channel_listing_update = data["input"]["channel_listing_update"]
         if(channel_listing_update):
             for channel in channel_listing_update:
-                cls.update_option_value_channel(channel, option_value.option_value.id)
+                cls.update_option_value_channel(channel, option_value.optionValue.id)
             
         return option_value    
 class DeleteBulkOptionValue(ModelBulkDeleteMutation):
