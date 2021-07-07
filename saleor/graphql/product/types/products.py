@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from saleor.graphql.option.types import Option
 from typing import Optional
 
 import graphene
@@ -553,6 +554,9 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     variants = graphene.List(
         ProductVariant, description="List of variants for the product."
     )
+    options = graphene.List(
+        Option, description="List of variants for the product."
+    )
     media = graphene.List(
         graphene.NonNull(lambda: ProductMedia),
         description="List of media for the product.",
@@ -815,6 +819,11 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     @traced_resolver
     def resolve_channel_listings(root: ChannelContext[models.Product], info, **_kwargs):
         return ProductChannelListingByProductIdLoader(info.context).load(root.node.id)
+    
+    @staticmethod
+    @traced_resolver
+    def resolve_options(root: ChannelContext[models.Product], info, **_kwargs):
+        return root.node.options.all()
 
     @staticmethod
     @traced_resolver

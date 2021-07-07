@@ -14,7 +14,8 @@ from .mutations.stores import (
 from .resolvers import (
     resolve_store,
     resolve_stores,
-    resolve_user_store
+    resolve_user_store,
+    resolve_my_store
 )
 
 class StoreQueries(graphene.ObjectType):
@@ -40,6 +41,10 @@ class StoreQueries(graphene.ObjectType):
         ),
         description="Look up a owner by ID.",
     )
+    my_store = graphene.Field(
+        Store,
+        description="Look up a store by ID.",
+    )
 
     def resolve_store(self, info, id=None, slug=None):
         return resolve_store(info, id, slug)
@@ -49,6 +54,9 @@ class StoreQueries(graphene.ObjectType):
 
     def resolve_user_store(self, info, store_id=None, slug=None):
         return resolve_user_store(info, store_id, slug)
+
+    def resolve_my_store(self, info, **kwargs):
+        return resolve_my_store(info, **kwargs)
 
 class StoreMutations(graphene.ObjectType):
     # store mutations

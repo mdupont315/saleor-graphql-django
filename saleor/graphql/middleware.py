@@ -26,6 +26,18 @@ class JWTMiddleware:
 
         request.user = SimpleLazyObject(lambda: user())
 
+        # domain = request.META.get('HTTP_ORIGIN')
+        # print('domain---------', request.META.get('HTTP_AUTHORIZATION'))
+        # if domain and "localhost" in domain:
+        #     domain = "http://localhost"
+        # s_store = Store.objects.filter(domain=domain).first()
+        # if request.META.get('HTTP_AUTHORIZATION') == "null" or (hasattr(request, 'user') and request.user.is_superuser):
+        #     unset_current_tenant()
+        # elif s_store:
+        #     set_current_tenant(s_store)
+        # else:
+        #     unset_current_tenant()
+
         domain = request.META.get('HTTP_ORIGIN')
         # if "localhost" in domain:
         #     domain = "http://localhost"
