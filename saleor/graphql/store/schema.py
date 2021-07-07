@@ -10,6 +10,7 @@ from .mutations.stores import (
     StoreCreate,
     StoreDelete,
     StoreUpdate,
+    MyStoreUpdate
 )
 from .resolvers import (
     resolve_store,
@@ -63,3 +64,4 @@ class StoreMutations(graphene.ObjectType):
     store_create = StoreCreate.Field()
     store_delete = StoreDelete.Field()
     store_update = StoreUpdate.Field()
+    my_store_update = MyStoreUpdate.Field()

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import date
+from saleor.store.error_codes import StoreErrorCode
 from saleor.account.models import User
 
 import graphene
@@ -136,6 +137,40 @@ class StoreUpdate(ModelMutation):
         permissions = (StorePermissions.MANAGE_STORES,)
         error_type_class = StoreError
         error_type_field = "store_errors"
+
+class MyStoreUpdate(ModelMutation):
+    class Arguments:
+        input = StoreUpdateInput(
+            required=True, description="Fields required to update a store."
+        )
+
+    class Meta:
+        description = "Updates a store."
+        model = models.Store
+        permissions = (StorePermissions.MANAGE_STORES,)
+        error_type_class = StoreError
+        error_type_field = "store_errors"
+
+    @classmethod
+    def perform_mutation(cls, root, info, **data):
+        input = data.get("input")
+        my_store = models.Store.objects.first()
+        if my_store:
+            for field_name, field_item in input._meta.fields.items():
+               if field_name in input:
+                    value = input[field_name]
+                    setattr(my_store, field_name, value)
+            my_store.save()
+            return cls.success_response(my_store)
+        raise ValidationError(
+                {
+                    "store": ValidationError(
+                        "Store does not exists.",
+                        code=StoreErrorCode.NOT_EXISTS,
+                    )
+                }
+            )
+
 
 
 class StoreDelete(ModelDeleteMutation):
