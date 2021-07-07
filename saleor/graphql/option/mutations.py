@@ -142,7 +142,7 @@ class OptionUpdate(ModelMutation):
         delete_values = data["input"].get("delete_values") or []
         if(delete_values):
             for value in delete_values:
-                cls.delete_option_value(value["id"])
+                cls.delete_option_value(value)
             
         return option
 
