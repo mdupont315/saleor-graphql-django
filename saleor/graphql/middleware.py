@@ -26,29 +26,23 @@ class JWTMiddleware:
 
         request.user = SimpleLazyObject(lambda: user())
 
-        # domain = request.META.get('HTTP_ORIGIN')
-        # print('domain---------', request.META.get('HTTP_AUTHORIZATION'))
-        # if domain and "localhost" in domain:
-        #     domain = "http://localhost"
-        # s_store = Store.objects.filter(domain=domain).first()
-        # if request.META.get('HTTP_AUTHORIZATION') == "null" or (hasattr(request, 'user') and request.user.is_superuser):
-        #     unset_current_tenant()
-        # elif s_store:
-        #     set_current_tenant(s_store)
-        # else:
-        #     unset_current_tenant()
-
+        LOCALHOST = "localhost"
         domain = request.META.get('HTTP_ORIGIN')
-        # if "localhost" in domain:
-        #     domain = "http://localhost"
-        s_store = Store.objects.filter(domain="http://localhost").first()
-        if hasattr(request, 'user') and request.user.is_superuser:
-            unset_current_tenant()
-        elif s_store:
-            print('vao``````````````````````', domain)
-            set_current_tenant(s_store)
+        if domain and LOCALHOST in domain:
+            domain = LOCALHOST
+        s_store = Store.objects.filter(domain=domain).first()
+
+        # Request from dashboard
+        if request.META.get('HTTP_FROMDB'):
+            if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
+                unset_current_tenant()
+            elif s_store:
+                set_current_tenant(s_store)
+            else:
+                unset_current_tenant()
+        # Request from storefront
         else:
-            unset_current_tenant()
+            set_current_tenant(s_store)
         
         return next(root, info, **kwargs)
 
