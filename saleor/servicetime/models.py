@@ -14,16 +14,16 @@ class ServiceTime(MultitenantModelWithMetadata):
         blank=True,
     )
     tenant_id='store_id'
-    dl_delivery_time = models.IntegerField(blank=True, null=True ,default=0)
-    dl_time_gap = models.IntegerField(blank=True, null=True, default=0)
+    dl_delivery_time = models.IntegerField(blank=True, null=True ,default=10)
+    dl_time_gap = models.IntegerField(blank=True, null=True, default=10)
     dl_as_soon_as_posible = models.BooleanField(blank=True, null=True, default=False)
     dl_allow_preorder = models.BooleanField(blank=True, null=True, default=False)
     dl_preorder_day = models.IntegerField(blank=True, null=True, default=0)
     dl_same_day_order = models.BooleanField(blank=True, null=True, default=False)
     dl_service_time = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
 
-    pu_delivery_time = models.IntegerField(blank=True, null=True ,default=0)
-    pu_time_gap = models.IntegerField(blank=True, null=True, default=0)
+    pu_delivery_time = models.IntegerField(blank=True, null=True ,default=10)
+    pu_time_gap = models.IntegerField(blank=True, null=True, default=10)
     pu_as_soon_as_posible = models.BooleanField(blank=True, null=True, default=False)
     pu_allow_preorder = models.BooleanField(blank=True, null=True, default=False)
     pu_preorder_day = models.IntegerField(blank=True, null=True, default=0)
