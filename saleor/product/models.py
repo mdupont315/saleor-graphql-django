@@ -26,6 +26,7 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import Coalesce
+from django.db.models.query import Prefetch, QuerySet
 from django.urls import reverse
 from django.utils.encoding import smart_text
 from django_measurement.models import MeasurementField
@@ -153,6 +154,13 @@ class ProductType(MultitenantModelWithMetadata):
             self.name,
         )
 
+class OptionQueryset(QuerySet):
+    def visible_to_user(self, channel_slug: str):
+        if channel_slug:
+            return self.prefetch_related(Prefetch('option_values', 
+            queryset=OptionValue.objects.visible_to_user(channel_slug)))
+        return self.all()
+
 class Option(MultitenantModelWithMetadata):
     store = models.ForeignKey(
         Store,
@@ -166,6 +174,8 @@ class Option(MultitenantModelWithMetadata):
     type = models.CharField(max_length=128, blank=True, null=True)
     required = models.BooleanField(blank=True, null=True, default=False)
     description = models.TextField(blank=True)
+
+    objects = OptionQueryset.as_manager()
 
 
     class Meta:
@@ -905,6 +915,14 @@ class CollectionTranslation(SeoModelTranslation):
     def __str__(self) -> str:
         return self.name if self.name else str(self.pk)
 
+
+class OptionValueQueryset(QuerySet):
+    def visible_to_user(self, channel_slug: str):
+        if channel_slug:
+            return self.prefetch_related(Prefetch('option_value_channels', 
+            queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug)))
+        return self.all()
+
 class OptionValue(models.Model):
     name = models.CharField(max_length=256)
     option = models.ForeignKey(
@@ -913,6 +931,8 @@ class OptionValue(models.Model):
         null=True,
         blank=True,
     )
+
+    objects = OptionValueQueryset.as_manager()
     
     class Meta:
         ordering = ("name", "pk")
