@@ -823,6 +823,8 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     @staticmethod
     @traced_resolver
     def resolve_options(root: ChannelContext[models.Product], info, **_kwargs):
+        if root.channel_slug:
+            return root.node.options.visible_to_user(root.channel_slug)
         return root.node.options.all()
 
     @staticmethod

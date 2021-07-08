@@ -1,6 +1,5 @@
 from saleor.core.tracing import traced_resolver
 from saleor.graphql.channel.types import Channel
-from saleor.graphql.core.fields import ChannelContextFilterConnectionField
 import graphene
 from ...product import models
 from ..core.connection import CountableDjangoObjectType
@@ -70,7 +69,7 @@ class Option(CountableDjangoObjectType):
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
         model = models.Option
-    
+
     @staticmethod
     @traced_resolver
     def resolve_option_values(root: models.Option, info, **_kwargs):
