@@ -25,19 +25,22 @@ class JWTMiddleware:
             return get_user(request) or AnonymousUser()
 
         request.user = SimpleLazyObject(lambda: user())
-        domain = request.META.get('HTTP_ORIGIN').split(":")[1][2:]
-        s_store = Store.objects.filter(domain=domain).first()
-        # Request from dashboard
-        if request.META.get('HTTP_FROMDB'):
-            if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
-                unset_current_tenant()
-            elif s_store:
-                set_current_tenant(s_store)
+
+        domain = request.META.get('HTTP_ORIGIN')
+        if domain:
+            domain = domain.split(":")[1][2:]
+            s_store = Store.objects.filter(domain=domain).first()
+            # Request from dashboard
+            if request.META.get('HTTP_FROMDB'):
+                if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
+                    unset_current_tenant()
+                elif s_store:
+                    set_current_tenant(s_store)
+                else:
+                    unset_current_tenant()
+            # Request from storefront
             else:
-                unset_current_tenant()
-        # Request from storefront
-        else:
-            set_current_tenant(s_store)
+                set_current_tenant(s_store)
         
         return next(root, info, **kwargs)
 
