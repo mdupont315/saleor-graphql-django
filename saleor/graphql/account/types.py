@@ -263,6 +263,7 @@ class User(CountableDjangoObjectType):
             "is_active",
             "is_staff",
             "is_supplier",
+            "is_superuser",
             "last_login",
             "last_name",
             "note",

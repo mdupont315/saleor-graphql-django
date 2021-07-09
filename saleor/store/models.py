@@ -39,6 +39,12 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     email_notifications = models.BooleanField(blank=True, null=True,default=False)
     email_address = models.EmailField(blank=True, null=True)
 
+    #Transaction cost
+    contant_enable = models.BooleanField(blank=True, null=True,default=False)
+    contant_cost = models.FloatField(blank=True, null=True, default=0)
+    stripe_enable = models.BooleanField(blank=True, null=True,default=False)
+    stripe_cost = models.FloatField(blank=True, null=True, default=0)
+
     objects = StoresQueryset.as_manager()
     translated = TranslationProxy()
 

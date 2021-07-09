@@ -35,6 +35,12 @@ class Store(CountableDjangoObjectType):
     email_notifications = graphene.Boolean(description="Enable notification", required=False)
     email_address = graphene.String(description="Email for notification", required=False)
 
+    #New order notifications
+    contant_enable = graphene.Boolean(description="Enable transaction cost for contant", required=False)
+    contant_cost = graphene.Float(description="Transaction cost for contant", required=False)
+    stripe_enable = graphene.Boolean(description="Enable transaction cost for stripe", required=False)
+    stripe_cost = graphene.Float(description="Transaction cost for stripe", required=False)
+
     class Meta:
         description = (
             "A static page that can be manually added by a shop operator through the "
@@ -50,6 +56,10 @@ class Store(CountableDjangoObjectType):
             "pickup_status",
             "email_notifications",
             "email_address",
+            "contant_enable",
+            "contant_cost",
+            "stripe_enable",
+            "stripe_cost",
             "id",
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
