@@ -5,7 +5,7 @@ from ..meta.types import ObjectWithMetadata
 
 
 class Delivery(CountableDjangoObjectType):
-    delivery_area = graphene.String(
+    delivery_area = graphene.JSONString(
         description="Delivery area setting."
     )
     delivery_fee = graphene.Float(

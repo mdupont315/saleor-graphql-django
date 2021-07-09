@@ -16,6 +16,12 @@ class Store(CountableDjangoObjectType):
     )
     logo = graphene.Field(Image, size=graphene.Int(description="Logo of store."), required=False)
     cover_photo = graphene.Field(Image, size=graphene.Int(description="Background of store."), required=False)
+    phone = graphene.String(
+        description="phone of store.",
+        required=False)
+    address = graphene.String(
+        description="phone of store.",
+        required=False)
 
     #Emergency setting feature
     webshop_status = graphene.DateTime(
@@ -51,6 +57,8 @@ class Store(CountableDjangoObjectType):
             "domain",
             "logo",
             "cover_photo",
+            "phone",
+            "address",
             "webshop_status",
             "delivery_status",
             "pickup_status",

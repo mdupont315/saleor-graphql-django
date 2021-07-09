@@ -29,6 +29,8 @@ class Store(MultitenantModelWithMetadata, SeoModel):
         upload_to="store-media", blank=True, null=True
     )
     date_joined = models.DateTimeField(default=timezone.now, editable=False)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    address = models.CharField(max_length=256, blank=True, null=True)
 
     #Emergency setting feature
     webshop_status = models.DateTimeField(blank=True, null=True)

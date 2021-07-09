@@ -18,7 +18,4 @@ class Delivery(MultitenantModelWithMetadata):
     delivery_fee = models.FloatField(blank=True, null=True, default=0)
     from_delivery = models.FloatField(blank=True, null=True, default=0)
     min_order = models.FloatField(blank=True, null=True, default=0)
-
-    def __str__(self) ->str:
-        return self.name
     
