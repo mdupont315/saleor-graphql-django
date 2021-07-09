@@ -30,7 +30,7 @@ class JWTMiddleware:
         domain = request.META.get('HTTP_ORIGIN')
         if domain and LOCALHOST in domain:
             domain = LOCALHOST
-        s_store = Store.objects.filter(domain=domain).first()
+        s_store = Store.objects.filter(domain__icontains=domain).first()
 
         # Request from dashboard
         if request.META.get('HTTP_FROMDB'):
