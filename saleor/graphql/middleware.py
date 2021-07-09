@@ -25,13 +25,8 @@ class JWTMiddleware:
             return get_user(request) or AnonymousUser()
 
         request.user = SimpleLazyObject(lambda: user())
-
-        LOCALHOST = "localhost"
-        domain = request.META.get('HTTP_ORIGIN')
-        if domain and LOCALHOST in domain:
-            domain = LOCALHOST
-        s_store = Store.objects.filter(domain__icontains=domain).first()
-
+        domain = request.META.get('HTTP_ORIGIN').split(":")[1][2:]
+        s_store = Store.objects.filter(domain=domain).first()
         # Request from dashboard
         if request.META.get('HTTP_FROMDB'):
             if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
