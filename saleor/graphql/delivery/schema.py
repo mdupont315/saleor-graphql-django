@@ -1,5 +1,6 @@
 import graphene 
 from .types import Delivery
+from ..core.fields import FilterInputConnectionField
 from .resolvers import(
     resolve_deliveries,
     resolve_delivery
@@ -10,12 +11,8 @@ from .mutations.deliveries import(
 )
 
 class DeliveryQueries(graphene.ObjectType):
-    delivery = graphene.Field(
+    current_delivery = graphene.Field(
         Delivery, 
-        id=graphene.Argument(
-            graphene.ID,
-            description="ID of the delivery."
-        ),
         description="Look up the delivery."
     )
     deliveries = graphene.List(
@@ -26,8 +23,8 @@ class DeliveryQueries(graphene.ObjectType):
     def resolve_deliveries(self, info, **kwargs):
         return resolve_deliveries(info, **kwargs)
 
-    def resolve_delivery(self, info, id=None):
-        return resolve_delivery(info, id)
+    def resolve_current_delivery(self, info, **kwargs):
+        return resolve_delivery(info, **kwargs)
 
 
         
