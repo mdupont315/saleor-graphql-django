@@ -124,6 +124,12 @@ class StoreUpdateInput(graphene.InputObjectType):
     email_notifications = graphene.Boolean(description="Enable notification")
     email_address = graphene.String(description="Email for notification")
 
+    #Transaction cost
+    contant_enable = graphene.Boolean(description="Enable transaction cost for contant")
+    contant_cost = graphene.Float(description="Transaction cost for contant")
+    stripe_enable = graphene.Boolean(description="Enable transaction cost for stripe")
+    stripe_cost = graphene.Float(description="Transaction cost for stripe")
+
 class StoreUpdate(ModelMutation):
     class Arguments:
         id = graphene.ID(required=True, description="ID of a store to update.")
