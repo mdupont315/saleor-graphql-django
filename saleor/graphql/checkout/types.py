@@ -393,7 +393,7 @@ class Checkout(CountableDjangoObjectType):
                 checkout_info,
                 lines,
                 subtotal=subtotal,
-                country_code=address.country.code,
+                country_code=address.country,
             )
             if available is None:
                 return []

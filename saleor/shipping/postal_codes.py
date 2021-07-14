@@ -83,7 +83,7 @@ def check_postal_code_in_range(country, code, start, end):
 
 
 def check_shipping_method_for_postal_code(customer_shipping_address, method):
-    country = customer_shipping_address.country.code
+    country = customer_shipping_address.country
     postal_code = customer_shipping_address.postal_code
     postal_code_rules = method.postal_code_rules.all()
     return {
