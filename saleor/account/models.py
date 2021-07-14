@@ -65,9 +65,9 @@ class Address(models.Model):
     city = models.CharField(max_length=256, blank=True)
     city_area = models.CharField(max_length=128, blank=True)
     postal_code = models.CharField(max_length=20, blank=True)
-    country = CountryField()
+    country = models.CharField(max_length=256, blank=True)
     country_area = models.CharField(max_length=128, blank=True)
-    phone = PossiblePhoneNumberField(blank=True, default="")
+    phone = models.CharField(max_length=256, blank=True)
 
     objects = AddressQueryset.as_manager()
 

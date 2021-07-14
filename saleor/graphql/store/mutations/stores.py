@@ -1,8 +1,10 @@
 from collections import defaultdict
 from datetime import date
+from logging import fatal
 from saleor.store.error_codes import StoreErrorCode
 from saleor.account.models import User
-
+from saleor.servicetime.models import ServiceTime
+from saleor.delivery.models import Delivery
 import graphene
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -83,6 +85,8 @@ class StoreCreate(ModelMutation):
     @classmethod
     def perform_mutation(cls, root, info, **data):
         retval = super().perform_mutation(root, info, **data)
+
+        # create user
         user = User()
         user.is_supplier = True
         user.store_id = retval.store.id
@@ -98,7 +102,36 @@ class StoreCreate(ModelMutation):
             group_name += " management"
             group_name = group_name.capitalize()
             cls.create_group_data(group_name, [permission], [user])
-            
+        
+        # create default service time
+        delivery = Delivery()
+        delivery.store_id = retval.store.id
+        delivery.delivery_area = { "areas" : []}
+        delivery.save()
+
+        # create default service time
+        service_time = ServiceTime()
+        service_time.store_id = retval.store.id
+
+        service_time.dl_allow_preorder = False
+        service_time.dl_as_soon_as_posible = False
+        service_time.dl_delivery_time = 10
+        service_time.dl_preorder_day = 1
+        service_time.dl_same_day_order = False
+        service_time.dl_service_time = {"dl":[{"days":[False,False,False,False,False,False,False],"open":"00:05","close":"23:55"}]}
+        # service_time.dl_service_time = None
+        service_time.dl_time_gap = 10
+
+        service_time.pu_allow_preorder = False
+        service_time.pu_as_soon_as_posible = False
+        service_time.pu_delivery_time = 10
+        service_time.pu_preorder_day = 1
+        service_time.pu_same_day_order = False
+        service_time.pu_service_time = {"pu":[{"days":[False,False,False,False,False,False,False],"open":"00:05","close":"23:55"}]}
+        # service_time.pu_service_time = None
+        service_time.pu_time_gap = 10
+
+        service_time.save()
         return retval
 
 class StoreUpdateInput(graphene.InputObjectType):
