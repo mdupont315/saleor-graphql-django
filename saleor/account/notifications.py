@@ -45,7 +45,7 @@ def send_password_reset_notification(
         if staff
         else NotifyEventType.ACCOUNT_PASSWORD_RESET
     )
-    manager.notify(event, payload=payload, channel_slug=channel_slug)
+    manager.user_notify(event, payload=payload, channel_slug=channel_slug)
 
 
 def send_account_confirmation(user, redirect_url, manager, channel_slug):

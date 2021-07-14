@@ -935,6 +935,17 @@ class PluginsManager(PaymentInterface):
         return self.__run_method_on_plugins(
             "notify", default_value, event, payload, channel_slug=channel_slug
         )
+    
+    def user_notify(
+        self,
+        event: "NotifyEventTypeChoice",
+        payload: dict,
+        channel_slug: Optional[str] = None,
+    ):
+        default_value = None
+        return self.__run_method_on_plugins(
+            "user_notify", default_value, event, payload, channel_slug=channel_slug
+        )
 
     def external_obtain_access_tokens(
         self, plugin_id: str, data: dict, request: WSGIRequest

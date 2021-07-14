@@ -4,7 +4,7 @@ from typing import Optional
 
 from django.conf import settings
 
-from ...core.notify_events import AdminNotifyEvent, NotifyEventType
+from ...core.notify_events import AdminNotifyEvent, NotifyEventType, UserNotifyEvent
 from ..base_plugin import BasePlugin, ConfigurationTypeField
 from ..email_common import (
     DEFAULT_EMAIL_CONFIG_STRUCTURE,
@@ -24,6 +24,7 @@ from .notify_events import (
     send_set_staff_password_email,
     send_staff_order_confirmation,
     send_staff_reset_password,
+    send_user_reset_password,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,12 @@ def get_admin_template_map(templates: AdminTemplate):
         ),
     }
 
+# def get_user_template_map(templates: AdminTemplate):
+#     return {
+#         AdminNotifyEvent.STAFF_ORDER_CONFIRMATION: templates.staff_order_confirmation,
+#         AdminNotifyEvent.ACCOUNT_SET_STAFF_PASSWORD: templates.set_staff_password_email,
+#         UserNotifyEvent.ACCOUNT_PASSWORD_RESET: templates.s
+#     }
 
 def get_admin_event_map():
     return {
@@ -59,6 +66,11 @@ def get_admin_event_map():
         AdminNotifyEvent.ACCOUNT_STAFF_RESET_PASSWORD: send_staff_reset_password,
         AdminNotifyEvent.CSV_PRODUCT_EXPORT_SUCCESS: send_csv_product_export_success,
         AdminNotifyEvent.CSV_EXPORT_FAILED: send_csv_export_failed,
+    }
+
+def get_user_event_map():
+    return {
+        UserNotifyEvent.ACCOUNT_PASSWORD_RESET: send_user_reset_password,
     }
 
 
@@ -229,6 +241,19 @@ class AdminEmailPlugin(BasePlugin):
         template_map = get_admin_template_map(self.templates)
         if not template_map.get(event):
             return previous_value
+        event_map[event](payload, asdict(self.config))  # type: ignore
+
+    def user_notify(self, event: NotifyEventType, payload: dict, previous_value):
+        print('vao dayyyyyyyyyyy')
+        if not self.active:
+            return previous_value
+        event_map = get_user_event_map()
+        if event not in UserNotifyEvent.CHOICES:
+            return previous_value
+        if event not in event_map:
+            logger.warning(f"Missing handler for event {event}")
+            return previous_value
+
         event_map[event](payload, asdict(self.config))  # type: ignore
 
     @classmethod

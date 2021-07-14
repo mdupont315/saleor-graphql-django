@@ -107,7 +107,7 @@ EMAIL_HOST_PASSWORD = email_config["EMAIL_HOST_PASSWORD"]
 EMAIL_HOST = email_config["EMAIL_HOST"]
 EMAIL_PORT = email_config["EMAIL_PORT"]
 EMAIL_BACKEND = email_config["EMAIL_BACKEND"]
-EMAIL_USE_TLS = email_config["EMAIL_USE_TLS"]
+EMAIL_USE_TLS = True
 EMAIL_USE_SSL = email_config["EMAIL_USE_SSL"]
 
 # If enabled, make sure you have set proper storefront address in ALLOWED_CLIENT_HOSTS.

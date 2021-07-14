@@ -27,6 +27,10 @@ CSV_EXPORT_FAILED_TEMPLATE_DEFAULT_TEMPLATE = "export_failed.html"
 STAFF_ORDER_CONFIRMATION_DEFAULT_TEMPLATE = "staff_confirm_order.html"
 STAFF_PASSWORD_RESET_DEFAULT_TEMPLATE = "password_reset.html"
 
+#user
+USER_PASSWORD_RESET_DEFAULT_TEMPLATE = "user_password_reset.html"
+USER_PASSWORD_RESET_DEFAULT_SUBJECT = "User password reset"
+
 STAFF_ORDER_CONFIRMATION_SUBJECT_FIELD = "staff_order_confirmation_subject"
 SET_STAFF_PASSWORD_SUBJECT_FIELD = "set_staff_password_subject"
 CSV_PRODUCT_EXPORT_SUCCESS_SUBJECT_FIELD = "csv_product_export_success_subject"
