@@ -684,7 +684,7 @@ def test_mutation_update_warehouse_can_update_address(
                 "streetAddress2": "Ground floor",
                 "companyName": "",
                 "city": address.city,
-                "country": address.country.code,
+                "country": address.country,
                 "postalCode": "53-601",
             },
         },

@@ -242,7 +242,7 @@ def _get_shipping_voucher_discount_for_checkout(
 
     # check if voucher is limited to specified countries
     if address:
-        if voucher.countries and address.country.code not in voucher.countries:
+        if voucher.countries and address.country not in voucher.countries:
             msg = "This offer is not valid in your country."
             raise NotApplicable(msg)
 

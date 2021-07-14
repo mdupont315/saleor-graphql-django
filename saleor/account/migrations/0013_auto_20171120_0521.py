@@ -14,7 +14,7 @@ def convert_phone_number_to_phonenumberfield(apps, schema_editor):
         if address.phone:
             try:
                 phone_number = phonenumbers.parse(
-                    address.phone.raw_input, address.country.code
+                    address.phone.raw_input, address.country
                 )
                 address.phone = phone_number
                 address.save()

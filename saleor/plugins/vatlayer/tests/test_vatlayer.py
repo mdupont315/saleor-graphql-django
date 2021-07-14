@@ -285,7 +285,7 @@ def test_calculate_checkout_total_from_origin_country(
     total = quantize_price(total, total.currency)
 
     # make sure that address has PL code
-    assert address.country.code == "PL"
+    assert address.country == "PL"
 
     # make sure that we applied DE taxes (19%)
     assert total == TaxedMoney(net=Money("21.00", "USD"), gross=Money("25.00", "USD"))
@@ -407,7 +407,7 @@ def test_calculate_checkout_subtotal_from_origin_country(
     total = quantize_price(total, total.currency)
 
     # make sure that address has PL code
-    assert address.country.code == "PL"
+    assert address.country == "PL"
 
     # make sure that we applied DE taxes (19%)
     assert total == TaxedMoney(net=Money("12.60", "USD"), gross=Money("15.00", "USD"))
@@ -480,7 +480,7 @@ def test_calculate_order_shipping_from_origin_country(
     price = quantize_price(price, price.currency)
 
     # make sure that address has PL code
-    assert order.shipping_address.country.code == "PL"
+    assert order.shipping_address.country == "PL"
 
     # make sure that we applied DE taxes (19%)
     assert price == TaxedMoney(net=Money("8.40", "USD"), gross=Money("10.00", "USD"))

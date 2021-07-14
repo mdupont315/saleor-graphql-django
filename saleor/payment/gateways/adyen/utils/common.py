@@ -286,7 +286,7 @@ def request_data_for_gateway_config(
 
     country = address.country if address else None
     if country:
-        country_code = country.code
+        country_code = country
     else:
         country_code = Country(settings.DEFAULT_COUNTRY).code
     channel = checkout.get_value_from_metadata("channel", "web")

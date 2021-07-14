@@ -161,10 +161,10 @@ class Checkout(MultitenantModelWithMetadata):
         address = self.shipping_address or self.billing_address
         saved_country = self.country
         if address is None or not address.country:
-            return saved_country.code
+            return saved_country
 
-        country_code = address.country.code
-        if not country_code == saved_country.code:
+        country_code = address.country
+        if not country_code == saved_country:
             self.set_country(country_code, commit=True)
         return country_code
 

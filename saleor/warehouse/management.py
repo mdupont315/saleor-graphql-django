@@ -245,7 +245,7 @@ def increase_allocations(lines_info: Iterable["OrderLineData"], channel_slug: st
 
     allocate_stocks(
         lines_info,
-        lines_info[0].line.order.shipping_address.country.code,  # type: ignore
+        lines_info[0].line.order.shipping_address.country,  # type: ignore
         channel_slug,
     )
 
