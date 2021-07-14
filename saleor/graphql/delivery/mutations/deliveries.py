@@ -38,19 +38,19 @@ class DeliveryCreate(ModelMutation):
 
 class DeliveryUpdateInput(graphene.InputObjectType):
     delivery_area = graphene.JSONString(
-        required=True, 
+        required=False, 
         description="Delivery area."
     )
     delivery_fee = graphene.Float(
-        required=True, 
+        required=False, 
         description="Delivery fee."
     )
     from_delivery = graphene.Float(
-        required=True, 
+        required=False, 
         description="Free delivery from."
     )
     min_order = graphene.Float(
-        required=True, 
+        required=False, 
         description="Min order value."
     )
 
@@ -67,17 +67,17 @@ class DeliveryUpdate(ModelMutation):
         error_type_class = DeliveryError
         error_type_field = "delivery_errors"
     
-    delivery = graphene.Field(Delivery)
-    @staticmethod
-    def mutate(root,info,id,input=None):
-        delivery_instance = models.Delivery.objects.get(pk=id)
-        if delivery_instance:
-            delivery_instance.delivery_area = input.delivery_area
-            delivery_instance.delivery_fee = input.delivery_fee
-            delivery_instance.from_delivery = input.from_delivery
-            delivery_instance.min_order = input.min_order
-            delivery_instance.save()
+    # delivery = graphene.Field(Delivery)
+    # @staticmethod
+    # def mutate(root,info,id,input=None):
+    #     delivery_instance = models.Delivery.objects.get(pk=id)
+    #     if delivery_instance:
+    #         delivery_instance.delivery_area = input.delivery_area
+    #         delivery_instance.delivery_fee = input.delivery_fee
+    #         delivery_instance.from_delivery = input.from_delivery
+    #         delivery_instance.min_order = input.min_order
+    #         delivery_instance.save()
             
-            return DeliveryUpdate(delivery=delivery_instance)
+    #         return DeliveryUpdate(delivery=delivery_instance)
         
-        return DeliveryUpdate(delivery=None)
+    #     return DeliveryUpdate(delivery=None)
