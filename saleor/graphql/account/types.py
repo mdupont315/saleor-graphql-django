@@ -74,7 +74,7 @@ class Address(CountableDjangoObjectType):
     @staticmethod
     @traced_resolver
     def resolve_country(root: models.Address, _info):
-        return CountryDisplay(code=root.country, country=root.country.name)
+        return CountryDisplay(code=root.country, country=root.country)
 
     @staticmethod
     @traced_resolver
