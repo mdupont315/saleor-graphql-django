@@ -126,7 +126,7 @@ def calculate_checkout_quantity(lines: Iterable["CheckoutLineInfo"]):
     return sum([line_info.line.quantity for line_info in lines])
 
 
-def add_variants_to_checkout(checkout, variants, quantities, channel_slug):
+def add_variants_to_checkout(checkout, variants, quantities, option_values, channel_slug):
     """Add variants to checkout.
 
     Suitable for new checkouts as it always creates new checkout lines without checking
@@ -155,7 +155,20 @@ def add_variants_to_checkout(checkout, variants, quantities, channel_slug):
         lines.append(
             CheckoutLine(checkout=checkout, variant=variant, quantity=quantity)
         )
-    checkout.lines.bulk_create(lines)
+    line_instances = checkout.lines.bulk_create(lines)
+
+    # create option value for checkout line
+    for line_instance, option_value in zip(line_instances, option_values):
+        if option_value:
+            option_value_list_to_create = []
+            for item in option_value:
+                option_value_instance = product_models.OptionValue.objects.first(pk=item["id"])
+                if option_value_instance:
+                    option_value_list_to_create.append(
+                        option_value_instance
+                    )
+            line_instance.option_values.bulk_create(option_value_list_to_create)
+
     return checkout
 
 

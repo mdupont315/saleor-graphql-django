@@ -143,6 +143,8 @@ def _create_line_for_order(
     quantity = checkout_line.quantity
     variant = checkout_line_info.variant
     product = checkout_line_info.product
+    # handle product option
+    option_values = checkout_line_info.line.option_values
     address = (
         checkout_info.shipping_address or checkout_info.billing_address
     )  # FIXME: check which address we need here
@@ -193,7 +195,7 @@ def _create_line_for_order(
         tax_rate=tax_rate,
     )
 
-    line_info = OrderLineData(line=line, quantity=quantity, variant=variant)
+    line_info = OrderLineData(line=line, quantity=quantity, variant=variant, option_values=option_values)
 
     return line_info
 
@@ -391,7 +393,11 @@ def _create_order(
         line.order_id = order.pk
         order_lines.append(line)
 
-    OrderLine.objects.bulk_create(order_lines)
+    order_line_instances = OrderLine.objects.bulk_create(order_lines)
+    for order_line_instance, line_info in zip(order_line_instances, order_lines_info):
+        option_values = line_info.option_values
+        if option_values:
+            order_line_instance.option_values.bulk_create(option_values)
 
     country_code = checkout_info.get_country()
     allocate_stocks(order_lines_info, country_code, checkout_info.channel.slug)
