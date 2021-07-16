@@ -93,7 +93,7 @@ class DiscountQueries(graphene.ObjectType):
         _, id = from_global_id_or_error(id, Voucher)
         return resolve_voucher(id, channel)
 
-    @permission_required(DiscountPermissions.MANAGE_DISCOUNTS)
+    # @permission_required(DiscountPermissions.MANAGE_DISCOUNTS)
     def resolve_vouchers(self, info, channel=None, **kwargs):
         return resolve_vouchers(info, channel_slug=channel, **kwargs)
 

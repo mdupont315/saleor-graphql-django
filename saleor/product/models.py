@@ -1,4 +1,6 @@
 import datetime
+from saleor.order.models import OrderLine
+from saleor.checkout.models import CheckoutLine
 from typing import TYPE_CHECKING, Iterable, Optional, Union
 from uuid import uuid4
 
@@ -923,6 +925,11 @@ class OptionValueQueryset(QuerySet):
             queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug)))
         return self.all()
 
+    def get_price_by_channel(self, channel_slug: str):
+        if channel_slug:
+            self.option_value_channels.first(channel__slug=channel_slug).price
+        return 0
+
 class OptionValue(models.Model):
     name = models.CharField(max_length=256)
     option = models.ForeignKey(
@@ -931,6 +938,10 @@ class OptionValue(models.Model):
         null=True,
         blank=True,
     )
+
+    checkout_lines = models.ManyToManyField(CheckoutLine, related_name="option_values")
+
+    order_lines = models.ManyToManyField(OrderLine, related_name="option_values")
 
     objects = OptionValueQueryset.as_manager()
     
