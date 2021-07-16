@@ -81,6 +81,11 @@ LANGUAGES = [
     ("en", "English"),
     ("nl", "Dutch"),
 ]
+ORDER_TYPE_DEFAULT = "pickup"
+ORDER_TYPES = [
+    ("delivery", "Delivery"),
+    ("pickup", "Pickup")
+]
 LOCALE_PATHS = [os.path.join(PROJECT_ROOT, "locale")]
 USE_I18N = True
 USE_L10N = True
