@@ -848,7 +848,7 @@ def test_mutation_update_company_address(
         "input": {
             "streetAddress1": address.street_address_1,
             "city": address.city,
-            "country": address.country.code,
+            "country": address.country,
             "postalCode": address.postal_code,
         }
     }
@@ -865,7 +865,7 @@ def test_mutation_update_company_address(
     assert site_settings.company_address
     assert site_settings.company_address.street_address_1 == address.street_address_1
     assert site_settings.company_address.city == address.city
-    assert site_settings.company_address.country.code == address.country.code
+    assert site_settings.company_address.country == address.country
 
 
 def test_mutation_update_company_address_remove_address(

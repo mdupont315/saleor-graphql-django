@@ -32,7 +32,7 @@ def move_company_address_to_avatax_configuration(apps, schema):
                     },
                     {
                         "name": "from_country",
-                        "value": company_address.country.code,
+                        "value": company_address.country,
                     },
                     {
                         "name": "from_country_area",

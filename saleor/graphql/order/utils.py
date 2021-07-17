@@ -36,7 +36,7 @@ def validate_shipping_method(order: "Order", errors: T_ERRORS):
         )
     elif (
         order.shipping_address
-        and order.shipping_address.country.code
+        and order.shipping_address.country
         not in order.shipping_method.shipping_zone.countries
     ):
         error = ValidationError(

@@ -49,7 +49,7 @@ def apply_tax_to_price(taxes, rate_name, base):
 
 
 def get_taxes_for_country(country):
-    tax_rates = get_tax_rates_for_country(country.code)
+    tax_rates = get_tax_rates_for_country(country)
     if tax_rates is None:
         return None
 
