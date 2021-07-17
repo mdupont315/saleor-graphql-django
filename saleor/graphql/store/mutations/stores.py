@@ -137,8 +137,8 @@ class StoreCreate(ModelMutation):
 class StoreUpdateInput(graphene.InputObjectType):
     name = graphene.String(description="Store name.")
     domain = graphene.String(description="Store domain")
-    street_address = graphene.String(description="Store address.")
-    phone_number = graphene.String(description="Store phone.")
+    address = graphene.String(description="Store address.")
+    phone = graphene.String(description="Store phone.")
     logo = Upload(description="Logo image file.")
     cover_photo = Upload(description="Cover photo image file.")
 

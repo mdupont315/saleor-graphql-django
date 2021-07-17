@@ -166,7 +166,7 @@ class ShippingMethodQueryset(CustomQueryset):
             return None
         if not country_code:
             # TODO: country_code should come from argument
-            country_code = instance.shipping_address.country.code  # type: ignore
+            country_code = instance.shipping_address.country  # type: ignore
         if lines is None:
             # TODO: lines should comes from args in get_valid_shipping_methods_for_order
             lines = instance.lines.prefetch_related("variant__product").all()
@@ -177,7 +177,7 @@ class ShippingMethodQueryset(CustomQueryset):
             price=price,
             channel_id=channel_id,
             weight=instance.get_total_weight(lines),
-            country_code=country_code or instance.shipping_address.country.code,
+            country_code=country_code or instance.shipping_address.country,
             product_ids=instance_product_ids,
         ).prefetch_related("postal_code_rules")
 

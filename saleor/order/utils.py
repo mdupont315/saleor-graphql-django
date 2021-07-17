@@ -39,7 +39,7 @@ def get_order_country(order: Order) -> str:
         address = order.shipping_address
     if address is None:
         return settings.DEFAULT_COUNTRY
-    return address.country.code
+    return address.country
 
 
 def order_line_needs_automatic_fulfillment(line: OrderLine) -> bool:
@@ -556,7 +556,7 @@ def get_valid_shipping_methods_for_order(order: Order):
         order,
         channel_id=order.channel_id,
         price=order.get_subtotal().gross,
-        country_code=order.shipping_address.country.code,
+        country_code=order.shipping_address.country,
     )
 
 

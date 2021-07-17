@@ -185,7 +185,7 @@ class VatlayerPlugin(BasePlugin):
                 )
 
             country = Country(origin_country_code)
-        country_code = country.code
+        country_code = country
 
         if country_code in self.config.countries_from_origin:
             country_code = self.config.origin_country

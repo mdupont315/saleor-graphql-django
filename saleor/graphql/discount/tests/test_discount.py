@@ -124,7 +124,7 @@ def test_voucher_query(
     assert data["startDate"] == voucher.start_date.isoformat()
     assert data["discountValueType"] == voucher.discount_value_type.upper()
     assert data["countries"] == [
-        {"country": country.name, "code": country.code} for country in voucher.countries
+        {"country": country.name, "code": country} for country in voucher.countries
     ]
     channel_listing = voucher.channel_listings.first()
     assert {
@@ -200,7 +200,7 @@ def test_voucher_query_with_channel_slug(
     assert data["startDate"] == voucher.start_date.isoformat()
     assert data["discountValueType"] == voucher.discount_value_type.upper()
     assert data["countries"] == [
-        {"country": country.name, "code": country.code} for country in voucher.countries
+        {"country": country.name, "code": country} for country in voucher.countries
     ]
     assert len(data["channelListings"]) == 2
     for channel_listing in voucher.channel_listings.all():

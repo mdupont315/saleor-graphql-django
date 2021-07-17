@@ -3434,7 +3434,7 @@ def payment_dummy(db, order_with_lines):
         billing_address_2=order_with_lines.billing_address.street_address_2,
         billing_city=order_with_lines.billing_address.city,
         billing_postal_code=order_with_lines.billing_address.postal_code,
-        billing_country_code=order_with_lines.billing_address.country.code,
+        billing_country_code=order_with_lines.billing_address.country,
         billing_country_area=order_with_lines.billing_address.country_area,
         billing_email=order_with_lines.user_email,
     )
@@ -3468,7 +3468,7 @@ def payment_dummy_credit_card(db, order_with_lines):
         billing_address_2=order_with_lines.billing_address.street_address_2,
         billing_city=order_with_lines.billing_address.city,
         billing_postal_code=order_with_lines.billing_address.postal_code,
-        billing_country_code=order_with_lines.billing_address.country.code,
+        billing_country_code=order_with_lines.billing_address.country,
         billing_country_area=order_with_lines.billing_address.country_area,
         billing_email=order_with_lines.user_email,
     )
