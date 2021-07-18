@@ -196,7 +196,7 @@ def validate_variants_available_for_purchase(variants_id: set, channel_id: int):
         )
 
 class ProductOptionValue(graphene.InputObjectType):
-    option_value_id = graphene.Int(required=True, description="The number of items purchased.")
+    option_value_id = graphene.ID(required=True, description="The number of items purchased.")
 
 class CheckoutLineInput(graphene.InputObjectType):
     quantity = graphene.Int(required=True, description="The number of items purchased.")

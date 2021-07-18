@@ -105,7 +105,7 @@ class Checkout(MultitenantModelWithMetadata):
     language_code = models.CharField(
         max_length=35, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
     )
-    order_type = models.Field(
+    order_type = models.CharField(
         max_length=35, choices=settings.ORDER_TYPES, default=settings.ORDER_TYPE_DEFAULT
     )
 
