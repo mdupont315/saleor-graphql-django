@@ -925,11 +925,6 @@ class OptionValueQueryset(QuerySet):
             queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug)))
         return self.all()
 
-    def get_price_by_channel(self, channel_slug: str):
-        if channel_slug:
-            self.option_value_channels.first(channel__slug=channel_slug).price
-        return 0
-
 class OptionValue(models.Model):
     name = models.CharField(max_length=256)
     option = models.ForeignKey(
@@ -948,6 +943,13 @@ class OptionValue(models.Model):
     class Meta:
         ordering = ("name", "pk")
 
+    def get_price_by_channel(self, channel_slug: str):
+        if channel_slug:
+            option_value_channel = self.option_value_channels.get(channel__slug=channel_slug)
+            option_value_price = option_value_channel.price
+            return option_value_price or 0
+        return 0
+
 class OptionValueChannelListing(models.Model):
     option_value = models.ForeignKey(
         OptionValue, 
@@ -962,7 +964,14 @@ class OptionValueChannelListing(models.Model):
         null=True,
         blank=True,
     )
-    price = models.FloatField(blank=True, null=True)
+    currency = models.CharField(max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH, blank=True, null=True)
+    price_amount = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        blank=True,
+        null=True,
+    )
+    price = MoneyField(amount_field="price_amount", currency_field="currency")
 
     class Meta:
         ordering = ("price", "pk")

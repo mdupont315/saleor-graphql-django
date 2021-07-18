@@ -244,7 +244,7 @@ class Order(MultitenantModelWithMetadata):
     )
     redirect_url = models.URLField(blank=True, null=True)
     
-    order_type = models.Field(
+    order_type = models.CharField(
         max_length=35, choices=settings.ORDER_TYPES, default=settings.ORDER_TYPE_DEFAULT
     )
     objects = OrderQueryset.as_manager()
