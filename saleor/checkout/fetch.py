@@ -47,7 +47,8 @@ class CheckoutInfo:
         return address.country
 
     def get_customer_email(self) -> str:
-        return self.user.email if self.user else self.checkout.email
+        email = self.checkout.billing_address.email
+        return self.user.email if self.user else email
 
 
 def fetch_checkout_lines(checkout: "Checkout") -> Iterable[CheckoutLineInfo]:
