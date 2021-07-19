@@ -68,6 +68,8 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
 
     @classmethod
     def clean_payment_amount(cls, info, checkout_total, amount):
+        print('checkout_total', checkout_total.gross.amount)
+        print('amount', amount)
         if amount != checkout_total.gross.amount:
             raise ValidationError(
                 {
