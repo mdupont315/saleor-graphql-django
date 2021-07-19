@@ -52,7 +52,7 @@ class Checkout(MultitenantModelWithMetadata):
         related_name="checkouts",
         on_delete=models.CASCADE,
     )
-    email = models.EmailField()
+    # email = models.EmailField()
     token = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     channel = models.ForeignKey(
         Channel,

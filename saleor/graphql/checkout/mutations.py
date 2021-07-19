@@ -219,7 +219,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
         ),
         required=True,
     )
-    email = graphene.String(description="The customer's email address.")
+    # email = graphene.String(description="The customer's email address.")
     shipping_address = AddressInput(
         description=(
             "The mailing address to where the checkout will be shipped. "
@@ -329,9 +329,9 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             ) = cls.clean_checkout_lines(lines, country, cleaned_input["channel"])
 
         # Use authenticated user's email as default email
-        if user.is_authenticated:
-            email = data.pop("email", None)
-            cleaned_input["email"] = email or user.email
+        # if user.is_authenticated:
+        #     email = data.pop("email", None)
+        #     cleaned_input["email"] = email or user.email
 
         language_code = data.get("language_code", settings.LANGUAGE_CODE)
         cleaned_input["language_code"] = language_code
