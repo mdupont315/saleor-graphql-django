@@ -38,6 +38,7 @@ class AddressInput(graphene.InputObjectType):
     country = CountryCodeEnum(description="Country.", required=False)
     country_area = graphene.String(description="State or province.", required=False)
     phone = graphene.String(description="Phone number.", required=False)
+    email = graphene.String(description="The customer's email address.")
 
 
 @key(fields="id")

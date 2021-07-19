@@ -40,7 +40,7 @@ from ...warehouse.availability import check_stock_quantity_bulk
 from ..account.i18n import I18nMixin
 from ..account.types import AddressInput
 from ..channel.utils import clean_channel
-from ..core.enums import LanguageCodeEnum
+from ..core.enums import LanguageCodeEnum, OrderTypeEnum
 from ..core.mutations import BaseMutation, ModelMutation
 from ..core.types.common import CheckoutError
 from ..core.validators import validate_variants_available_in_channel
@@ -195,10 +195,16 @@ def validate_variants_available_for_purchase(variants_id: set, channel_id: int):
             }
         )
 
+class ProductOptionValue(graphene.InputObjectType):
+    option_value_id = graphene.ID(required=True, description="The number of items purchased.")
 
 class CheckoutLineInput(graphene.InputObjectType):
     quantity = graphene.Int(required=True, description="The number of items purchased.")
     variant_id = graphene.ID(required=True, description="ID of the product variant.")
+    option_values = graphene.List(
+        ProductOptionValue,
+        required=False, description="option values"
+    )
 
 
 class CheckoutCreateInput(graphene.InputObjectType):
@@ -213,7 +219,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
         ),
         required=True,
     )
-    email = graphene.String(description="The customer's email address.")
+    # email = graphene.String(description="The customer's email address.")
     shipping_address = AddressInput(
         description=(
             "The mailing address to where the checkout will be shipped. "
@@ -224,6 +230,9 @@ class CheckoutCreateInput(graphene.InputObjectType):
     billing_address = AddressInput(description="Billing address of the customer.")
     language_code = graphene.Argument(
         LanguageCodeEnum, required=False, description="Checkout language code."
+    )
+    order_type = graphene.Argument(
+        OrderTypeEnum, required=True, description="Checkout type."
     )
 
 
@@ -265,13 +274,14 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         )
 
         quantities = [line["quantity"] for line in lines]
+        option_values = [line.get("option_values", []) for line in lines]
         variant_db_ids = {variant.id for variant in variants}
-        validate_variants_available_for_purchase(variant_db_ids, channel.id)
+        # validate_variants_available_for_purchase(variant_db_ids, channel.id)
         validate_variants_available_in_channel(
             variant_db_ids, channel.id, CheckoutErrorCode.UNAVAILABLE_VARIANT_IN_CHANNEL
         )
         check_lines_quantity(variants, quantities, country, channel.slug)
-        return variants, quantities
+        return variants, quantities, option_values
 
     @classmethod
     def retrieve_shipping_address(cls, user, data: dict) -> Optional["Address"]:
@@ -315,12 +325,13 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             (
                 cleaned_input["variants"],
                 cleaned_input["quantities"],
+                cleaned_input["option_values"],
             ) = cls.clean_checkout_lines(lines, country, cleaned_input["channel"])
 
         # Use authenticated user's email as default email
-        if user.is_authenticated:
-            email = data.pop("email", None)
-            cleaned_input["email"] = email or user.email
+        # if user.is_authenticated:
+        #     email = data.pop("email", None)
+        #     cleaned_input["email"] = email or user.email
 
         language_code = data.get("language_code", settings.LANGUAGE_CODE)
         cleaned_input["language_code"] = language_code
@@ -344,9 +355,10 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         # Create checkout lines
         variants = cleaned_input.get("variants")
         quantities = cleaned_input.get("quantities")
+        option_values = cleaned_input.get("option_values")
         if variants and quantities:
             try:
-                add_variants_to_checkout(instance, variants, quantities, channel.slug)
+                add_variants_to_checkout(instance, variants, quantities, option_values, channel.slug)
             except InsufficientStock as exc:
                 error = prepare_insufficient_stock_checkout_validation_error(exc)
                 raise ValidationError({"lines": error})
