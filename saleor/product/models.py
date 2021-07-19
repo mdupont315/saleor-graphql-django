@@ -974,5 +974,5 @@ class OptionValueChannelListing(models.Model):
     price = MoneyField(amount_field="price_amount", currency_field="currency")
 
     class Meta:
-        ordering = ("price", "pk")
+        ordering = ("price_amount", "pk")
         unique_together = [["option_value", "channel"]]
