@@ -114,9 +114,6 @@ class Checkout(MultitenantModelWithMetadata):
     expected_time = models.CharField(
         max_length=10, blank=True, null=True
     )
-    note = models.CharField(
-        max_length=500, blank=True, null=True
-    )
 
     class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("-last_change", "pk")
