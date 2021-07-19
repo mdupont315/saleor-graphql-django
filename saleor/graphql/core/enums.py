@@ -89,6 +89,11 @@ LanguageCodeEnum = graphene.Enum(
     [(lang[0].replace("-", "_").upper(), lang[0]) for lang in settings.LANGUAGES],
 )
 
+OrderTypeEnum = graphene.Enum(
+    "OrderTypeEnum",
+    [(order_type[0].replace("-", "_").upper(), order_type[0]) for order_type in settings.ORDER_TYPES],
+)
+
 
 JobStatusEnum = to_enum(JobStatus)
 PermissionEnum = graphene.Enum("PermissionEnum", get_permissions_enum_list())

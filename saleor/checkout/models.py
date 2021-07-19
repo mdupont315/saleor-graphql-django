@@ -52,7 +52,7 @@ class Checkout(MultitenantModelWithMetadata):
         related_name="checkouts",
         on_delete=models.CASCADE,
     )
-    email = models.EmailField()
+    # email = models.EmailField()
     token = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     channel = models.ForeignKey(
         Channel,
@@ -104,6 +104,9 @@ class Checkout(MultitenantModelWithMetadata):
 
     language_code = models.CharField(
         max_length=35, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
+    )
+    order_type = models.CharField(
+        max_length=35, choices=settings.ORDER_TYPES, default=settings.ORDER_TYPE_DEFAULT
     )
 
     class Meta(MultitenantModelWithMetadata.Meta):
