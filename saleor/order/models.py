@@ -253,9 +253,7 @@ class Order(MultitenantModelWithMetadata):
     expected_time = models.CharField(
         max_length=10, blank=True, null=True
     )
-    note = models.CharField(
-        max_length=500, blank=True, null=True
-    )
+
     objects = OrderQueryset.as_manager()
 
     class Meta:
@@ -276,8 +274,7 @@ class Order(MultitenantModelWithMetadata):
 
     def get_customer_email(self):
         email = self.billing_address.email
-        # return self.user.email if self.user else self.user_email
-        return self.user.email if self.user else email
+        return self.user.email if self.user else self.user_email
 
     def update_total_paid(self):
         self.total_paid_amount = (
