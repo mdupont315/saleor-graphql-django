@@ -108,6 +108,15 @@ class Checkout(MultitenantModelWithMetadata):
     order_type = models.CharField(
         max_length=35, choices=settings.ORDER_TYPES, default=settings.ORDER_TYPE_DEFAULT
     )
+    expected_date = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    expected_time = models.CharField(
+        max_length=10, blank=True, null=True
+    )
+    note = models.CharField(
+        max_length=500, blank=True, null=True
+    )
 
     class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("-last_change", "pk")
@@ -119,7 +128,8 @@ class Checkout(MultitenantModelWithMetadata):
         return iter(self.lines.all())
 
     def get_customer_email(self) -> str:
-        return self.user.email if self.user else self.email
+        email = self.billing_address.email
+        return self.user.email if self.user else email
 
     def is_shipping_required(self) -> bool:
         """Return `True` if any of the lines requires shipping."""
