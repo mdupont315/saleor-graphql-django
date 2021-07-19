@@ -1,3 +1,4 @@
+from saleor.graphql.core.scalars import PositiveDecimal
 from graphql_relay.node.node import from_global_id
 from .types import Option
 import graphene
@@ -10,7 +11,7 @@ from ...channel import models as channel_models
 
 class OptionValueChannelInput(graphene.InputObjectType):
     channel_id = graphene.String(required=True, description="Channel")
-    price = graphene.Float(required=True, description="Channel")
+    price = PositiveDecimal(required=True, description="Channel")
 
 class OptionValueInput(graphene.InputObjectType):
     name = graphene.String(required=True, description="Name")
@@ -44,7 +45,7 @@ class OptionCreate(ModelMutation):
     @classmethod
     def create_option_value_channel(cls, value, option_value_id):
         option_value_channel = models.OptionValueChannelListing()
-        option_value_channel.price = value["price"]
+        option_value_channel.price_amount = value["price"]
         _type , _pk = from_global_id(value["channel_id"])
         option_value_channel.channel = channel_models.Channel.objects.get(pk = _pk)
         option_value_channel.option_value = models.OptionValue.objects.get(pk = option_value_id)
