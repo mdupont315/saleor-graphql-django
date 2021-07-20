@@ -264,14 +264,25 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         cls, lines, country, channel
     ) -> Tuple[List[product_models.ProductVariant], List[int]]:
         variant_ids = [line["variant_id"] for line in lines]
-        variants = cls.get_nodes_or_error(
-            variant_ids,
-            "variant_id",
-            ProductVariant,
-            qs=product_models.ProductVariant.objects.prefetch_related(
-                "product__product_type"
-            ),
-        )
+
+        # variants = cls.get_nodes_or_error(
+        #     variant_ids,
+        #     "variant_id",
+        #     ProductVariant,
+        #     qs=product_models.ProductVariant.objects.prefetch_related(
+        #         "product__product_type"
+        #     ),
+        # )
+        variants = []
+        for id in variant_ids:
+            variants.append(cls.get_nodes_or_error(
+                [id],
+                "variant_id",
+                ProductVariant,
+                qs=product_models.ProductVariant.objects.prefetch_related(
+                    "product__product_type"
+                ),
+            )[0])
 
         quantities = [line["quantity"] for line in lines]
         option_values = [line.get("option_values", []) for line in lines]
