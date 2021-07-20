@@ -234,7 +234,12 @@ class CheckoutCreateInput(graphene.InputObjectType):
     order_type = graphene.Argument(
         OrderTypeEnum, required=True, description="Checkout type."
     )
-
+    expected_date = graphene.String(
+        description="Expected date to receive order."
+    )
+    expected_time = graphene.String(
+        description="Expected date to receive order."
+    )
 
 class CheckoutCreate(ModelMutation, I18nMixin):
     created = graphene.Field(
