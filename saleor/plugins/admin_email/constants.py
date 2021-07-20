@@ -30,6 +30,8 @@ STAFF_PASSWORD_RESET_DEFAULT_TEMPLATE = "password_reset.html"
 #user
 USER_PASSWORD_RESET_DEFAULT_TEMPLATE = "user_password_reset.html"
 USER_PASSWORD_RESET_DEFAULT_SUBJECT = "User password reset"
+ORDER_CREATED_DEFAULT_TEMPLATE = "order_created.html"
+ORDER_CREATED_DEFAULT_SUBJECT = "Order information"
 
 STAFF_ORDER_CONFIRMATION_SUBJECT_FIELD = "staff_order_confirmation_subject"
 SET_STAFF_PASSWORD_SUBJECT_FIELD = "set_staff_password_subject"

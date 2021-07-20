@@ -25,6 +25,7 @@ from .notify_events import (
     send_staff_order_confirmation,
     send_staff_reset_password,
     send_user_reset_password,
+    send_order_infomation,
 )
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ def get_admin_event_map():
 def get_user_event_map():
     return {
         UserNotifyEvent.ACCOUNT_PASSWORD_RESET: send_user_reset_password,
+        UserNotifyEvent.ORDER_CREATED: send_order_infomation,
     }
 
 
@@ -244,7 +246,6 @@ class AdminEmailPlugin(BasePlugin):
         event_map[event](payload, asdict(self.config))  # type: ignore
 
     def user_notify(self, event: NotifyEventType, payload: dict, previous_value):
-        print('vao dayyyyyyyyyyy')
         if not self.active:
             return previous_value
         event_map = get_user_event_map()
