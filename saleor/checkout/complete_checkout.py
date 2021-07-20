@@ -373,6 +373,8 @@ def _create_order(
         origin=OrderOrigin.CHECKOUT,
         channel=checkout_info.channel,
         order_type=checkout.order_type,
+        expected_date=checkout.expected_date,
+        expected_time=checkout.expected_time,
     )
     if checkout.discount:
         # store voucher as a fixed value as it this the simplest solution for now.
@@ -398,7 +400,7 @@ def _create_order(
 
     # add option values to order line
     for order_line_instance, line_info in zip(order_line_instances, order_lines_info):
-        option_values = line_info.line.option_values.all()
+        option_values = line_info.option_values.all()
         if option_values:
             option_values_list = []
             for option_values_in_line in option_values:

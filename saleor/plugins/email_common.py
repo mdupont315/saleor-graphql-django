@@ -177,6 +177,28 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
     )
     return pybars.strlist([formatted_price])
 
+def list_product_customer(this, options, items):
+    result = [u'<table>']
+    for thing in items:
+        result.append(u'<tr>')
+        result.append(u'<td>')
+        result.append(str(thing.quantity))
+        result.append(u'x </td>')
+        result.append(u'<td>')
+        result.append(thing.product_name)
+        option_values = thing.option_values.all()
+        if option_values:
+            for option_value in option_values:
+                result.append(u'<br/>')
+                result.append(option_value.option.name)
+                result.append(": {name}".format(name=option_value.name))
+        result.append(u'</td>')
+        result.append(u'<td>')
+        result.append(str(thing.total_price_net.amount))
+        result.append(u'</td>')
+        result.append(u'</tr>')
+    result.append(u'</table>')
+    return result
 
 def send_email(
     config: EmailConfig, recipient_list, context, subject="", template_str=""
@@ -204,6 +226,7 @@ def send_email(
         "format_datetime": format_datetime,
         "get_product_image_thumbnail": get_product_image_thumbnail,
         "compare": compare,
+         "product_customer": list_product_customer
     }
     message = template(context, helpers=helpers)
     subject_message = subject_template(context, helpers)
@@ -215,7 +238,6 @@ def send_email(
         html_message=message,
         connection=email_backend,
     )
-
 
 def validate_email_config(config: EmailConfig):
     email_backend = EmailBackend(
