@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
+from saleor.core.notify_events import NotifyEventType
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 
 from django.contrib.sites.models import Site
@@ -9,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from ..account.models import User
+from ..store.models import Store
 from ..core import analytics
 from ..core.exceptions import AllocationError, InsufficientStock, InsufficientStockData
 from ..core.tracing import traced_atomic_transaction
@@ -98,6 +100,24 @@ def order_created(
     site_settings = Site.objects.get_current().settings
     if site_settings.automatically_confirm_all_new_orders:
         order_confirmed(order, user, manager)
+
+    # sending email
+    current_strore = Store.objects.all().first()
+    payload = {
+        "order_num": order.pk,
+        "expected_date": order.expected_date,
+        "expected_time": order.expected_time,
+        "recipient_email": order.user_email,
+        "lines": order.lines.all(),
+        "logo": current_strore.logo,
+        "sub_total": order.get_subtotal(),
+        "total": order.total_net_amount,
+        "discount": order.total_net_amount - order.undiscounted_total_net_amount,
+        "channel": order.channel.currency_code
+    }
+
+    event = (NotifyEventType.ORDER_CREATED)
+    manager.user_notify(event, payload=payload, channel_slug=order.channel.slug)
 
 
 def order_confirmed(

@@ -57,6 +57,7 @@ class AddressData:
     country_area: str
     phone: str
     email: str
+    apartment: str
 
 
 @dataclass

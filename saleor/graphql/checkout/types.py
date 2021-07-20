@@ -221,6 +221,9 @@ class Checkout(CountableDjangoObjectType):
             "user",
             "voucher_code",
             "discount",
+            "order_type",
+            "expected_date",
+            "expected_time",
         ]
         description = "Checkout object."
         model = models.Checkout
