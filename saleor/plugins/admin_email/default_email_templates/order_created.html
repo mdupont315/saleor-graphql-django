@@ -231,7 +231,7 @@
   <div class="container">
     <div class="logo">
       <img width="100" height="100"
-        src="https://saleor-orderich.s3.amazonaws.com/store-media/270_crop_phindi_choco_new.png" />
+        src="{{logo}}" alt="logo" />
     </div>
     <div class="mail-body">
       <div class="mail-body-info">
@@ -241,67 +241,59 @@
         <div class="mail-title-sub">
           <img
             src="https://ci3.googleusercontent.com/proxy/67mDZharvIvFtW8jgQsBrqFJeNWrp43imdX1_3ntB0eaeRwvvxe96F4xlOdTuivuN1cCp64941vypzWQppuXZw=s0-d-e1-ft#https://i.ibb.co/J3GsSzM/local-restaurant.png" />
-          Picked up today at {{expected_time}}
+          {{order_type}} {{expected_date}} at {{expected_time}}
         </div>
 
         <div class="customer-info">
-          <ul>
+          <!-- <ul>
             <li>121212</li>
             <li>tuan.vuthanh@ncc.asia</li>
-          </ul>
+          </ul> -->
+          {{#address_customer address}}{{/address_customer}}
         </div>
       </div>
 
       <div class="mail-products">
         <div class="order-code">
-          Here’s your order summary #A812070
+          Here’s your order summary #{{order_num}}
         </div>
-        <table class="product-table">
+        <!-- <table class="product-table">
           <tr>
             <td class="td-number">1x </td>
             <td class="td-name">Trà sữa</td>
             <td class="td-price">€ 22.000</td>
           </tr>
-          <tr>
-            <td class="td-option" colspan="3">
-              Kies je saus: Sesamsaus (€ 2,00)
-            </td>
-          </tr>
-          <tr>
-            <td class="td-number">1x </td>
-            <td class="td-name">Trà sữa</td>
-            <td class="td-price">€ 10.000</td>
-          </tr>
-        </table>
+        </table> -->
+        {{#product_customer lines}}{{/product_customer}}
 
         <hr>
         <table class="product-table">
           <tr>
             <td class="total">Subtotal</td>
-            <td class="price">€ 12,00</td>
+            <td class="price">{{channel_symbol}} {{sub_total}}</td>
           </tr>
           <tr>
             <td class="total sub-total">Discount</td>
-            <td class="price sub-total">€ 12,00</td>
+            <td class="price sub-total">{{channel_symbol}} {{discount}}</td>
           </tr>
           <tr>
             <td class="total">Total</td>
             <td class="price"><img
                 src="https://ci3.googleusercontent.com/proxy/fW7dPY9pR73dowq5miqcEbzeUqIKMZrsmK_BAet_W0o0vdxhN3-BHOJHGcNDb8ld3ZIwgPSWEwk874sfrA=s0-d-e1-ft#https://i.ibb.co/w70MhGf/coin-and-cash.png" />
-              € 12,00</td>
+                {{channel_symbol}} {{total}}</td>
           </tr>
         </table>
         <hr>
         <div class="mail-body-info">
           <h3 class="question">Questions about your order?</h3>
           <div>
-            Call us at +31648512110.
+            Call us at {{store_phone}}.
           </div>
           <img class="orderich-img"
             src="https://ci6.googleusercontent.com/proxy/hm_XWQGZZkawdiCNSGD6DP30nGim0FzPbpwmcmodFVFiZOEalOgWmHkaHRl1sbFmbMRq7WKPkN8=s0-d-e1-ft#https://i.ibb.co/2gnvG1P/Group-57.png"
             alt="">
           <div class="orderich-footer ">
-            Japans Restaurant Mizumi, powered by <a href="https://orderich.com/" target="_blank">Orderich</a>
+            {{store_name}}, powered by <a href="https://orderich.com/" target="_blank">Orderich</a>
           </div>
           <a href="https://orderich.com/" target="_blank">
             Algemene voorwaarden Privacybeleid
