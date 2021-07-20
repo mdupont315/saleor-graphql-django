@@ -110,10 +110,15 @@ def order_created(
         "recipient_email": order.user_email,
         "lines": order.lines.all(),
         "logo": current_strore.logo,
-        "sub_total": order.get_subtotal(),
+        "store_phone": current_strore.phone,
+        "store_name": current_strore.name,
+        "order_type": order.get_order_type_display(),
+        "sub_total": order.get_subtotal().net.amount,
         "total": order.total_net_amount,
-        "discount": order.total_net_amount - order.undiscounted_total_net_amount,
-        "channel": order.channel.currency_code
+        "discount": order.get_discount_amout(),
+        "channel": order.channel.currency_code,
+        "channel_symbol": order.get_channel_curreny_symbool(),
+        "address": vars(order.billing_address)
     }
 
     event = (NotifyEventType.ORDER_CREATED)
