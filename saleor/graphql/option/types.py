@@ -1,3 +1,4 @@
+from django_prices.models import MoneyField
 from saleor.core.tracing import traced_resolver
 from saleor.graphql.channel.types import Channel
 import graphene
@@ -6,7 +7,7 @@ from ..core.connection import CountableDjangoObjectType
 from ..meta.types import ObjectWithMetadata
 
 class OptionValueChannelListing(CountableDjangoObjectType):
-    price = graphene.Float(description="Price")
+    price = MoneyField(description="Price")
     channel = graphene.Field(
         type=Channel
     )
