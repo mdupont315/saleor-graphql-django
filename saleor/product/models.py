@@ -949,6 +949,13 @@ class OptionValue(models.Model):
             option_value_price = option_value_channel.price
             return option_value_price or 0
         return 0
+    
+    def get_price_amount_by_channel(self, channel_slug: str):
+        if channel_slug:
+            option_value_channel = self.option_value_channels.get(channel__slug=channel_slug)
+            option_value_price = option_value_channel.price_amount
+            return option_value_price or 0
+        return 0
 
 class OptionValueChannelListing(models.Model):
     option_value = models.ForeignKey(

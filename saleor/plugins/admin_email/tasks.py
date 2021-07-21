@@ -181,3 +181,20 @@ def send_order_infomation_email_task(recipient_email, payload, config):
         subject=subject,
         template_str=email_template_str,
     )
+
+def send_order_admin_infomation_email_task(recipient_email, payload, config):
+    email_config = EmailConfig(**config)
+    email_template_str = get_email_template_or_default(
+        None,
+        None,
+        constants.ORDER_CREATED_ADMIN_DEFAULT_TEMPLATE,
+        constants.DEFAULT_EMAIL_TEMPLATES_PATH,
+    )
+    subject = constants.ORDER_CREATED_ADMIN_DEFAULT_SUBJECT
+    send_email(
+        config=email_config,
+        recipient_list=[recipient_email],
+        context=payload,
+        subject=subject,
+        template_str=email_template_str,
+    )

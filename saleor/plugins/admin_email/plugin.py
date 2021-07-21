@@ -26,6 +26,7 @@ from .notify_events import (
     send_staff_reset_password,
     send_user_reset_password,
     send_order_infomation,
+    send_order_admin_infomation,
 )
 
 logger = logging.getLogger(__name__)
@@ -73,6 +74,7 @@ def get_user_event_map():
     return {
         UserNotifyEvent.ACCOUNT_PASSWORD_RESET: send_user_reset_password,
         UserNotifyEvent.ORDER_CREATED: send_order_infomation,
+        UserNotifyEvent.ORDER_ADMIN_CREATED: send_order_admin_infomation,
     }
 
 

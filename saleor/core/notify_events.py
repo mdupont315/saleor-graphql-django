@@ -14,6 +14,7 @@ class UserNotifyEvent:
     ORDER_CANCELED = "order_canceled"
     ORDER_REFUND_CONFIRMATION = "order_refund_confirmation"
     ORDER_CREATED = 'order_created'
+    ORDER_ADMIN_CREATED = 'order_admin_created'
 
     CHOICES = [
         ACCOUNT_CONFIRMATION,
@@ -30,7 +31,8 @@ class UserNotifyEvent:
         ORDER_PAYMENT_CONFIRMATION,
         ORDER_CANCELED,
         ORDER_REFUND_CONFIRMATION,
-        ORDER_CREATED
+        ORDER_CREATED,
+        ORDER_ADMIN_CREATED
     ]
 
 
