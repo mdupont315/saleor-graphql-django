@@ -416,6 +416,57 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         response.created = True
         return response
 
+class CheckoutUpdateInput(graphene.InputObjectType):
+    channel = graphene.String(
+        description="Slug of a channel in which to create a checkout."
+    )
+    language_code = graphene.Argument(
+        LanguageCodeEnum, required=False, description="Checkout language code."
+    )
+    order_type = graphene.Argument(
+        OrderTypeEnum, description="Checkout type."
+    )
+    expected_date = graphene.String(
+        description="Expected date to receive order."
+    )
+    expected_time = graphene.String(
+        description="Expected date to receive order."
+    )
+
+class CheckoutInfoUpdate(BaseMutation):
+    checkout = graphene.Field(Checkout, description="An updated checkout.")
+    class Arguments:
+        checkout_id = graphene.ID(description="The ID of the checkout.", required=True)
+        input = CheckoutUpdateInput(
+            required=True, description="Fields required to create checkout."
+        )
+
+    class Meta:
+        description = "Create a new checkout."
+        model = models.Checkout
+        return_field_name = "checkout"
+        error_type_class = CheckoutError
+        error_type_field = "checkout_errors"
+    
+    @classmethod
+    def perform_mutation(cls, _root, info, checkout_id, **data):
+        checkout = cls.get_node_or_error(
+            info, checkout_id, only_type=Checkout, field="checkout_id"
+        )
+        input = data.get("input", {})
+        if input.get("channel"):
+            checkout.channel = input.get("channel")
+        if input.get("order_type"):
+            checkout.order_type = input.get("order_type")
+        if input.get("language_code"):
+            checkout.language_code = input.get("language_code")
+        if input.get("expected_date"):
+            checkout.expected_date = input.get("expected_date")
+        if input.get("expected_time"):
+            checkout.expected_time = input.get("expected_time")
+        checkout.save()
+        info.context.plugins.checkout_updated(checkout)
+        return CheckoutLanguageCodeUpdate(checkout=checkout)
 
 class CheckoutLinesAdd(BaseMutation):
     checkout = graphene.Field(Checkout, description="An updated checkout.")
