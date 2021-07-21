@@ -420,6 +420,9 @@ class CheckoutUpdateInput(graphene.InputObjectType):
     channel = graphene.String(
         description="Slug of a channel in which to create a checkout."
     )
+    note = graphene.String(
+        description="Slug of a channel in which to create a checkout."
+    )
     language_code = graphene.Argument(
         LanguageCodeEnum, required=False, description="Checkout language code."
     )
@@ -464,6 +467,8 @@ class CheckoutInfoUpdate(BaseMutation):
             checkout.expected_date = input.get("expected_date")
         if input.get("expected_time"):
             checkout.expected_time = input.get("expected_time")
+        if input.get("note"):
+            checkout.note = input.get("note")
         checkout.save()
         info.context.plugins.checkout_updated(checkout)
         return CheckoutLanguageCodeUpdate(checkout=checkout)
