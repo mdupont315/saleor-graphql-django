@@ -1,5 +1,6 @@
 from decimal import Decimal
 from operator import attrgetter
+from saleor.graphql.option.types import OptionValue
 from typing import Optional
 
 import graphene
@@ -435,6 +436,10 @@ class OrderLine(CountableDjangoObjectType):
         DiscountValueTypeEnum,
         description="Type of the discount: fixed or percent",
     )
+    option_values = graphene.List(
+        OptionValue,
+        description="OptionValues",
+    )
 
     class Meta:
         description = "Represents order line of particular order."
@@ -528,6 +533,11 @@ class OrderLine(CountableDjangoObjectType):
     @staticmethod
     def resolve_translated_variant_name(root: models.OrderLine, _info):
         return root.translated_variant_name
+
+    @staticmethod
+    def resolve_option_values(root: models.OrderLine, _info):
+        # option_values = root.option_values.all()
+        return root.option_values.all()
 
     @staticmethod
     @traced_resolver

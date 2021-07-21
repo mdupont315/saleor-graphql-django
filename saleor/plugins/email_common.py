@@ -177,7 +177,7 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
     )
     return pybars.strlist([formatted_price])
 
-def list_product_customer(this, options, items):
+def list_product_customer(this, options, items, channel, channel_symbol):
     result = [u'<table class="product-table">']
     for thing in items:
         result.append(u'<tr>')
@@ -196,22 +196,23 @@ def list_product_customer(this, options, items):
             for option_value in option_values:
                 result.append(u'<tr>')
                 result.append(u'<td class="td-option" colspan="3">')
-                result.append("{option}: {name} ({curency} {price})".format(
+                result.append("{option} : {name} ({curency} {price})".format(
                     option=option_value.option.name,
                     name=option_value.name,
-                    curency='€',
-                    price=10
+                    curency=channel_symbol,
+                    price=option_value.get_price_amount_by_channel(channel)
                     ))
-                result.append(u'x </td>')
+                result.append(u'</td>')
                 result.append(u'</tr>')
     result.append(u'</table>')
     return result
 
 def customer_list_address(this, options, items):
     result = [u'<ul>']
-    del items['_state']
     dict_items = items.items()
     for key, value in dict_items:
+        if key == 'id' or key == '_state':
+            continue
         if value:
             result.append(u'<li>')
             result.append(str(value)),
