@@ -4,11 +4,9 @@ from copy import deepcopy
 from decimal import Decimal
 from saleor.core.notify_events import NotifyEventType
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
-
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
-
 from ..account.models import User
 from ..store.models import Store
 from ..core import analytics
@@ -109,20 +107,27 @@ def order_created(
         "expected_time": order.expected_time,
         "recipient_email": order.user_email,
         "lines": order.lines.all(),
-        "logo": current_strore.logo,
+        "logo": current_strore.logo.url,
         "store_phone": current_strore.phone,
         "store_name": current_strore.name,
         "order_type": order.get_order_type_display(),
         "sub_total": order.get_subtotal().net.amount,
         "total": order.total_net_amount,
         "discount": order.get_discount_amout(),
-        "channel": order.channel.currency_code,
+        "channel": order.channel.slug,
         "channel_symbol": order.get_channel_curreny_symbool(),
-        "address": vars(order.billing_address)
+        "address": vars(order.billing_address),
+        "payment_status": order.get_last_payment().charge_status,
+        "payment_method": 'Cash' if order.get_last_payment().gateway == 'mirumee.payments.dummy' else 'Stripe',
+        "order_note": order.customer_note,
     }
-
-    event = (NotifyEventType.ORDER_CREATED)
-    manager.user_notify(event, payload=payload, channel_slug=order.channel.slug)
+    if order.user_email:
+        event = (NotifyEventType.ORDER_CREATED)
+        manager.user_notify(event, payload=payload, channel_slug=order.channel.slug)
+    if current_strore.email_notifications and current_strore.email_address:
+        event = (NotifyEventType.ORDER_ADMIN_CREATED)
+        payload["recipient_email"] = current_strore.email_address
+        manager.user_notify(event, payload=payload, channel_slug=order.channel.slug)
 
 
 def order_confirmed(
