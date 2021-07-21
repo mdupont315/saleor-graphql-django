@@ -178,26 +178,45 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
     return pybars.strlist([formatted_price])
 
 def list_product_customer(this, options, items):
-    result = [u'<table>']
+    result = [u'<table class="product-table">']
     for thing in items:
         result.append(u'<tr>')
-        result.append(u'<td>')
+        result.append(u'<td class="td-number">')
         result.append(str(thing.quantity))
         result.append(u'x </td>')
-        result.append(u'<td>')
+        result.append(u'<td class="td-name">')
         result.append(thing.product_name)
-        option_values = thing.option_values.all()
-        if option_values:
-            for option_value in option_values:
-                result.append(u'<br/>')
-                result.append(option_value.option.name)
-                result.append(": {name}".format(name=option_value.name))
         result.append(u'</td>')
-        result.append(u'<td>')
+        result.append(u'<td class="td-price">')
         result.append(str(thing.total_price_net.amount))
         result.append(u'</td>')
         result.append(u'</tr>')
+        option_values = thing.option_values.all()
+        if option_values:
+            for option_value in option_values:
+                result.append(u'<tr>')
+                result.append(u'<td class="td-option" colspan="3">')
+                result.append("{option}: {name} ({curency} {price})".format(
+                    option=option_value.option.name,
+                    name=option_value.name,
+                    curency='€',
+                    price=10
+                    ))
+                result.append(u'x </td>')
+                result.append(u'</tr>')
     result.append(u'</table>')
+    return result
+
+def customer_list_address(this, options, items):
+    result = [u'<ul>']
+    del items['_state']
+    dict_items = items.items()
+    for key, value in dict_items:
+        if value:
+            result.append(u'<li>')
+            result.append(str(value)),
+            result.append(u'</li>')
+    result.append(u'</ul>')
     return result
 
 def send_email(
@@ -226,7 +245,8 @@ def send_email(
         "format_datetime": format_datetime,
         "get_product_image_thumbnail": get_product_image_thumbnail,
         "compare": compare,
-         "product_customer": list_product_customer
+        "product_customer": list_product_customer,
+        "address_customer": customer_list_address,
     }
     message = template(context, helpers=helpers)
     subject_message = subject_template(context, helpers)
