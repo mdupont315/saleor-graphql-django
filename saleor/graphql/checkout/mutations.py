@@ -232,7 +232,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
         LanguageCodeEnum, required=False, description="Checkout language code."
     )
     order_type = graphene.Argument(
-        OrderTypeEnum, required=True, description="Checkout type."
+        OrderTypeEnum, description="Checkout type."
     )
     expected_date = graphene.String(
         description="Expected date to receive order."
