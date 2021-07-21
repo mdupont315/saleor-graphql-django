@@ -12,6 +12,7 @@ from ...channel import models as channel_models
 class OptionValueChannelInput(graphene.InputObjectType):
     channel_id = graphene.String(required=True, description="Channel")
     price = PositiveDecimal(required=True, description="Channel")
+    currency = graphene.String(required=True, description="currency")
 
 class OptionValueInput(graphene.InputObjectType):
     name = graphene.String(required=True, description="Name")
@@ -46,6 +47,7 @@ class OptionCreate(ModelMutation):
     def create_option_value_channel(cls, value, option_value_id):
         option_value_channel = models.OptionValueChannelListing()
         option_value_channel.price_amount = value["price"]
+        option_value_channel.currency = value["currency"]
         _type , _pk = from_global_id(value["channel_id"])
         option_value_channel.channel = channel_models.Channel.objects.get(pk = _pk)
         option_value_channel.option_value = models.OptionValue.objects.get(pk = option_value_id)
