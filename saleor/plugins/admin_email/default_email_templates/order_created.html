@@ -1,14 +1,310 @@
-<!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-  <head>
-    <title>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office">
 
-    </title>
-    </head>
+<head>
+  <title>
+
+  </title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+
+    .orderich-footer {
+      text-decoration: none;
+      padding-bottom: 8px;
+      font-size: 16px;
+      line-height: 24px;
+      color: #808080;
+      text-align: center;
+    }
+
+    a {
+      text-decoration: none;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
+  </style>
+
+
+
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+  </style>
+
+
+  <style type="text/css">
+
+
+  </style>
+  <style type="text/css">
+    body {
+      background-color: #F5F5F5;
+    }
+
+    .container {
+      width: 500px;
+      margin: 0 auto;
+    }
+
+    .mail-title {
+      padding-bottom: 16px;
+      font-size: 24px;
+      line-height: 28px;
+      color: black;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .mail-title-sub {
+      padding-top: 40px;
+      padding-bottom: 40px;
+      font-size: 20px;
+      line-height: 24px;
+      color: black;
+      text-align: center;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .mail-title-message {
+      padding-bottom: 32px;
+      font-size: 16px;
+      line-height: 24px;
+      color: #808080;
+      text-align: center;
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    .logo {
+      padding: 40px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .mail-body {
+      padding: 40px;
+      background-color: #fff;
+      width: 100%;
+    }
+
+    .mail-body-info {
+      text-align: center;
+    }
+
+    .customer-info>ul {
+      list-style-type: none;
+    }
+
+    .customer-info>ul>li {
+      padding-bottom: 5px;
+      font-size: 16px;
+    }
+
+    .product-table {
+      width: 100%;
+    }
+
+    .product-table .price {
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .product-table .total {
+      font-weight: bold;
+    }
+
+    .sub-total {
+      font-weight: bold;
+      color: #4caf50;
+      ;
+    }
+
+    .price>img {
+      padding-right: 30px;
+    }
+
+    .order-code {
+      padding-top: 32px;
+      padding-bottom: 32px;
+      font-size: 24px;
+      line-height: 28px;
+      color: #1f1f1f;
+      text-align: center;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .td-number {
+      width: 30px;
+      font-weight: bold;
+    }
+
+    .td-name {
+      width: 100px;
+      font-size: 16px;
+      line-height: 24px;
+      color: #1f1f1f;
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    .td-price {
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .td-option {
+      font-size: 14px;
+      line-height: 20px;
+      color: #808080;
+    }
+
+    .question {
+      padding-top: 16px;
+      font-size: 20px;
+      line-height: 24px;
+      color: black;
+      text-align: center;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .call-us {
+      padding-top: 16px;
+      font-size: 16px;
+      line-height: 24px;
+      color: black;
+      text-align: center;
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    .orderich-img {
+      padding-top: 32px;
+      padding-bottom: 16px;
+    }
+  </style>
+</head>
+
 <body>
-    <h3>Thank you for your order!</h3>
-    <div style="color: black;">
-      {{#product_customer lines}} {{/product_customer}}
+  <div class="container">
+    <div class="logo">
+      <img width="100" height="100"
+        src="{{logo}}" alt="logo" />
     </div>
+    <div class="mail-body">
+      <div class="mail-body-info">
+        <div class="mail-title">Thank you for your order!</div>
+        <span class="mail-title-message">Your order is successfully placed and will be processed shortly.</span>
+
+        <div class="mail-title-sub">
+          <img
+            src="https://ci3.googleusercontent.com/proxy/67mDZharvIvFtW8jgQsBrqFJeNWrp43imdX1_3ntB0eaeRwvvxe96F4xlOdTuivuN1cCp64941vypzWQppuXZw=s0-d-e1-ft#https://i.ibb.co/J3GsSzM/local-restaurant.png" />
+          {{order_type}} {{expected_date}} at {{expected_time}}
+        </div>
+
+        <div class="customer-info">
+          <!-- <ul>
+            <li>121212</li>
+            <li>tuan.vuthanh@ncc.asia</li>
+          </ul> -->
+          {{#address_customer address}}{{/address_customer}}
+        </div>
+      </div>
+
+      <div class="mail-products">
+        <div class="order-code">
+          Here’s your order summary #{{order_num}}
+        </div>
+        <!-- <table class="product-table">
+          <tr>
+            <td class="td-number">1x </td>
+            <td class="td-name">Trà sữa</td>
+            <td class="td-price">€ 22.000</td>
+          </tr>
+        </table> -->
+        {{#product_customer lines}}{{/product_customer}}
+
+        <hr>
+        <table class="product-table">
+          <tr>
+            <td class="total">Subtotal</td>
+            <td class="price">{{channel_symbol}} {{sub_total}}</td>
+          </tr>
+          <tr>
+            <td class="total sub-total">Discount</td>
+            <td class="price sub-total">{{channel_symbol}} {{discount}}</td>
+          </tr>
+          <tr>
+            <td class="total">Total</td>
+            <td class="price"><img
+                src="https://ci3.googleusercontent.com/proxy/fW7dPY9pR73dowq5miqcEbzeUqIKMZrsmK_BAet_W0o0vdxhN3-BHOJHGcNDb8ld3ZIwgPSWEwk874sfrA=s0-d-e1-ft#https://i.ibb.co/w70MhGf/coin-and-cash.png" />
+                {{channel_symbol}} {{total}}</td>
+          </tr>
+        </table>
+        <hr>
+        <div class="mail-body-info">
+          <h3 class="question">Questions about your order?</h3>
+          <div>
+            Call us at {{store_phone}}.
+          </div>
+          <img class="orderich-img"
+            src="https://ci6.googleusercontent.com/proxy/hm_XWQGZZkawdiCNSGD6DP30nGim0FzPbpwmcmodFVFiZOEalOgWmHkaHRl1sbFmbMRq7WKPkN8=s0-d-e1-ft#https://i.ibb.co/2gnvG1P/Group-57.png"
+            alt="">
+          <div class="orderich-footer ">
+            {{store_name}}, powered by <a href="https://orderich.com/" target="_blank">Orderich</a>
+          </div>
+          <a href="https://orderich.com/" target="_blank">
+            Algemene voorwaarden Privacybeleid
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
 </body>
+
 </html>

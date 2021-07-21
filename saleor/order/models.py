@@ -327,6 +327,18 @@ class Order(MultitenantModelWithMetadata):
 
     def get_total_quantity(self):
         return sum([line.quantity for line in self.lines.all()])
+    
+    def get_discount_amout(self):
+        return self.undiscounted_total_net_amount - self.total_net_amount 
+    
+    def get_order_type_display(self):
+        order_type = self.order_type
+        for code, display in settings.ORDER_TYPES:
+            if code == order_type:
+                return display
+
+    def get_channel_curreny_symbool(self):
+        return '€' if self.currency == 'EUR' else '$'
 
     def is_draft(self):
         return self.status == OrderStatus.DRAFT
