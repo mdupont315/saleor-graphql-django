@@ -48,6 +48,7 @@
       line-height: 24px;
       color: #808080;
       text-align: center;
+      font-weight: 600;
     }
 
     a {
@@ -77,8 +78,9 @@
   </style>
   <style type="text/css">
     .parrent-container {
-      font-family: -apple-system,BlinkMacSystemFont,avenir next,avenir,helvetica neue,helvetica,Ubuntu,roboto,noto,segoe ui,arial,sans-serif;
-      background-color: #F5F5F5;
+      font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+      background-color: #fff;
+      color: #222222;
     }
 
     .container {
@@ -87,23 +89,13 @@
     }
 
     .mail-title {
+      padding-top: 30px;
       padding-bottom: 16px;
       font-size: 24px;
       line-height: 28px;
       color: black;
       text-align: center;
       font-weight: bold;
-    }
-
-    .mail-title-sub {
-      padding-top: 40px;
-      padding-bottom: 40px;
-      font-size: 20px;
-      line-height: 24px;
-      color: black;
-      text-align: center;
-      font-weight: bold;
-      font-style: normal;
     }
 
     .mail-title-message {
@@ -124,7 +116,6 @@
 
     .mail-body {
       padding: 40px;
-      background-color: #fff;
       width: 100%;
     }
 
@@ -143,6 +134,7 @@
 
     .product-table {
       width: 100%;
+      font-size: 16px;
     }
 
     .product-table .price {
@@ -152,12 +144,13 @@
 
     .product-table .total {
       font-weight: bold;
+      height: 30px;
+      text-align: left;
     }
 
-    .sub-total {
+    .discount {
       font-weight: bold;
       color: #4caf50;
-      ;
     }
 
     .price>img {
@@ -198,6 +191,8 @@
       font-size: 14px;
       line-height: 20px;
       color: #808080;
+      text-align: left;
+      padding-left: 58px;
     }
 
     .question {
@@ -224,95 +219,217 @@
       padding-top: 32px;
       padding-bottom: 16px;
     }
+
+    .box {
+      border: 1px solid #DCDCDC;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .box-title {
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 28px;
+      text-align: left;
+      padding-bottom: 24px;
+      color: #222222!important;
+    }
+
+    .cash-logo {
+      height: 20px;
+      vertical-align: bottom;
+    }
+
+    .total-divide {
+      margin-bottom: 30px;
+    }
+
+    .payment-method {
+      text-align: left;
+      padding-top: 10px;
+      font-size: 16px;
+      color: #222222!important;
+    }
+
+    .checkout-button {
+      width: 100%;
+      background: #28A745;
+      box-shadow: 4px 4px 0px rgba(34, 34, 34, 0.16);
+      border-radius: 8px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      margin-top: 30px;
+      display: block;
+      color: #FFFFFF!important;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .dont-reply {
+      font-size: 16px;
+      color: #808080;
+      text-align: left;
+    }
+
+    .detail-label {
+      font-size: 14px;
+      line-height: 22px;
+      text-align: left;
+      color: #808080;
+      padding-top: 10px;
+    }
+
+    .detail-value {
+      font-size: 16px;
+      line-height: 24px;
+      color: #222222;
+      text-align: left;
+      padding-top: 5px;
+    }
+
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+    li {
+      margin: 0;
+      padding: 0;
+    }
   </style>
 </head>
 
 <body>
   <div class="parrent-container">
     <div class="container">
-      <div class="logo">
-        <img width="100" height="100" src={{logo}} alt="logo" />
-      </div>
       <div class="mail-body">
         <div class="mail-body-info">
-          <div class="mail-title">Thank you for your order!</div>
-          <span class="mail-title-message">Your order is successfully placed and will be processed shortly.</span>
+          <img width="100" height="100"
+            src="{{logo}}" />
+          <div class="mail-title">Thank you for ordering!</div>
+          <span class="mail-title-message">Here’s the summary of your order #{{order_num}} on {{place_date}}.</span>
 
-          <div class="mail-title-sub">
-            <img
-              src="https://ci3.googleusercontent.com/proxy/67mDZharvIvFtW8jgQsBrqFJeNWrp43imdX1_3ntB0eaeRwvvxe96F4xlOdTuivuN1cCp64941vypzWQppuXZw=s0-d-e1-ft#https://i.ibb.co/J3GsSzM/local-restaurant.png" />
-            {{order_type}} {{expected_date}} at {{expected_time}}
+
+          <div class="box">
+            <div class="box-title">Order details</div>
+            <!-- <table class="product-table">
+              <tr>
+                <td class="td-number">1x </td>
+                <td class="td-name">Trà sữa</td>
+                <td class="td-price">€ 22.000</td>
+              </tr>
+              <tr>
+                <td class="td-option" colspan="3">
+                  Kies je saus: Sesamsaus (€ 2,00)
+                </td>
+              </tr>
+              <tr>
+                <td class="td-number">1x </td>
+                <td class="td-name">Trà sữa</td>
+                <td class="td-price">€ 10.000</td>
+              </tr>
+            </table> -->
+            {{#product_customer items=lines channel=channel channel_symbol=channel_symbol}}{{/product_customer}}
+
+            <hr class="total-divide">
+            <table class="product-table">
+              <tr>
+                <td class="total">Subtotal</td>
+                <td class="price">{{channel_symbol}} {{sub_total}}</td>
+              </tr>
+              <tr>
+                <td class="total discount">Discount</td>
+                <td class="price discount">- {{channel_symbol}} {{discount}}</td>
+              </tr>
+              <tr>
+                <td class="total">Delivery fee</td>
+                <td class="price">{{channel_symbol}} {{delivery_fee}}</td>
+              </tr>
+              <tr>
+                <td class="total">Transaction cost</td>
+                <td class="price">{{channel_symbol}} {{transaction_cost}}</td>
+              </tr>
+              
+              <tr>
+                <td class="total">Total</td>
+                <td class="price"><img class="cash-logo"
+                    src="https://ci3.googleusercontent.com/proxy/fW7dPY9pR73dowq5miqcEbzeUqIKMZrsmK_BAet_W0o0vdxhN3-BHOJHGcNDb8ld3ZIwgPSWEwk874sfrA=s0-d-e1-ft#https://i.ibb.co/w70MhGf/coin-and-cash.png" />
+                    {{channel_symbol}} {{total}}</td>
+              </tr>
+            </table>
+
+            <div class="payment-method">Paid with {{payment_method}}</div>
+            <a href="{{order_url}}" target="_blank" class="checkout-button">Track your order</a>
           </div>
 
-          <div class="customer-info">
-            <!-- <ul>
-              <li>121212</li>
-              <li>tuan.vuthanh@ncc.asia</li>
-            </ul> -->
-            {{#address_customer address}}{{/address_customer}}
+          <div class="box">
+            <div class="box-title">Delivery details</div>
+
+            <div class="detail-label">
+              Delivery moment
+            </div>
+            <div class="detail-value">
+              <div>
+                {{expected_date}}
+              </div>
+              <div>
+                {{expected_time}}
+              </div>
+            </div>
+
+            <div class="detail-label">
+              Receiver
+            </div>
+            <div class="detail-value">
+              <!-- <ul>
+                <li>Crys Nguyen</li>
+                <li>Main Street 321, 1234 AB, Rotterdam</li>
+                <li>crys@orderich.com</li>
+                <li>0612345678</li>
+              </ul> -->
+              {{#address_customer address}}{{/address_customer}}
+            </div>
+
+            <div class="detail-label">
+              Order note, special instructions
+            </div>
+            <div class="detail-value">
+              {{order_note}}
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="mail-body-info">
+              <div class="box-title">Have questions?</div>
+              <p class="dont-reply">
+                Please don’t reply directly to this automatically generated email.
+                Contact us using the contact details below instead.</p>
+              <div class="detail-label">
+                Our phone number
+              </div>
+              <div class="detail-value">
+                {{store_phone}}
+              </div>
+              <div class="detail-label">
+                Our address
+              </div>
+              <div class="detail-value">
+                {{store_address}}
+              </div>
+            </div>
+          </div>
+          <img class="orderich-img"
+            src="https://ci6.googleusercontent.com/proxy/hm_XWQGZZkawdiCNSGD6DP30nGim0FzPbpwmcmodFVFiZOEalOgWmHkaHRl1sbFmbMRq7WKPkN8=s0-d-e1-ft#https://i.ibb.co/2gnvG1P/Group-57.png"
+            alt="">
+          <div class="orderich-footer">
+            {{store_name}}, powered by <a href="https://orderich.com/" target="_blank">Orderich</a>
           </div>
         </div>
 
-        <div class="mail-products">
-          <div class="order-code">
-            Here’s your order summary #{{order_num}}
-          </div>
-          <!-- <table class="product-table">
-            <tr>
-              <td class="td-number">1x </td>
-              <td class="td-name">Trà sữa</td>
-              <td class="td-price">€ 22.000</td>
-            </tr>
-          </table> -->
-          {{#product_customer items=lines channel=channel channel_symbol=channel_symbol}}{{/product_customer}}
-
-          <hr>
-          <table class="product-table">
-            <tr>
-              <td class="total">Subtotal</td>
-              <td class="price">{{channel_symbol}} {{sub_total}}</td>
-            </tr>
-            <tr>
-              <td class="total sub-total">Discount</td>
-              <td class="price sub-total">{{channel_symbol}} {{discount}}</td>
-            </tr>
-            <tr>
-              <td class="total">Delivery fee</td>
-              <td class="price">{{channel_symbol}} {{delivery_fee}}</td>
-            </tr>
-            <tr>
-              <td class="total">Transaction cost</td>
-              <td class="price">{{channel_symbol}} {{transaction_cost}}</td>
-            </tr>
-            <tr>
-              <td class="total">Total</td>
-              <td class="price"><img
-                  src="https://ci3.googleusercontent.com/proxy/fW7dPY9pR73dowq5miqcEbzeUqIKMZrsmK_BAet_W0o0vdxhN3-BHOJHGcNDb8ld3ZIwgPSWEwk874sfrA=s0-d-e1-ft#https://i.ibb.co/w70MhGf/coin-and-cash.png" />
-                {{channel_symbol}} {{total}}</td>
-            </tr>
-          </table>
-          <hr>
-          <div class="mail-body-info">
-            <h3 class="question">Questions about your order?</h3>
-            <div>
-              Call us at {{store_phone}}.
-            </div>
-            <img class="orderich-img"
-              src="https://ci6.googleusercontent.com/proxy/hm_XWQGZZkawdiCNSGD6DP30nGim0FzPbpwmcmodFVFiZOEalOgWmHkaHRl1sbFmbMRq7WKPkN8=s0-d-e1-ft#https://i.ibb.co/2gnvG1P/Group-57.png"
-              alt="">
-            <div class="orderich-footer ">
-              {{store_name}}, powered by <a href="https://orderich.com/" target="_blank">Orderich</a>
-            </div>
-            <a href="https://orderich.com/" target="_blank">
-              Algemene voorwaarden Privacybeleid
-            </a>
-          </div>
-
-        </div>
       </div>
-
     </div>
-  </div>
+
 </body>
 
 </html>

@@ -125,7 +125,7 @@ class Checkout(MultitenantModelWithMetadata):
         return iter(self.lines.all())
 
     def get_customer_email(self) -> str:
-        email = self.billing_address.email
+        email = self.billing_address.email if self.billing_address else ''
         return self.user.email if self.user else email
 
     def is_shipping_required(self) -> bool:

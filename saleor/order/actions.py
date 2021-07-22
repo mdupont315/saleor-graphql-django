@@ -2,6 +2,8 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
+
+from django.conf import settings
 from saleor.core.notify_events import NotifyEventType
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 from django.contrib.sites.models import Site
@@ -101,6 +103,10 @@ def order_created(
 
     # sending email
     current_strore = Store.objects.all().first()
+    TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
+    protocol = "https" if settings.ENABLE_SSL else "http"
+    # order_url = protocol + "://" + current_strore.domain + "order-history"
+    order_url = "{protocol}://{domain}/order-history/{token}".format(protocol=protocol, domain=current_strore.domain, token=order.token)
     payload = {
         "order_num": order.pk,
         "expected_date": order.expected_date,
@@ -110,20 +116,22 @@ def order_created(
         "logo": current_strore.logo.url,
         "store_phone": current_strore.phone,
         "store_name": current_strore.name,
+        "store_address": current_strore.address,
         "order_type": order.get_order_type_display(),
-        "sub_total": order.get_subtotal().net.amount,
+        "sub_total": order.get_subtotal().net.amount.quantize(TWOPLACES),
         "place_date": order.created.strftime('%d-%m-%y'),
         "place_time": order.created.strftime('%H-%M'),
-        "delivery_fee": order.delivery_fee,
-        "transaction_cost": order.transaction_cost,
-        "total": order.total_net_amount,
-        "discount": order.get_discount_amout(),
+        "delivery_fee": order.delivery_fee.quantize(TWOPLACES),
+        "transaction_cost": order.transaction_cost.quantize(TWOPLACES),
+        "total": order.total_net_amount.quantize(TWOPLACES),
+        "discount": order.get_discount_amout().quantize(TWOPLACES),
         "channel": order.channel.slug,
         "channel_symbol": order.get_channel_curreny_symbool(),
         "address": vars(order.billing_address),
         "payment_status": order.get_last_payment().charge_status,
         "payment_method": 'Cash' if order.get_last_payment().gateway == 'mirumee.payments.dummy' else 'Stripe',
         "order_note": order.customer_note,
+        "order_url": order_url
     }
     if order.user_email:
         event = (NotifyEventType.ORDER_CREATED)
