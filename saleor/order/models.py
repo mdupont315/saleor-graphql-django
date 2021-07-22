@@ -253,6 +253,18 @@ class Order(MultitenantModelWithMetadata):
     expected_time = models.CharField(
         max_length=10, blank=True, null=True
     )
+    
+    delivery_fee = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
+    )
+
+    transaction_cost = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
+    )
 
     objects = OrderQueryset.as_manager()
 
@@ -549,6 +561,10 @@ class OrderLine(models.Model):
 
     tax_rate = models.DecimalField(
         max_digits=5, decimal_places=4, default=Decimal("0.0")
+    )
+
+    option_items = models.JSONField(
+        blank=True, null=True
     )
 
     objects = OrderLineQueryset.as_manager()

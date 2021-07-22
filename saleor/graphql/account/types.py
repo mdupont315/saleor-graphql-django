@@ -27,8 +27,8 @@ from .utils import can_user_manage_group, get_groups_which_user_can_manage
 
 
 class AddressInput(graphene.InputObjectType):
-    first_name = graphene.String(description="Given name.")
-    last_name = graphene.String(description="Family name.")
+    first_name = graphene.String(description="Given name.", required=False)
+    last_name = graphene.String(description="Family name.", required=False)
     company_name = graphene.String(description="Company or organization.", required=False)
     street_address_1 = graphene.String(description="Address.", required=False)
     street_address_2 = graphene.String(description="Address.", required=False)
@@ -38,8 +38,8 @@ class AddressInput(graphene.InputObjectType):
     country = CountryCodeEnum(description="Country.", required=False)
     country_area = graphene.String(description="State or province.", required=False)
     phone = graphene.String(description="Phone number.", required=False)
-    email = graphene.String(description="The customer's email address.")
-    apartment = graphene.String(description="The customer's email address.")
+    email = graphene.String(description="The customer's email address.", required=False)
+    apartment = graphene.String(description="The customer's email address.", required=False)
 
 
 @key(fields="id")

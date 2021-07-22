@@ -1,10 +1,12 @@
 from datetime import date
+import decimal
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.encoding import smart_text
+import json
 from prices import TaxedMoney
 
 from ..account.error_codes import AccountErrorCode
@@ -41,6 +43,15 @@ from . import AddressType
 from .checkout_cleaner import clean_checkout_payment, clean_checkout_shipping
 from .models import Checkout
 from .utils import get_voucher_for_checkout
+from ..delivery.models import Delivery
+from ..store.models import Store
+from django.conf import settings
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self,o):
+        if isinstance(o, decimal.Decimal):
+            return float(o)
+        super(DecimalEncoder,self).default(o)
 
 if TYPE_CHECKING:
     from ..plugins.manager import PluginsManager
@@ -284,6 +295,30 @@ def _prepare_order_data(
     taxed_total.net -= cards_total
 
     taxed_total = max(taxed_total, zero_taxed_money(checkout.currency))
+    delivery_setting = Delivery.objects.all().first()
+    current_strore = Store.objects.all().first()
+    # implement delivery fee
+    if delivery_setting:
+        if delivery_setting.min_order > taxed_total.net.amount:
+            raise ValidationError(
+            {
+                "min_order": "The subtotal must be greater than {min_order}".format(min_order=delivery_setting.min_order)
+            }
+        )
+        if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and taxed_total.net.amount < delivery_setting.from_delivery:
+            taxed_total.net.amount = taxed_total.net.amount + delivery_setting.delivery_fee
+            order_data["delivery_fee"] = delivery_setting.delivery_fee
+    
+    # implement transaction fee
+    payment_gateway = checkout.get_last_active_payment().gateway
+    if payment_gateway == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
+        taxed_total.net.amount = taxed_total.net.amount + current_strore.contant_cost
+        order_data["transaction_cost"] = current_strore.contant_cost
+    if payment_gateway == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
+        taxed_total.net.amount = taxed_total.net.amount + current_strore.stripe_cost
+        order_data["transaction_cost"] = current_strore.stripe_cost
+
+
     undiscounted_total = taxed_total + checkout.discount
 
     shipping_total = manager.calculate_checkout_shipping(
@@ -403,9 +438,18 @@ def _create_order(
         option_values = line_info.option_values.all()
         if option_values:
             option_values_list = []
+            option_values_dict_list = []
             for option_values_in_line in option_values:
                 option_value_order_line = OrderLine.option_values.through(optionvalue_id=option_values_in_line.id, orderline_id=order_line_instance.id)
                 option_values_list.append(option_value_order_line)
+                option_values_dict = {}
+                option_values_dict["price"] = option_values_in_line.get_price_amount_by_channel(order.channel.slug)
+                option_values_dict["id"] = option_values_in_line.id
+                option_values_dict["name"] = option_values_in_line.name
+                option_values_dict["currency"] = order.channel.currency_code
+                option_values_dict_list.append(option_values_dict)
+            order_line_instance.option_items = json.dumps(option_values_dict_list, cls=DecimalEncoder)
+            order_line_instance.save()
             order_line_instance.option_values.through.objects.bulk_create(option_values_list)
 
     country_code = checkout_info.get_country()
