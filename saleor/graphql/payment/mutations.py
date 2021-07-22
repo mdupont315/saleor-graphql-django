@@ -1,3 +1,5 @@
+from decimal import Decimal
+from django.conf import settings
 import graphene
 from django.core.exceptions import ValidationError
 
@@ -18,7 +20,8 @@ from ..core.mutations import BaseMutation
 from ..core.scalars import PositiveDecimal
 from ..core.types import common as common_types
 from .types import Payment, PaymentInitialized
-
+from ...delivery.models import Delivery
+from ...store.models import Store
 
 class PaymentInput(graphene.InputObjectType):
     gateway = graphene.Field(
@@ -156,6 +159,27 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             address=address,
             discounts=info.context.discounts,
         )
+        delivery_setting = Delivery.objects.all().first()
+        current_strore = Store.objects.all().first()
+
+        # implement delivery fee
+        if delivery_setting:
+            if delivery_setting.min_order > checkout_total.gross.amount:
+                raise ValidationError(
+                {
+                    "min_order": "The subtotal must be greater than {min_order}".format(min_order=delivery_setting.min_order)
+                }
+            )
+            if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and checkout_total.gross.amount < delivery_setting.from_delivery:
+                checkout_total.gross.amount = checkout_total.gross.amount + delivery_setting.delivery_fee
+        
+        # implement transaction fee
+        if data["gateway"] == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
+            checkout_total.gross.amount = checkout_total.gross.amount + current_strore.contant_cost
+        if data["gateway"] == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
+            checkout_total.gross.amount = checkout_total.gross.amount + current_strore.stripe_cost
+      
+
         amount = data.get("amount", checkout_total.gross.amount)
         clean_checkout_shipping(checkout_info, lines, PaymentErrorCode)
         clean_billing_address(checkout_info, PaymentErrorCode)
