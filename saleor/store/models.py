@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from versatileimagefield.fields import VersatileImageField
 from ..core.utils.translations import TranslationProxy
@@ -43,9 +44,17 @@ class Store(MultitenantModelWithMetadata, SeoModel):
 
     #Transaction cost
     contant_enable = models.BooleanField(blank=True, null=True,default=False)
-    contant_cost = models.FloatField(blank=True, null=True, default=0)
+    contant_cost = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
+    )
     stripe_enable = models.BooleanField(blank=True, null=True,default=False)
-    stripe_cost = models.FloatField(blank=True, null=True, default=0)
+    stripe_cost = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
+    )
 
     objects = StoresQueryset.as_manager()
     translated = TranslationProxy()

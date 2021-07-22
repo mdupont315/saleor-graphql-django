@@ -234,7 +234,7 @@
   <div class="container">
     <div class=div-head>
       <span class="order-code">New {{order_type}} order <b>#{{order_num}}</b></span><br />
-      <span class="place-time">Placed on {{expected_date}} at {{expected_time}}</span>
+      <span class="place-time">Placed on {{place_date}} at {{place_time}}</span>
     </div>
 
     <div class="info clearfix">
@@ -302,6 +302,14 @@
           <tr class="total-row">
             <td class="discout">Discount</td>
             <td class="discout total-row-price">{{channel_symbol}} {{discount}}</td>
+          </tr>
+          <tr>
+            <td>Delivery fee</td>
+            <td class="total-row-price">{{channel_symbol}} {{delivery_fee}}</td>
+          </tr>
+          <tr>
+            <td>Transaction cost</td>
+            <td class="total-row-price">{{channel_symbol}} {{transaction_cost}}</td>
           </tr>
           <tr class="total-row">
             <td>Total</td>
