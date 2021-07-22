@@ -27,8 +27,8 @@ from .utils import can_user_manage_group, get_groups_which_user_can_manage
 
 
 class AddressInput(graphene.InputObjectType):
-    first_name = graphene.String(description="Given name.", required=False)
-    last_name = graphene.String(description="Family name.", required=False)
+    first_name = graphene.String(description="Given name.", required=True)
+    last_name = graphene.String(description="Family name.", required=True)
     company_name = graphene.String(description="Company or organization.", required=False)
     street_address_1 = graphene.String(description="Address.", required=False)
     street_address_2 = graphene.String(description="Address.", required=False)
