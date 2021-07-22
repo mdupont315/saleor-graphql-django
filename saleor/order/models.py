@@ -285,7 +285,6 @@ class Order(MultitenantModelWithMetadata):
         return self.total_paid_amount > 0
 
     def get_customer_email(self):
-        email = self.billing_address.email
         return self.user.email if self.user else self.user_email
 
     def update_total_paid(self):
