@@ -119,9 +119,11 @@ def _process_user_data_for_order(checkout_info: "CheckoutInfo", manager):
         if checkout_info.user.addresses.filter(pk=billing_address.pk).exists():
             billing_address = billing_address.get_copy()
 
+    print('checkout_info.get_customer_email()', checkout_info.get_customer_email())
+    user_email = checkout_info.get_customer_email()
     return {
         "user": checkout_info.user,
-        "user_email": checkout_info.get_customer_email(),
+        "user_email": user_email if user_email else '',
         "billing_address": billing_address,
         "customer_note": checkout_info.checkout.note,
     }
