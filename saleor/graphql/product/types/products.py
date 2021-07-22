@@ -1202,17 +1202,18 @@ class Category(CountableDjangoObjectType):
         if channel is None and not is_staff:
             channel = get_default_channel_slug_or_graphql_error()
         qs = models.Product.objects.all()
-        if not is_staff:
-            qs = (
-                qs.published(channel)
-                .annotate_visible_in_listings(channel)
-                .exclude(
-                    visible_in_listings=False,
-                )
-            )
+        # if not is_staff:
+        #     qs = (
+        #         qs.published(channel)
+        #         .annotate_visible_in_listings(channel)
+        #         .exclude(
+        #             visible_in_listings=False,
+        #         )
+        #     )
         if channel and is_staff:
             qs = qs.filter(channel_listings__channel__slug=channel)
         qs = qs.filter(category__in=tree)
+        print('qs', qs.count())
         return ChannelQsContext(qs=qs, channel_slug=channel)
 
     @staticmethod

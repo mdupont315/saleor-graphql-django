@@ -86,6 +86,8 @@ ORDER_TYPES = [
     ("delivery", "Delivery"),
     ("pickup", "Pickup")
 ]
+DUMMY_GATEWAY = 'mirumee.payments.dummy'
+STRIPE_GATEWAY = 'mirumee.payments.stripe'
 LOCALE_PATHS = [os.path.join(PROJECT_ROOT, "locale")]
 USE_I18N = True
 USE_L10N = True
