@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from email.headerregistry import Address
+from saleor.core.prices import quantize_price
 from typing import List, Optional
 
 import dateutil.parser
@@ -178,17 +179,18 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
     return pybars.strlist([formatted_price])
 
 def list_product_customer(this, options, items, channel, channel_symbol):
+    TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     result = [u'<table class="product-table">']
     for thing in items:
         result.append(u'<tr>')
         result.append(u'<td class="td-number">')
         result.append(str(thing.quantity))
-        result.append(u'x </td>')
+        result.append(u' x </td>')
         result.append(u'<td class="td-name">')
         result.append(thing.product_name)
         result.append(u'</td>')
         result.append(u'<td class="td-price">')
-        result.append(str(thing.total_price_net.amount))
+        result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
         result.append(u'</td>')
         result.append(u'</tr>')
         option_values = thing.option_values.all()
@@ -200,7 +202,7 @@ def list_product_customer(this, options, items, channel, channel_symbol):
                     option=option_value.option.name,
                     name=option_value.name,
                     curency=channel_symbol,
-                    price=option_value.get_price_amount_by_channel(channel)
+                    price=(quantize_price(option_value.get_price_amount_by_channel(channel), channel)).quantize(TWOPLACES)
                     ))
                 result.append(u'</td>')
                 result.append(u'</tr>')
