@@ -160,7 +160,6 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             discounts=info.context.discounts,
         )
         undiscount_checkout_total = checkout_total.gross.amount + checkout_info.checkout.discount.amount
-
         delivery_setting = Delivery.objects.all().first()
         current_strore = Store.objects.all().first()
         # implement delivery fee
