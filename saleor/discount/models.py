@@ -96,6 +96,7 @@ class Voucher(TenantModel):
     products = models.ManyToManyField("product.Product", blank=True)
     collections = models.ManyToManyField("product.Collection", blank=True)
     categories = models.ManyToManyField("product.Category", blank=True)
+    active = models.BooleanField(null=True, blank=True, default=True)
 
     objects = VoucherQueryset.as_manager()
     translated = TranslationProxy()

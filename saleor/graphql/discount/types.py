@@ -199,6 +199,7 @@ class Voucher(ChannelContextType, CountableDjangoObjectType):
             "type",
             "usage_limit",
             "used",
+            "active",
         ]
         interfaces = [relay.Node]
         model = models.Voucher
