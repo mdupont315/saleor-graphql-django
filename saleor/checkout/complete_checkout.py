@@ -321,7 +321,7 @@ def _prepare_order_data(
         taxed_total.net.amount = taxed_total.net.amount + current_strore.stripe_cost
         order_data["transaction_cost"] = current_strore.stripe_cost
 
-
+    print('--------------', taxed_total.net.amount)
     undiscounted_total = taxed_total + checkout.discount
 
     shipping_total = manager.calculate_checkout_shipping(
