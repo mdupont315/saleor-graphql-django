@@ -300,14 +300,15 @@ def _prepare_order_data(
     delivery_setting = Delivery.objects.all().first()
     current_strore = Store.objects.all().first()
     # implement delivery fee
+    undiscount_checkout_total = taxed_total.net.amount + checkout_info.checkout.discount.amount
     if delivery_setting:
-        if delivery_setting.min_order > taxed_total.net.amount:
+        if delivery_setting.min_order > undiscount_checkout_total:
             raise ValidationError(
             {
                 "min_order": "The subtotal must be greater than {min_order}".format(min_order=delivery_setting.min_order)
             }
         )
-        if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and taxed_total.net.amount < delivery_setting.from_delivery:
+        if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and undiscount_checkout_total < delivery_setting.from_delivery:
             taxed_total.net.amount = taxed_total.net.amount + delivery_setting.delivery_fee
             order_data["delivery_fee"] = delivery_setting.delivery_fee
     
