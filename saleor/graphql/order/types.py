@@ -797,8 +797,8 @@ class Order(CountableDjangoObjectType):
             requester = get_user_or_app_from_context(info.context)
             if requestor_has_access(requester, user, OrderPermissions.MANAGE_ORDERS):
                 return address
-            return obfuscate_address(address)
-
+            return address
+        
         if not root.billing_address_id:
             return
 
@@ -996,7 +996,7 @@ class Order(CountableDjangoObjectType):
             requester = get_user_or_app_from_context(info.context)
             if requestor_has_access(requester, user, OrderPermissions.MANAGE_ORDERS):
                 return user.email if user else root.user_email
-            return obfuscate_email(user.email if user else root.user_email)
+            return user.email if user else root.user_email
 
         if not root.user_id:
             return _resolve_user_email(None)
