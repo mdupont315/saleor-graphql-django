@@ -174,6 +174,9 @@ class OrderEvent(CountableDjangoObjectType):
     related_order = graphene.Field(
         lambda: Order, description="The order which is related to this order."
     )
+    order = graphene.Field(
+        lambda: Order, description="The order which is related to this order."
+    )
     discount = graphene.Field(
         OrderEventDiscountObject, description="The discount applied to the order."
     )
@@ -317,6 +320,10 @@ class OrderEvent(CountableDjangoObjectType):
         if not order_pk:
             return None
         return OrderByIdLoader(info.context).load(order_pk)
+
+    @staticmethod
+    def resolve_order(root: models.OrderEvent, info):
+        return root.order
 
     @staticmethod
     @traced_resolver
