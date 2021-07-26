@@ -117,7 +117,7 @@ def order_created(
         "expected_time": order.expected_time,
         "recipient_email": order.user_email,
         "lines": order.lines.all(),
-        "logo": current_strore.logo.url,
+        "logo": current_strore.logo.url if current_strore.logo else '',
         "store_phone": current_strore.phone,
         "store_name": current_strore.name,
         "store_address": current_strore.address,
