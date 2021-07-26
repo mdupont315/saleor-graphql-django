@@ -302,7 +302,7 @@ def _prepare_order_data(
     # implement delivery fee
     delivery_setting = Delivery.objects.all().first()
     current_strore = Store.objects.all().first()
-    undiscount_checkout_total_amount = taxed_total.net.amount + checkout_info.checkout.discount.amount
+    undiscount_checkout_total_amount = taxed_total.net.amount + checkout.discount.amount
     if delivery_setting:
         if delivery_setting.min_order > undiscount_checkout_total_amount:
             raise ValidationError(

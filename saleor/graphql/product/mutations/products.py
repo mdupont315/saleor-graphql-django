@@ -649,7 +649,7 @@ class ProductCreate(ModelMutation):
             instance.collections.set(collections)
 
         options = cleaned_data.get("options", None)
-        if options is not None:
+        if options is not None and options:
             instance.options.set(options)
 
     @classmethod

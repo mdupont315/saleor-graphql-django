@@ -107,6 +107,10 @@ def order_created(
     protocol = "https" if settings.ENABLE_SSL else "http"
     # order_url = protocol + "://" + current_strore.domain + "order-history"
     order_url = "{protocol}://{domain}/order-history/{token}".format(protocol=protocol, domain=current_strore.domain, token=order.token)
+    discounts = order.discounts.all()
+    total_discount = 0
+    for item in discounts:
+        total_discount += item.amount.amount
     payload = {
         "order_num": order.pk,
         "expected_date": order.expected_date,
@@ -124,7 +128,7 @@ def order_created(
         "delivery_fee": Decimal(order.delivery_fee).quantize(TWOPLACES),
         "transaction_cost": Decimal(order.transaction_cost).quantize(TWOPLACES),
         "total": order.total_net_amount.quantize(TWOPLACES),
-        "discount": order.get_discount_amout().quantize(TWOPLACES),
+        "discount": Decimal(total_discount).quantize(TWOPLACES),
         "channel": order.channel.slug,
         "channel_symbol": order.get_channel_curreny_symbool(),
         "address": vars(order.billing_address),
