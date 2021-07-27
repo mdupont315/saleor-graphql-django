@@ -240,6 +240,9 @@ class CheckoutCreateInput(graphene.InputObjectType):
     expected_time = graphene.String(
         description="Expected date to receive order."
     )
+    table_name = graphene.String(
+        description="Table name"
+    )
 
 class CheckoutCreate(ModelMutation, I18nMixin):
     created = graphene.Field(
@@ -435,6 +438,9 @@ class CheckoutUpdateInput(graphene.InputObjectType):
     expected_time = graphene.String(
         description="Expected date to receive order."
     )
+    table_name = graphene.String(
+        description="Table name."
+    )
 
 class CheckoutInfoUpdate(BaseMutation):
     checkout = graphene.Field(Checkout, description="An updated checkout.")
@@ -469,6 +475,8 @@ class CheckoutInfoUpdate(BaseMutation):
             checkout.expected_time = input.get("expected_time")
         if input.get("note"):
             checkout.note = input.get("note")
+        if input.get("table_name"):
+            checkout.note = input.get("table_name")
         checkout.save()
         info.context.plugins.checkout_updated(checkout)
         return CheckoutLanguageCodeUpdate(checkout=checkout)

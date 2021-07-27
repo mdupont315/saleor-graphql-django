@@ -732,7 +732,8 @@ class Order(CountableDjangoObjectType):
             "expected_date",
             "expected_time",
             "delivery_fee",
-            "transaction_cost"
+            "transaction_cost",
+            "table_name",
         ]
 
     @staticmethod

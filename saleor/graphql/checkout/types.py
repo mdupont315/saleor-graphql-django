@@ -224,6 +224,7 @@ class Checkout(CountableDjangoObjectType):
             "order_type",
             "expected_date",
             "expected_time",
+            "table_name",
         ]
         description = "Checkout object."
         model = models.Checkout
