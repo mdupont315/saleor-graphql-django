@@ -222,6 +222,7 @@ INSTALLED_APPS = [
     "saleor.delivery",
     "saleor.store",
     "saleor.servicetime",
+    "saleor.table_service",
     # External apps
     "versatileimagefield",
     "django_measurement",

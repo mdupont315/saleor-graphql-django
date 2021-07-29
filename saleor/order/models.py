@@ -266,6 +266,10 @@ class Order(MultitenantModelWithMetadata):
         default=0,
     )
 
+    table_name = models.CharField(
+        max_length=100, null=True, blank=True
+    )
+
     objects = OrderQueryset.as_manager()
 
     class Meta:

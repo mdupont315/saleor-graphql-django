@@ -411,6 +411,7 @@ def _create_order(
         order_type=checkout.order_type,
         expected_date=checkout.expected_date,
         expected_time=checkout.expected_time,
+        table_name=checkout.table_name
     )
     if checkout.discount:
         # store voucher as a fixed value as it this the simplest solution for now.
@@ -495,6 +496,7 @@ def _prepare_checkout(
     """Prepare checkout object to complete the checkout process."""
     checkout = checkout_info.checkout
     clean_checkout_shipping(checkout_info, lines, CheckoutErrorCode)
+    print('------------checkout_info', checkout_info)
     clean_checkout_payment(
         manager,
         checkout_info,
