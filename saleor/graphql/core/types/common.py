@@ -42,6 +42,7 @@ from ..enums import (
     StoreErrorCode,
     ServiceTimeErrorCode,
     OptionErrorCode,
+    TableServiceErrorCode,
 )
 from .money import VAT
 
@@ -348,6 +349,9 @@ class StoreError(Error):
 
 class ServiceTimeError(Error):
     code = ServiceTimeErrorCode(description="The error code.", required=True)
+
+class TableServiceError(Error):
+    code = TableServiceErrorCode(description="The error code.", required=True)
 
 class OptionError(Error):
     code = OptionErrorCode(description="The error code.", required=True)
