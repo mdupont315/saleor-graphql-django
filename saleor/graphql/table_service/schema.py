@@ -1,3 +1,5 @@
+from saleor.graphql.table_service.filters import TableServiceFilterInput
+from saleor.graphql.table_service.sorters import TableServiceSortInput
 from saleor.graphql.table_service.types import TableService
 import graphene
 from ..decorators import permission_required
@@ -14,6 +16,8 @@ from .mutations import (
 class TableServiceQueries(graphene.ObjectType):
     table_services = FilterInputConnectionField(
         TableService,
+        filter=TableServiceFilterInput(description="Filtering table services."),
+        sort_by=TableServiceSortInput(description="Sort table services."),
         description="List of the table service.",
     )
 
