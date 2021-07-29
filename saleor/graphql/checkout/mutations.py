@@ -939,6 +939,12 @@ class CheckoutComplete(BaseMutation):
             "Confirmation data used to process additional authorization steps."
         ),
     )
+    redirect_url = graphene.String(
+        required=False,
+        description=(
+            "Redirect URL"
+        ),
+    )
 
     class Arguments:
         checkout_id = graphene.ID(description="Checkout ID.", required=True)
@@ -1015,7 +1021,7 @@ class CheckoutComplete(BaseMutation):
             checkout_info = fetch_checkout_info(
                 checkout, lines, info.context.discounts, manager
             )
-            order, action_required, action_data = complete_checkout(
+            order, action_required, action_data, redirect_url = complete_checkout(
                 manager=manager,
                 checkout_info=checkout_info,
                 lines=lines,
@@ -1033,6 +1039,7 @@ class CheckoutComplete(BaseMutation):
             order=order,
             confirmation_needed=action_required,
             confirmation_data=action_data,
+            redirect_url=redirect_url
         )
 
 

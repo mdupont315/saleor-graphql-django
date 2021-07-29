@@ -79,7 +79,6 @@ class I18nMixin:
         #         }
         #     )
         # address_form = cls.validate_address_form(address_data, address_type)
-        # print('address_form', address_form.cleaned_data)
         cleaned_data = {k: v for k, v in address_data.items() if v}
         if not instance:
             instance = Address()
