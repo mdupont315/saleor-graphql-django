@@ -35,49 +35,50 @@ logger = logging.getLogger(__name__)
 @transaction_with_commit_on_errors()
 def handle_webhook(request: WSGIRequest, gateway_config: "GatewayConfig"):
     payload = request.body
-    # sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
-    print('gateway_config', gateway_config)
-    endpoint_secret = gateway_config.connection_params["private_key"]
+    sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+    endpoint_secret = gateway_config.connection_params["webhook_secret"]
     api_key = gateway_config.connection_params["private_key"]
-    # try:
-    #     event = construct_stripe_event(
-    #         api_key=api_key,
-    #         payload=payload,
-    #         sig_header=sig_header,
-    #         endpoint_secret=endpoint_secret,
-    #     )
-    # except ValueError as e:
-    #     # Invalid payload
-    #     logger.warning(
-    #         "Received invalid payload for Stripe webhook", extra={"error": e}
-    #     )
-    #     return HttpResponse(status=400)
-    # except SignatureVerificationError as e:
-    #     # Invalid signature
-    #     logger.warning("Invalid signature for Stripe webhook", extra={"error": e})
-    #     return HttpResponse(status=400)
+    try:
+        event = construct_stripe_event(
+            api_key=api_key,
+            payload=payload,
+            sig_header=sig_header,
+            endpoint_secret=endpoint_secret,
+        )
+    except ValueError as e:
+        # Invalid payload
+        logger.warning(
+            "Received invalid payload for Stripe webhook", extra={"error": e}
+        )
+        return HttpResponse(status=400)
+    except SignatureVerificationError as e:
+        # Invalid signature
+        logger.warning("Invalid signature for Stripe webhook", extra={"error": e})
+        return HttpResponse(status=400)
 
-    # webhook_handlers = {
-    #     WEBHOOK_SUCCESS_EVENT: handle_successful_payment_intent,
-    #     WEBHOOK_AUTHORIZED_EVENT: handle_authorized_payment_intent,
-    #     WEBHOOK_PROCESSING_EVENT: handle_processing_payment_intent,
-    #     WEBHOOK_FAILED_EVENT: handle_failed_payment_intent,
-    #     WEBHOOK_CANCELED_EVENT: handle_failed_payment_intent,
-    #     WEBHOOK_REFUND_EVENT: handle_refund,
-    # }
-    # if event.type in webhook_handlers:
-    #     logger.debug(
-    #         "Processing new Stripe webhook",
-    #         extra={"event_type": event.type, "event_id": event.id},
-    #     )
-    #     webhook_handlers[event.type](event.data.object, gateway_config)
-    # else:
-    #     logger.warning(
-    #         "Received unhandled webhook events", extra={"event_type": event.type}
-    #     )
-    json1_data = json.loads(payload)
-    intent = retrieve_payment_intent(api_key, json1_data["id"])
-    handle_authorized_payment_intent(intent, gateway_config)
+    webhook_handlers = {
+        WEBHOOK_SUCCESS_EVENT: handle_successful_payment_intent,
+        WEBHOOK_AUTHORIZED_EVENT: handle_authorized_payment_intent,
+        WEBHOOK_PROCESSING_EVENT: handle_processing_payment_intent,
+        WEBHOOK_FAILED_EVENT: handle_failed_payment_intent,
+        WEBHOOK_CANCELED_EVENT: handle_failed_payment_intent,
+        WEBHOOK_REFUND_EVENT: handle_refund,
+    }
+    if event.type in webhook_handlers:
+        logger.debug(
+            "Processing new Stripe webhook",
+            extra={"event_type": event.type, "event_id": event.id},
+        )
+        webhook_handlers[event.type](event.data.object, gateway_config)
+    else:
+        logger.warning(
+            "Received unhandled webhook events", extra={"event_type": event.type}
+        )
+
+    # # for local test
+    # json1_data = json.loads(payload)
+    # intent = retrieve_payment_intent(api_key, json1_data["id"])
+    # handle_successful_payment_intent(intent, gateway_config)
     return HttpResponse(status=200)
 
 
@@ -130,13 +131,15 @@ def _finalize_checkout(
         gateway_response=gateway_response,
     )
 
+    gateway_postprocess(tnx, payment)
+
     manager = get_plugins_manager()
     discounts = fetch_active_discounts()
     lines = fetch_checkout_lines(checkout)  # type: ignore
     checkout_info = fetch_checkout_info(
         checkout, lines, discounts, manager  # type: ignore
     )
-    order, _, _ = complete_checkout(
+    order, _, _, _ = complete_checkout(
         manager=manager,
         checkout_info=checkout_info,
         lines=lines,
@@ -190,9 +193,6 @@ def _process_payment_with_checkout(
 def handle_authorized_payment_intent(
     payment_intent: StripeObject, gateway_config: "GatewayConfig"
 ):
-    # payment = _get_payment(payment_intent.id)
-    payment_intent = payment_intent[0]
-    print('---------------payment_intent', payment_intent)
     payment = _get_payment(payment_intent.id)
 
     if not payment:
@@ -217,7 +217,7 @@ def handle_authorized_payment_intent(
         _process_payment_with_checkout(
             payment,
             payment_intent,
-            kind=TransactionKind.CAPTURE,
+            kind=TransactionKind.AUTH,
             amount=payment_intent.amount,
             currency=payment_intent.currency,
         )
@@ -273,6 +273,9 @@ def handle_processing_payment_intent(
 def handle_successful_payment_intent(
     payment_intent: StripeObject, gateway_config: "GatewayConfig"
 ):
+    # # for local test
+    # payment_intent = payment_intent[0]
+    # print('---------------payment_intent', payment_intent)
     payment = _get_payment(payment_intent.id)
 
     if not payment:

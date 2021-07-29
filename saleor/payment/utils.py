@@ -176,7 +176,6 @@ def create_transaction(
             error=error_msg,
             raw_response={},
         )
-    print('vao tan day nayyyyyyyyyyyy', gateway_response)
     txn = Transaction.objects.create(
         payment=payment,
         action_required=action_required,
@@ -189,7 +188,6 @@ def create_transaction(
         customer_id=gateway_response.customer_id,
         gateway_response=gateway_response.raw_response or {},
         action_required_data=gateway_response.action_required_data or {},
-        already_processed=gateway_response.transaction_already_processed or False
     )
     return txn
 

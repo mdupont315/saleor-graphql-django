@@ -31,6 +31,7 @@ class StripeGatewayPlugin(BasePlugin):
     DEFAULT_CONFIGURATION = [
         {"name": "Public API key", "value": None},
         {"name": "Secret API key", "value": None},
+        {"name": "Weebhook secret", "value": None},
         {"name": "Store customers card", "value": False},
         {"name": "Automatic payment capture", "value": True},
         {"name": "Supported currencies", "value": ""},
@@ -46,6 +47,11 @@ class StripeGatewayPlugin(BasePlugin):
             "type": ConfigurationTypeField.SECRET,
             "help_text": "Provide Stripe secret API key.",
             "label": "Secret API key",
+        },
+        "Weebhook secret": {
+            "type": ConfigurationTypeField.SECRET,
+            "help_text": "Provide Stripe webhook secret.",
+            "label": "Weebhook secret",
         },
         "Store customers card": {
             "type": ConfigurationTypeField.BOOLEAN,
@@ -76,6 +82,7 @@ class StripeGatewayPlugin(BasePlugin):
             connection_params={
                 "public_key": configuration["Public API key"],
                 "private_key": configuration["Secret API key"],
+                "webhook_secret": configuration["Weebhook secret"]
             },
             store_customer=configuration["Store customers card"],
         )

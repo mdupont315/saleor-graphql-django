@@ -860,14 +860,15 @@ def create_channel(channel_name, currency_code, slug=None):
 
 
 def create_channels():
-    yield create_channel(
-        channel_name="Channel-USD",
-        currency_code="USD",
-        slug=settings.DEFAULT_CHANNEL_SLUG,
-    )
+    # yield create_channel(
+    #     channel_name="Channel-USD",
+    #     currency_code="USD",
+    #     slug=settings.DEFAULT_CHANNEL_SLUG,
+    # )
     yield create_channel(
         channel_name="Channel-EUR",
         currency_code="EUR",
+        slug=settings.DEFAULT_CHANNEL_SLUG,
     )
 
 

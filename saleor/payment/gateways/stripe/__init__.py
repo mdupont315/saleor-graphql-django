@@ -1,3 +1,4 @@
+from saleor.payment.gateways.stripe.consts import STRIPE_API_VERSION
 from saleor.checkout.models import Checkout
 from typing import List
 
@@ -64,10 +65,13 @@ def authorize(
                 confirm=True,
                 capture_method=capture_method,
                 # setup_future_usage=future_use,
-                customer=customer_id,
+                # customer=customer_id,
                 shipping=shipping,
                 payment_method_types=['ideal'],
-                return_url="http://52.58.195.234:81"
+                return_url=checkout.get_last_active_payment().return_url+ "?payment_token=" + checkout.get_last_active_payment().token or None,
+                # # for local test
+                # return_url= "http://52.58.195.234:81?payment_token=" + checkout.get_last_active_payment().token,
+                stripe_version=STRIPE_API_VERSION
             )
         # if config.store_customer and not customer_id:
         #     with opentracing.global_tracer().start_active_span(

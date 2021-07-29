@@ -127,11 +127,10 @@ def retrieve_payment_intent(
             payment_intent = stripe.PaymentIntent.retrieve(
                 id=payment_intent_id,
                 api_key=api_key,
-                # stripe_version=STRIPE_API_VERSION,
+                stripe_version=STRIPE_API_VERSION,
             )
         return payment_intent, None
     except StripeError as error:
-        print('------------------', error)
         logger.warning(
             "Unable to retrieve a payment intent",
             extra=_extra_log_data(error),
