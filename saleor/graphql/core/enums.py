@@ -34,6 +34,7 @@ from ..shop import error_codes as shop_error_codes
 from ...delivery import error_codes as delivery_error_codes
 from ...store import error_codes as store_error_codes
 from ...servicetime import error_codes as service_time_error_codes
+from ...table_service import error_codes as table_service_error_codes
 from .utils import str_to_enum
 
 
@@ -142,3 +143,4 @@ DeliveryErrorCode = graphene.Enum.from_enum(delivery_error_codes.DeliveryErrorCo
 StoreErrorCode = graphene.Enum.from_enum(store_error_codes.StoreErrorCode)
 ServiceTimeErrorCode = graphene.Enum.from_enum(service_time_error_codes.ServiceTimeErrorCode)
 OptionErrorCode = graphene.Enum.from_enum(product_error_codes.OptionErrorCode)
+TableServiceErrorCode = graphene.Enum.from_enum(table_service_error_codes.TableServiceErrorCode)

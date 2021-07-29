@@ -26,6 +26,7 @@ from .webhook.schema import WebhookMutations, WebhookQueries
 from .servicetime.schema import ServiceTimeQueries, ServiceTimeMutations
 from .store.schema import StoreMutations, StoreQueries
 from .option.shcema import OptionMutations, OptionQueries
+from .table_service.schema import TableServiceMutations, TableServiceQueries
 
 from .delivery.schema import DeliveryQueries, DeliveryMutations
 
@@ -55,7 +56,8 @@ class Query(
     DeliveryQueries,
     StoreQueries,
     ServiceTimeQueries,
-    OptionQueries
+    OptionQueries,
+    TableServiceQueries,
 ):
     pass
 
@@ -85,7 +87,8 @@ class Mutation(
     DeliveryMutations,
     StoreMutations,
     ServiceTimeMutations,
-    OptionMutations
+    OptionMutations,
+    TableServiceMutations,
 ):
     pass
 
