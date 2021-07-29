@@ -680,10 +680,10 @@ class PluginsManager(PaymentInterface):
         )
 
     def process_payment(
-        self, gateway: str, payment_information: "PaymentData", channel_slug: str
+        self, gateway: str, payment_information: "PaymentData", channel_slug: str, checkout: "Checkout"
     ) -> "GatewayResponse":
         return self.__run_payment_method(
-            gateway, "process_payment", payment_information, channel_slug=channel_slug
+            gateway, "process_payment", payment_information, channel_slug=channel_slug, checkout=checkout
         )
 
     def token_is_required_as_payment_input(

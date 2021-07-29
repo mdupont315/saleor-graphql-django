@@ -1,3 +1,4 @@
+from saleor.checkout.models import Checkout
 from typing import List
 
 import opentracing
@@ -30,9 +31,10 @@ def get_client_token(**_):
 
 
 def authorize(
-    payment_information: PaymentData, config: GatewayConfig
+    payment_information: PaymentData, config: GatewayConfig, checkout: Checkout
 ) -> GatewayResponse:
-    kind = TransactionKind.CAPTURE if config.auto_capture else TransactionKind.AUTH
+    # kind = TransactionKind.CAPTURE if config.auto_capture else TransactionKind.AUTH
+    kind = TransactionKind.AUTH
     client = _get_client(**config.connection_params)
     capture_method = "automatic" if config.auto_capture else "manual"
     currency = get_currency_for_stripe(payment_information.currency)
@@ -57,23 +59,25 @@ def authorize(
             intent = client.PaymentIntent.create(
                 payment_method=payment_information.token,
                 amount=stripe_amount,
-                currency=currency,
-                confirmation_method="manual",
+                currency='eur',
+                confirmation_method="automatic",
                 confirm=True,
                 capture_method=capture_method,
-                setup_future_usage=future_use,
+                # setup_future_usage=future_use,
                 customer=customer_id,
                 shipping=shipping,
+                payment_method_types=['ideal'],
+                return_url="http://52.58.195.234:81"
             )
-        if config.store_customer and not customer_id:
-            with opentracing.global_tracer().start_active_span(
-                "stripe.Customer.create"
-            ) as scope:
-                span = scope.span
-                span.set_tag(opentracing.tags.COMPONENT, "payment")
-                span.set_tag("service.name", "stripe")
-                customer = client.Customer.create(payment_method=intent.payment_method)
-            customer_id = customer.id
+        # if config.store_customer and not customer_id:
+        #     with opentracing.global_tracer().start_active_span(
+        #         "stripe.Customer.create"
+        #     ) as scope:
+        #         span = scope.span
+        #         span.set_tag(opentracing.tags.COMPONENT, "payment")
+        #         span.set_tag("service.name", "stripe")
+        #         customer = client.Customer.create(payment_method=intent.payment_method)
+        #     customer_id = customer.id
 
     except stripe.error.StripeError as exc:
         response = _error_response(kind=kind, exc=exc, payment_info=payment_information)
@@ -83,6 +87,9 @@ def authorize(
             intent=intent, kind=kind, success=success, customer_id=customer_id
         )
         response = fill_card_details(intent, response)
+    
+    checkout.redirect_url = intent.next_action.redirect_to_url.url
+    checkout.save()
     return response
 
 
@@ -221,9 +228,9 @@ def list_client_sources(
 
 
 def process_payment(
-    payment_information: PaymentData, config: GatewayConfig
+    payment_information: PaymentData, config: GatewayConfig, checkout: Checkout
 ) -> GatewayResponse:
-    return authorize(payment_information, config)
+    return authorize(payment_information, config, checkout)
 
 
 def _get_client(**connection_params):

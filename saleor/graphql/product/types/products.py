@@ -1213,7 +1213,6 @@ class Category(CountableDjangoObjectType):
         if channel and is_staff:
             qs = qs.filter(channel_listings__channel__slug=channel)
         qs = qs.filter(category__in=tree)
-        print('qs', qs.count())
         return ChannelQsContext(qs=qs, channel_slug=channel)
 
     @staticmethod

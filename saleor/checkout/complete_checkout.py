@@ -119,7 +119,6 @@ def _process_user_data_for_order(checkout_info: "CheckoutInfo", manager):
         if checkout_info.user.addresses.filter(pk=billing_address.pk).exists():
             billing_address = billing_address.get_copy()
 
-    print('checkout_info.get_customer_email()', checkout_info.get_customer_email())
     user_email = checkout_info.get_customer_email()
     return {
         "user": checkout_info.user,
@@ -452,7 +451,6 @@ def _create_order(
                 option_values_dict["type"] = option_values_in_line.option.type
                 option_values_dict_list.append(option_values_dict)
             order_line_instance.option_items = json.dumps(option_values_dict_list, cls=DecimalEncoder)
-            print('option_values_dict', option_values_dict)
             order_line_instance.save()
             order_line_instance.option_values.through.objects.bulk_create(option_values_list)
 
@@ -583,6 +581,7 @@ def _process_payment(
     order_data: dict,
     manager: "PluginsManager",
     channel_slug: str,
+    checkout: Checkout = None
 ) -> Transaction:
     """Process the payment assigned to checkout."""
     try:
@@ -602,6 +601,7 @@ def _process_payment(
                 store_source=store_source,
                 additional_data=payment_data,
                 channel_slug=channel_slug,
+                checkout=checkout
             )
         payment.refresh_from_db()
         if not txn.is_success:
@@ -623,6 +623,7 @@ def complete_checkout(
     site_settings=None,
     tracking_code=None,
     redirect_url=None,
+    txn: "dict"=None
 ) -> Tuple[Optional[Order], bool, dict]:
     """Logic required to finalize the checkout and convert it to order.
 
@@ -652,17 +653,17 @@ def complete_checkout(
     customer_id = None
     if store_source and payment:
         customer_id = fetch_customer_id(user=user, gateway=payment.gateway)
-
-    txn = _process_payment(
-        payment=payment,  # type: ignore
-        customer_id=customer_id,
-        store_source=store_source,
-        payment_data=payment_data,
-        order_data=order_data,
-        manager=manager,
-        channel_slug=channel_slug,
-    )
-
+    if txn is None:   
+        txn = _process_payment(
+            payment=payment,  # type: ignore
+            customer_id=customer_id,
+            store_source=store_source,
+            payment_data=payment_data,
+            order_data=order_data,
+            manager=manager,
+            channel_slug=channel_slug,
+            checkout=checkout
+        )
     if txn.customer_id and user.is_authenticated:
         store_customer_id(user, payment.gateway, txn.customer_id)  # type: ignore
 
@@ -686,4 +687,5 @@ def complete_checkout(
             gateway.payment_refund_or_void(payment, manager, channel_slug=channel_slug)
             error = prepare_insufficient_stock_checkout_validation_error(e)
             raise error
-    return order, action_required, action_data
+            
+    return order, action_required, action_data, checkout.redirect_url
