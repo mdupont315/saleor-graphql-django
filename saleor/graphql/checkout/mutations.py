@@ -1,4 +1,5 @@
 import datetime
+from saleor.table_service.error_codes import TableServiceErrorCode
 from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple
 
 import graphene
@@ -45,6 +46,7 @@ from ..core.mutations import BaseMutation, ModelMutation
 from ..core.types.common import CheckoutError
 from ..core.validators import validate_variants_available_in_channel
 from ..order.types import Order
+from ...table_service.models import TableService
 from ..product.types import ProductVariant
 from ..shipping.types import ShippingMethod
 from ..utils import get_user_country_context
@@ -358,6 +360,20 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         cleaned_input["shipping_address"] = shipping_address
         cleaned_input["billing_address"] = billing_address
         cleaned_input["country"] = country
+
+        # validate the table name if have table name
+        table_name = cleaned_input.get("table_name")
+        if table_name:
+            table = TableService.objects.filter(table_name=table_name).first()
+            if not table:
+                raise ValidationError(
+                {
+                    "table_name": ValidationError(
+                        "table name doesn't exists.",
+                        code=TableServiceErrorCode.NOT_EXISTS,
+                    )
+                }
+            )
         return cleaned_input
 
     @classmethod

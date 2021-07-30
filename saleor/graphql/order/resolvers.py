@@ -1,6 +1,7 @@
 from ...channel.models import Channel
 from ...core.tracing import traced_resolver
 from ...order import OrderStatus, models
+from ...payment.models import Payment
 from ...order.events import OrderEvents
 from ...order.models import OrderEvent
 from ...order.utils import sum_order_totals
@@ -60,3 +61,7 @@ def resolve_order_by_token(token):
         .filter(token=token)
         .first()
     )
+
+def resolve_order_by_payment_token(token):
+    payment = Payment.objects.filter(token=token).first()
+    return payment.order

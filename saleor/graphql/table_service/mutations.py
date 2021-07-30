@@ -1,3 +1,5 @@
+from saleor.table_service.error_codes import TableServiceErrorCode
+from django.core.exceptions import ValidationError
 from ..core.types.common import TableServiceError
 import graphene
 from ..core.mutations import ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
@@ -19,6 +21,23 @@ class TableServiceCreate(ModelMutation):
         input = TableServiceInput(
             required=True, description="Fields required to create table service."
         )
+
+    @classmethod
+    def clean_input(cls, info, instance, data):
+        cleaned_input = super().clean_input(info, instance, data)
+        # validate table name
+        table_name = cleaned_input["table_name"]
+        table_service = models.TableService.objects.filter(table_name=table_name).first()
+        if table_service:
+            raise ValidationError(
+                {
+                    "table_name": ValidationError(
+                        "table name already exists.",
+                        code=TableServiceErrorCode.ALREADY_EXISTS,
+                    )
+                }
+            )
+        return cleaned_input
 
     class Meta:
         description = "Creates a table service with QR code."

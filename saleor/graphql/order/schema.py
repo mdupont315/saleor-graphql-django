@@ -1,4 +1,5 @@
 import graphene
+from graphene.types.scalars import String
 
 from ...core.permissions import OrderPermissions
 from ...core.tracing import traced_resolver
@@ -52,6 +53,7 @@ from .resolvers import (
     resolve_order_by_token,
     resolve_orders,
     resolve_orders_total,
+    resolve_order_by_payment_token,
 )
 from .sorters import OrderSortingInput
 from .types import Order, OrderEvent
@@ -109,6 +111,11 @@ class OrderQueries(graphene.ObjectType):
         description="Look up an order by token.",
         token=graphene.Argument(UUID, description="The order's token.", required=True),
     )
+    order_by_payment_token = graphene.Field(
+        Order,
+        description="Look up an order by token.",
+        token=graphene.Argument(String, description="The order's token.", required=True),
+    )
 
     @permission_required(OrderPermissions.MANAGE_ORDERS)
     @traced_resolver
@@ -135,6 +142,10 @@ class OrderQueries(graphene.ObjectType):
     @traced_resolver
     def resolve_order_by_token(self, _info, token):
         return resolve_order_by_token(token)
+    
+    @traced_resolver
+    def resolve_order_by_payment_token(self, _info, token):
+        return resolve_order_by_payment_token(token)
 
 
 class OrderMutations(graphene.ObjectType):

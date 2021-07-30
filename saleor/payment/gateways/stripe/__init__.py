@@ -49,6 +49,8 @@ def authorize(
         if payment_information.shipping
         else None
     )
+    payment = checkout.get_last_active_payment()
+    return_url = checkout.get_last_active_payment().return_url + "/" + payment.token + "?payment_token=true"
 
     try:
         with opentracing.global_tracer().start_active_span(
@@ -68,9 +70,9 @@ def authorize(
                 # customer=customer_id,
                 shipping=shipping,
                 payment_method_types=['ideal'],
-                return_url=checkout.get_last_active_payment().return_url+ "?payment_token=" + checkout.get_last_active_payment().token or None,
+                return_url=return_url,
                 # # for local test
-                # return_url= "http://52.58.195.234:81?payment_token=" + checkout.get_last_active_payment().token,
+                # return_url= "http://52.58.195.234:81/order-history" + "/" + payment.token + "?payment_token=true",
                 stripe_version=STRIPE_API_VERSION
             )
         # if config.store_customer and not customer_id:
