@@ -10,7 +10,7 @@ from .mutations import (
     ChannelDelete,
     ChannelUpdate,
 )
-from .resolvers import resolve_channel, resolve_channels
+from .resolvers import resolve_channel, resolve_channels, resolve_channel_by_slug
 from .types import Channel
 
 
@@ -23,6 +23,11 @@ class ChannelQueries(graphene.ObjectType):
     channels = graphene.List(
         graphene.NonNull(Channel), description="List of all channels."
     )
+    channel_by_slug = graphene.Field(
+        Channel,
+        slug=graphene.Argument(graphene.String, description="Slug of the channel."),
+        description="Look up a channel by ID.",
+    )
 
     @staff_member_or_app_required
     def resolve_channel(self, info, id=None, **kwargs):
@@ -34,6 +39,8 @@ class ChannelQueries(graphene.ObjectType):
     def resolve_channels(self, _info, **kwargs):
         return resolve_channels()
 
+    def resolve_channel_by_slug(self, info, slug=None, **kwargs):
+        return resolve_channel_by_slug(slug)
 
 class ChannelMutations(graphene.ObjectType):
     channel_create = ChannelCreate.Field()

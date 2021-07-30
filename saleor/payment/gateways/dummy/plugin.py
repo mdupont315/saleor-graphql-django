@@ -28,7 +28,7 @@ class DummyGatewayPlugin(BasePlugin):
     DEFAULT_CONFIGURATION = [
         {"name": "Store customers card", "value": False},
         {"name": "Automatic payment capture", "value": True},
-        {"name": "Supported currencies", "value": "USD, PLN"},
+        {"name": "Supported currencies", "value": "EUR"},
     ]
     CONFIG_STRUCTURE = {
         "Store customers card": {
