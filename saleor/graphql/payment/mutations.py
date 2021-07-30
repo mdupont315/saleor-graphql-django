@@ -164,10 +164,10 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         current_strore = Store.objects.all().first()
         # implement delivery fee
         if delivery_setting:
-            if delivery_setting.min_order > undiscount_checkout_total:
+            if delivery_setting.min_order > undiscount_checkout_total and checkout.order_type == settings.ORDER_TYPES[0][0]:
                 raise ValidationError(
                 {
-                    "min_order": "The subtotal must be greater than {min_order}".format(min_order=delivery_setting.min_order)
+                    "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=delivery_setting.min_order)
                 }
             )
             if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and undiscount_checkout_total < delivery_setting.from_delivery:
