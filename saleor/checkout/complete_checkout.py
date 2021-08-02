@@ -1,5 +1,8 @@
 from datetime import date
 import decimal
+
+from prices.money import Money
+from saleor.core.prices import quantize_price
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 
 from django.contrib.sites.models import Site
@@ -296,12 +299,11 @@ def _prepare_order_data(
     taxed_total.net -= cards_total
 
     taxed_total = max(taxed_total, zero_taxed_money(checkout.currency))
-
     undiscounted_total = taxed_total + checkout.discount
     # implement delivery fee
     delivery_setting = Delivery.objects.all().first()
     current_strore = Store.objects.all().first()
-    undiscount_checkout_total_amount = taxed_total.net.amount + checkout.discount.amount
+    undiscount_checkout_total_amount = taxed_total.gross.amount + checkout.discount.amount
     if delivery_setting:
         if delivery_setting.min_order > undiscount_checkout_total_amount and checkout.order_type == settings.ORDER_TYPES[0][0]:
             raise ValidationError(
@@ -310,16 +312,19 @@ def _prepare_order_data(
             }
         )
         if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and undiscount_checkout_total_amount < delivery_setting.from_delivery:
-            taxed_total.net.amount = taxed_total.net.amount + delivery_setting.delivery_fee
+            delivery_fee = Money(amount=delivery_setting.delivery_fee, currency=checkout.currency)
+            taxed_total = taxed_total + TaxedMoney(net=delivery_fee, gross=delivery_fee)
             order_data["delivery_fee"] = delivery_setting.delivery_fee
     
     # implement transaction fee
     payment_gateway = checkout.get_last_active_payment().gateway
     if payment_gateway == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
-        taxed_total.net.amount = taxed_total.net.amount + current_strore.contant_cost
+        contant_cost = Money(amount=current_strore.contant_cost, currency=checkout.currency)
+        taxed_total = taxed_total + TaxedMoney(net=contant_cost, gross=contant_cost)
         order_data["transaction_cost"] = current_strore.contant_cost
     if payment_gateway == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
-        taxed_total.net.amount = taxed_total.net.amount + current_strore.stripe_cost
+        stripe_cost =  Money(amount=current_strore.stripe_cost, currency=checkout.currency)
+        taxed_total = taxed_total + TaxedMoney(net=stripe_cost, gross=stripe_cost)
         order_data["transaction_cost"] = current_strore.stripe_cost
 
     shipping_total = manager.calculate_checkout_shipping(

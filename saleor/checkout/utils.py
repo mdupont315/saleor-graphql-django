@@ -15,6 +15,7 @@ from ..core.utils.promo_code import (
     InvalidPromoCode,
     promo_code_is_gift_card,
     promo_code_is_voucher,
+    promo_code_is_active_voucher,
 )
 from ..discount import DiscountInfo, VoucherType
 from ..discount.models import NotApplicable, Voucher
@@ -473,7 +474,7 @@ def add_promo_code_to_checkout(
 
     Raise InvalidPromoCode if promo code does not match to any voucher or gift card.
     """
-    if promo_code_is_voucher(promo_code):
+    if promo_code_is_active_voucher(promo_code):
         add_voucher_code_to_checkout(
             manager, checkout_info, lines, promo_code, discounts
         )
