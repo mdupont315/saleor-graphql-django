@@ -13,7 +13,7 @@ from django_multitenant.models import TenantModel
 from django_prices.models import MoneyField
 from django_prices.templatetags.prices import amount
 from prices import Money, TaxedMoney, fixed_discount, percentage_discount
-
+from django.utils.timezone import now
 from ..channel.models import Channel
 from ..core.permissions import DiscountPermissions
 from ..core.taxes import display_gross_prices
@@ -97,7 +97,7 @@ class Voucher(TenantModel):
     collections = models.ManyToManyField("product.Collection", blank=True)
     categories = models.ManyToManyField("product.Category", blank=True)
     active = models.BooleanField(null=True, blank=True, default=True)
-
+    created = models.DateTimeField(default=now, editable=False)
     objects = VoucherQueryset.as_manager()
     translated = TranslationProxy()
 
