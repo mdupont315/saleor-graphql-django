@@ -402,6 +402,7 @@ def _create_order(
         if site_settings.automatically_confirm_all_new_orders
         else OrderStatus.UNCONFIRMED
     )
+
     order = Order.objects.create(
         **order_data,
         checkout_token=checkout.token,
@@ -411,7 +412,8 @@ def _create_order(
         order_type=checkout.order_type,
         expected_date=checkout.expected_date,
         expected_time=checkout.expected_time,
-        table_name=checkout.table_name
+        table_name=checkout.table_name,
+        store=checkout.store,
     )
     if checkout.discount:
         # store voucher as a fixed value as it this the simplest solution for now.
