@@ -310,13 +310,15 @@
             <td class="discout">Discount</td>
             <td class="discout total-row-price">- {{channel_symbol}} {{discount}}</td>
           </tr>
+          <!-- {{#if is_delivery}}
+          {{/if}} -->
           <tr>
-            <td>Delivery fee</td>
-            <td class="total-row-price">{{channel_symbol}} {{delivery_fee}}</td>
+            <td>Delivery cost</td>
+            <td class="total-row-price">{{delivery_fee}}</td>
           </tr>
           <tr>
             <td>Transaction cost</td>
-            <td class="total-row-price">{{channel_symbol}} {{transaction_cost}}</td>
+            <td class="total-row-price">{{transaction_cost}}</td>
           </tr>
           <tr class="total-row">
             <td>Total</td>

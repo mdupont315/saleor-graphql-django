@@ -111,6 +111,7 @@ def order_created(
     total_discount = 0
     for item in discounts:
         total_discount += item.amount.amount
+    channel_symbol = order.get_channel_curreny_symbool()
     payload = {
         "order_num": order.pk,
         "expected_date": order.expected_date,
@@ -122,18 +123,19 @@ def order_created(
         "store_name": current_strore.name,
         "store_address": current_strore.address,
         "order_type": order.get_order_type_display(),
+        "is_delivery": False,
         "sub_total": order.get_subtotal().net.amount.quantize(TWOPLACES),
         "place_date": order.created.strftime('%d-%m-%y'),
         "place_time": order.created.strftime('%H-%M'),
-        "delivery_fee": Decimal(order.delivery_fee).quantize(TWOPLACES),
-        "transaction_cost": Decimal(order.transaction_cost).quantize(TWOPLACES),
+        "delivery_fee": "{symbol} {price}".format(symbol=channel_symbol, price=Decimal(order.delivery_fee).quantize(TWOPLACES)) if order.delivery_fee > 0 else 'Free',
+        "transaction_cost": "{symbol} {price}".format(symbol=channel_symbol, price=Decimal(order.transaction_cost).quantize(TWOPLACES)) if order.transaction_cost > 0 else 'Free',
         "total": order.total_net_amount.quantize(TWOPLACES),
         "discount": Decimal(total_discount).quantize(TWOPLACES),
         "channel": order.channel.slug,
-        "channel_symbol": order.get_channel_curreny_symbool(),
+        "channel_symbol": channel_symbol,
         "address": vars(order.billing_address),
         "payment_status": order.get_last_payment().charge_status,
-        "payment_method": 'Cash' if order.get_last_payment().gateway == 'mirumee.payments.dummy' else 'Stripe',
+        "payment_method": 'Cash' if order.get_last_payment().gateway == 'mirumee.payments.dummy' else 'Ideal',
         "order_note": order.customer_note,
         "order_url": order_url
     }
