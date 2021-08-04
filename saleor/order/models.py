@@ -251,7 +251,7 @@ class Order(MultitenantModelWithMetadata):
         max_length=50, blank=True, null=True
     )
     expected_time = models.CharField(
-        max_length=10, blank=True, null=True
+        max_length=50, blank=True, null=True
     )
     
     delivery_fee = models.DecimalField(
