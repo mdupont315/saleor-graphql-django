@@ -229,6 +229,8 @@ def send_email(
     sender_address = config.sender_address
 
     from_email = str(Address(sender_name, addr_spec=sender_address))
+    if not config.host or not config.port or not config.username or not config.password:
+        return
 
     email_backend = EmailBackend(
         host=config.host,
