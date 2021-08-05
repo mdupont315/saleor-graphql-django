@@ -15,6 +15,7 @@ class Store(CountableDjangoObjectType):
         required=False
     )
     logo = graphene.Field(Image, size=graphene.Int(description="Logo of store."), required=False)
+    favicon = graphene.Field(Image, size=graphene.Int(description="Logo of store."), required=False)
     cover_photo = graphene.Field(Image, size=graphene.Int(description="Background of store."), required=False)
     phone = graphene.String(
         description="phone of store.",
@@ -56,6 +57,7 @@ class Store(CountableDjangoObjectType):
             "name",
             "domain",
             "logo",
+            "favicon",
             "cover_photo",
             "phone",
             "address",
@@ -81,6 +83,17 @@ class Store(CountableDjangoObjectType):
                 alt=None,
                 size=size,
                 rendition_key_set="store_logo",
+                info=info,
+            )
+
+    @staticmethod
+    def resolve_favicon(root: models.Store, info, size=None, **_kwargs):
+        if root.logo:
+            return Image.get_adjusted(
+                image=root.favicon,
+                alt=None,
+                size=size,
+                rendition_key_set="store_favicon",
                 info=info,
             )
     

@@ -84,7 +84,8 @@ LANGUAGES = [
 ORDER_TYPE_DEFAULT = "pickup"
 ORDER_TYPES = [
     ("delivery", "Delivery"),
-    ("pickup", "Pickup")
+    ("pickup", "Pickup"),
+    ("dinein", "Dine-in"),
 ]
 DUMMY_GATEWAY = 'mirumee.payments.dummy'
 STRIPE_GATEWAY = 'mirumee.payments.stripe'

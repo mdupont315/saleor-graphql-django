@@ -23,6 +23,9 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     tenant_id = 'id'
     name = models.CharField(max_length=256)
     domain = models.CharField(max_length=256)
+    favicon = VersatileImageField(
+        upload_to="store-media", blank=True, null=True
+    )
     logo = VersatileImageField(
         upload_to="store-media", blank=True, null=True
     )
