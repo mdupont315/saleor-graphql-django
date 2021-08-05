@@ -140,6 +140,7 @@ class StoreUpdateInput(graphene.InputObjectType):
     address = graphene.String(description="Store address.")
     phone = graphene.String(description="Store phone.")
     logo = Upload(description="Logo image file.")
+    favicon = Upload(description="Logo image file.")
     cover_photo = Upload(description="Cover photo image file.")
 
     #Emergency setting feature
