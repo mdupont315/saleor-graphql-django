@@ -88,7 +88,7 @@ class Store(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_favicon(root: models.Store, info, size=None, **_kwargs):
-        if root.logo:
+        if root.favicon:
             return Image.get_adjusted(
                 image=root.favicon,
                 alt=None,
