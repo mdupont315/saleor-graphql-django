@@ -164,7 +164,7 @@ def send_user_password_reset_email_task(recipient_email, payload, config):
         template_str=email_template_str,
     )
 
-# @app.task(compression="zlib")
+@app.task(compression="zlib", serializer='pickle')
 def send_order_infomation_email_task(recipient_email, payload, config):
     email_config = EmailConfig(**config)
     email_template_str = get_email_template_or_default(
@@ -182,6 +182,7 @@ def send_order_infomation_email_task(recipient_email, payload, config):
         template_str=email_template_str,
     )
 
+@app.task(compression="zlib", serializer='pickle')
 def send_order_admin_infomation_email_task(recipient_email, payload, config):
     email_config = EmailConfig(**config)
     email_template_str = get_email_template_or_default(

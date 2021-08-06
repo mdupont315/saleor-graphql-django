@@ -51,9 +51,9 @@ def send_user_reset_password(payload: dict, config: dict):
 def send_order_infomation(payload: dict, config: dict):
     recipient_email = payload.get("recipient_email")
     if recipient_email:
-        send_order_infomation_email_task(recipient_email, payload, config)
+        send_order_infomation_email_task.delay(recipient_email, payload, config)
 
 def send_order_admin_infomation(payload: dict, config: dict):
     recipient_email = payload.get("recipient_email")
     if recipient_email:
-        send_order_admin_infomation_email_task(recipient_email, payload, config)
+        send_order_admin_infomation_email_task.delay(recipient_email, payload, config)

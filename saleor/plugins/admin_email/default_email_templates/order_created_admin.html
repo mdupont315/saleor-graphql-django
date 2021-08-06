@@ -253,7 +253,13 @@
           <li>121212</li>
           <li>tuan.vuthanh@ncc.asia</li>
         </ul> -->
-        {{#address_customer address}}{{/address_customer}}
+        {{#if table_name}}
+          <ul>
+            <li>{{table_name}}</li>
+          </ul>
+        {{else}}
+          {{#address_customer address}}{{/address_customer}}
+        {{/if}}
       </div>
       <div class="info-right">
         <ul class="order-common">

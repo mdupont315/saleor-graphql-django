@@ -123,6 +123,7 @@ def order_created(
         "store_name": current_strore.name,
         "store_address": current_strore.address,
         "order_type": order.get_order_type_display(),
+        "table_name": order.table_name,
         "is_delivery": False,
         "sub_total": order.get_subtotal().net.amount.quantize(TWOPLACES),
         "place_date": order.created.strftime('%d-%m-%y'),
