@@ -212,8 +212,12 @@ def list_product_customer(this, options, items, channel, channel_symbol):
 def customer_list_address(this, options, items):
     result = [u'<ul>']
     dict_items = items.items()
+    ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
+    result.append(u'<li>')
+    result.append(str(ctm_name)),
+    result.append(u'</li>')
     for key, value in dict_items:
-        if key == 'id' or key == '_state':
+        if key == 'id' or key == '_state' or key == 'last_name' or key == 'first_name':
             continue
         if value:
             result.append(u'<li>')
