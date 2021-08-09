@@ -141,6 +141,8 @@ class StoreUpdateInput(graphene.InputObjectType):
     domain = graphene.String(description="Store domain")
     address = graphene.String(description="Store address.")
     phone = graphene.String(description="Store phone.")
+    postal_code = graphene.String(description="postal code.")
+    city = graphene.String(description="city of strore.")
     logo = Upload(description="Logo image file.")
     favicon = Upload(description="Logo image file.")
     cover_photo = Upload(description="Cover photo image file.")

@@ -14,6 +14,9 @@ class TableServiceInput(graphene.InputObjectType):
     table_qr_code = graphene.String(
         description="table qr code",
     )
+    active = graphene.Boolean(
+        description="status of qr code",
+    )
 
 
 class TableServiceCreate(ModelMutation):
