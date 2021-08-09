@@ -37,6 +37,10 @@ class Store(CountableDjangoObjectType):
         description="Pickup status setting.",
         required=False
     )
+    table_service_status =graphene.DateTime(
+        description="Pickup status setting.",
+        required=False
+    )
 
     #New order notifications
     email_notifications = graphene.Boolean(description="Enable notification", required=False)
@@ -64,6 +68,7 @@ class Store(CountableDjangoObjectType):
             "webshop_status",
             "delivery_status",
             "pickup_status",
+            "table_service_status",
             "email_notifications",
             "email_address",
             "contant_enable",

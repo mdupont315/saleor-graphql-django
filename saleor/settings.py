@@ -267,62 +267,87 @@ if ENABLE_DEBUG_TOOLBAR:
             "debug_toolbar.panels.profiling.ProfilingPanel",
         ]
         DEBUG_TOOLBAR_CONFIG = {"RESULTS_CACHE_SIZE": 100}
-
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "root": {"level": "INFO", "handlers": ["default"]},
+    'version': 1,
+    'disable_existing_loggers': False,
     "formatters": {
-        "django.server": {
+        "django": {
             "()": "django.utils.log.ServerFormatter",
             "format": "[{server_time}] {message}",
             "style": "{",
         },
-        "json": {
-            "()": "saleor.core.logging.JsonFormatter",
-            "datefmt": "%Y-%m-%dT%H:%M:%SZ",
-            "format": (
-                "%(asctime)s %(levelname)s %(lineno)s %(message)s %(name)s "
-                + "%(pathname)s %(process)d %(threadName)s"
-            ),
-        },
-        "verbose": {
-            "format": (
-                "%(levelname)s %(name)s %(message)s [PID:%(process)d:%(threadName)s]"
-            )
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            "formatter": "django",
         },
     },
-    "handlers": {
-        "default": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose" if DEBUG else "json",
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
         },
-        "django.server": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "django.server" if DEBUG else "json",
-        },
-        "null": {
-            "class": "logging.NullHandler",
-        },
-    },
-    "loggers": {
-        "django": {"level": "INFO", "propagate": True},
-        "django.server": {
-            "handlers": ["django.server"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "saleor": {"level": "DEBUG", "propagate": True},
-        "saleor.graphql.errors.handled": {
-            "handlers": ["default"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "graphql.execution.utils": {"propagate": False, "handlers": ["null"]},
     },
 }
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "root": {"level": "INFO", "handlers": ["default"]},
+#     "formatters": {
+#         "django.server": {
+#             "()": "django.utils.log.ServerFormatter",
+#             "format": "[{server_time}] {message}",
+#             "style": "{",
+#         },
+#         "json": {
+#             "()": "saleor.core.logging.JsonFormatter",
+#             "datefmt": "%Y-%m-%dT%H:%M:%SZ",
+#             "format": (
+#                 "%(asctime)s %(levelname)s %(lineno)s %(message)s %(name)s "
+#                 + "%(pathname)s %(process)d %(threadName)s"
+#             ),
+#         },
+#         "verbose": {
+#             "format": (
+#                 "%(levelname)s %(name)s %(message)s [PID:%(process)d:%(threadName)s]"
+#             )
+#         },
+#     },
+#     "handlers": {
+#         "default": {
+#             "level": "DEBUG",
+#             "class": "logging.StreamHandler",
+#             "formatter": "verbose" if DEBUG else "json",
+#         },
+#         "django.server": {
+#             "level": "INFO",
+#             "class": "logging.StreamHandler",
+#             "formatter": "django.server" if DEBUG else "json",
+#         },
+#         "null": {
+#             "class": "logging.NullHandler",
+#         },
+#     },
+#     "loggers": {
+#         # "django": {"level": "INFO", "propagate": True},
+#         "django.server": {
+#             "handlers": ["django.server"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "saleor": {"level": "DEBUG", "propagate": True},
+#         "saleor.graphql.errors.handled": {
+#             "handlers": ["default"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "graphql.execution.utils": {"propagate": False, "handlers": ["null"]},
+#     },
+# }
 
 AUTH_USER_MODEL = "account.User"
 

@@ -30,6 +30,8 @@ class ServiceTime(MultitenantModelWithMetadata):
     pu_same_day_order = models.BooleanField(blank=True, null=True, default=False)
     pu_service_time = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
 
+    table_service_time = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
+
     def __str__(self) -> str:
         return self.name
 
