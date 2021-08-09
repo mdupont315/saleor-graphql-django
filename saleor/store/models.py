@@ -34,6 +34,8 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     )
     date_joined = models.DateTimeField(default=timezone.now, editable=False)
     phone = models.CharField(max_length=20, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    city = models.CharField(max_length=256, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
 
     #Emergency setting feature

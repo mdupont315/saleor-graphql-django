@@ -12,6 +12,7 @@ class TableService(CountableDjangoObjectType):
         only_fields = [
             "table_name",
             "table_qr_code",
+            "active",
             "id",
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]

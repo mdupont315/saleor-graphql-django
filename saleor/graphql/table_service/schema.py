@@ -34,7 +34,7 @@ class TableServiceQueries(graphene.ObjectType):
     def resolve_table_services(self, info, **kwargs):
         return resolve_table_services(info, **kwargs)
 
-    @permission_required(TableServicePermissions.MANAGE_TABLE_SERVICE)
+    # @permission_required(TableServicePermissions.MANAGE_TABLE_SERVICE)
     def resolve_table_service(self, info, id=None, **kwargs):
         return resolve_table_service(info, id, **kwargs)
 

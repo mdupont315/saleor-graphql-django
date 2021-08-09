@@ -14,6 +14,7 @@ class TableService(MultitenantModelWithMetadata):
     )
     tenant_id ='store_id'
     table_name = models.CharField(max_length=100, null=False, blank=False)
+    active = models.BooleanField(default=True, null=False, blank=False)
     table_qr_code = models.CharField(max_length=500,null=False, blank=False)
 
     class Meta:

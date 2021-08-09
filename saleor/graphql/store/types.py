@@ -65,6 +65,8 @@ class Store(CountableDjangoObjectType):
             "cover_photo",
             "phone",
             "address",
+            "postal_code",
+            "city",
             "webshop_status",
             "delivery_status",
             "pickup_status",
