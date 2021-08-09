@@ -63,6 +63,10 @@ class ServiceTimeInput(graphene.InputObjectType):
         required=True,
        description="Pickup service time setting.")
 
+    # Table service time
+    table_service_time = graphene.JSONString(
+        required=True,
+       description="Pickup service time setting.")
 
 class ServiceTimeCreate(ModelMutation):
     class Arguments:
@@ -122,7 +126,9 @@ class ServiceTimeUpdateInput(graphene.InputObjectType):
     pu_service_time = graphene.JSONString(
        description="Pickup service time setting.")
 
-
+   # Table service time
+    table_service_time = graphene.JSONString(
+       description="Pickup service time setting.")
 class ServiceTimeUpdate(ModelMutation):
     class Arguments:
         id = graphene.ID(required=True, description="ID of a service time to update.")

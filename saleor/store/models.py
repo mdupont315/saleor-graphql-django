@@ -40,6 +40,7 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     webshop_status = models.DateTimeField(blank=True, null=True)
     delivery_status = models.DateTimeField(blank=True, null=True)
     pickup_status = models.DateTimeField(blank=True, null=True)
+    table_service_status = models.DateTimeField(blank=True, null=True)
 
     #New order notifications
     email_notifications = models.BooleanField(blank=True, null=True,default=False)

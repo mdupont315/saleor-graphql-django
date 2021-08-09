@@ -23,6 +23,10 @@ class ServiceTime(CountableDjangoObjectType):
     pu_service_time = graphene.JSONString(
         description="Service time.",
     )
+
+    table_service_time = graphene.JSONString(
+        description="Service time.",
+    )
     class Meta:
         description = (
             "Service time config"
@@ -42,6 +46,7 @@ class ServiceTime(CountableDjangoObjectType):
             "pu_preorder_day",
             "pu_same_day_order",
             "pu_service_time",
+            "table_service_time",
             "id",
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
