@@ -4,7 +4,6 @@ from ..core.connection import CountableDjangoObjectType
 from ..meta.types import ObjectWithMetadata
 
 class TableService(CountableDjangoObjectType):
-    
     class Meta:
         description = (
             "Service time config"
