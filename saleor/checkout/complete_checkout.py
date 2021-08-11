@@ -311,21 +311,23 @@ def _prepare_order_data(
                 "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=delivery_setting.min_order)
             }
         )
-        if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and undiscount_checkout_total_amount < delivery_setting.from_delivery:
+        if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
+           (undiscount_checkout_total_amount < delivery_setting.from_delivery or (undiscount_checkout_total_amount >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
             delivery_fee = Money(amount=delivery_setting.delivery_fee, currency=checkout.currency)
             taxed_total = taxed_total + TaxedMoney(net=delivery_fee, gross=delivery_fee)
             order_data["delivery_fee"] = delivery_setting.delivery_fee
     
     # implement transaction fee
     payment_gateway = checkout.get_last_active_payment().gateway
-    if payment_gateway == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
-        contant_cost = Money(amount=current_strore.contant_cost, currency=checkout.currency)
-        taxed_total = taxed_total + TaxedMoney(net=contant_cost, gross=contant_cost)
-        order_data["transaction_cost"] = current_strore.contant_cost
-    if payment_gateway == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
-        stripe_cost =  Money(amount=current_strore.stripe_cost, currency=checkout.currency)
-        taxed_total = taxed_total + TaxedMoney(net=stripe_cost, gross=stripe_cost)
-        order_data["transaction_cost"] = current_strore.stripe_cost
+    if current_strore.enable_transaction_fee:
+        if payment_gateway == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
+            contant_cost = Money(amount=current_strore.contant_cost, currency=checkout.currency)
+            taxed_total = taxed_total + TaxedMoney(net=contant_cost, gross=contant_cost)
+            order_data["transaction_cost"] = current_strore.contant_cost
+        if payment_gateway == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
+            stripe_cost =  Money(amount=current_strore.stripe_cost, currency=checkout.currency)
+            taxed_total = taxed_total + TaxedMoney(net=stripe_cost, gross=stripe_cost)
+            order_data["transaction_cost"] = current_strore.stripe_cost
 
     shipping_total = manager.calculate_checkout_shipping(
         checkout_info, lines, address, discounts

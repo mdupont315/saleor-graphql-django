@@ -170,14 +170,16 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                     "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=delivery_setting.min_order)
                 }
             )
-            if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and undiscount_checkout_total < delivery_setting.from_delivery:
+            if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
+               (undiscount_checkout_total < delivery_setting.from_delivery or (undiscount_checkout_total >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
                 checkout_total.gross.amount = checkout_total.gross.amount + delivery_setting.delivery_fee
         
         # implement transaction fee
-        if data["gateway"] == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
-            checkout_total.gross.amount = checkout_total.gross.amount + current_strore.contant_cost
-        if data["gateway"] == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
-            checkout_total.gross.amount = checkout_total.gross.amount + current_strore.stripe_cost
+        if current_strore.enable_transaction_fee:
+            if data["gateway"] == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
+                checkout_total.gross.amount = checkout_total.gross.amount + current_strore.contant_cost
+            if data["gateway"] == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
+                checkout_total.gross.amount = checkout_total.gross.amount + current_strore.stripe_cost
       
 
         amount = data.get("amount", checkout_total.gross.amount)
