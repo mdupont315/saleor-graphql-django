@@ -1,9 +1,9 @@
 import logging
 from dataclasses import asdict, dataclass
 from typing import Optional
-
+from ..models import PluginConfiguration
 from django.conf import settings
-
+from django_multitenant.utils import unset_current_tenant, get_current_tenant, set_current_tenant
 from ...core.notify_events import AdminNotifyEvent, NotifyEventType, UserNotifyEvent
 from ..base_plugin import BasePlugin, ConfigurationTypeField
 from ..email_common import (
@@ -204,6 +204,24 @@ class AdminEmailPlugin(BasePlugin):
         super().__init__(*args, **kwargs)
 
         configuration = {item["name"]: item["value"] for item in self.configuration}
+        # override the configuration for all store because the configuration is loaded by store_id
+        # so when we add configuration by super admin we need override it
+        tenant = get_current_tenant()
+        print('-----=-=-=-=-', tenant)
+        unset_current_tenant()
+        config_by_supper_admin = PluginConfiguration.objects.filter(identifier=self.PLUGIN_ID).first()
+        if config_by_supper_admin:
+            new_configuration = {item["name"]: item["value"] for item in config_by_supper_admin.configuration}
+            configuration["host"] = new_configuration["host"]
+            configuration["port"] = new_configuration["port"]
+            configuration["username"] = new_configuration["username"]
+            configuration["password"] = new_configuration["password"]
+            configuration["sender_name"] = new_configuration["sender_name"]
+            configuration["sender_address"] = new_configuration["sender_address"]
+            configuration["use_tls"] = new_configuration["use_tls"]
+            configuration["use_ssl"] = new_configuration["use_ssl"]
+        if tenant:
+            set_current_tenant(tenant)
         self.config = EmailConfig(
             host=configuration["host"] or settings.EMAIL_HOST,
             port=configuration["port"] or settings.EMAIL_PORT,
