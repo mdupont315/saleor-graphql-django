@@ -131,7 +131,7 @@ class StoreCreate(ModelMutation):
         # service_time.pu_service_time = None
         service_time.pu_time_gap = 10
 
-        service_time.table_service_time = {"pu":[{"days":[False,False,False,False,False,False,False],"open":"00:05","close":"23:55"}]}
+        service_time.table_service_time = {"tb":[{"days":[False,False,False,False,False,False,False],"open":"00:05","close":"23:55"}]}
 
         service_time.save()
         return retval
