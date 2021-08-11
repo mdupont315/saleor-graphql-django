@@ -49,6 +49,7 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     email_address = models.EmailField(blank=True, null=True)
 
     #Transaction cost
+    enable_transaction_fee = models.BooleanField(blank=True, null=True,default=False)
     contant_enable = models.BooleanField(blank=True, null=True,default=False)
     contant_cost = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,

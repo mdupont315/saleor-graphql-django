@@ -17,7 +17,7 @@ class Delivery(CountableDjangoObjectType):
     min_order = graphene.Float(
         description="Min order value setting."
     )
-    enable_for_big_order = graphene.Float(
+    enable_for_big_order = graphene.Boolean(
         description="Min order value setting."
     )
     

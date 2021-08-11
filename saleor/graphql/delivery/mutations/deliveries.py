@@ -57,7 +57,7 @@ class DeliveryUpdateInput(graphene.InputObjectType):
         required=False, 
         description="Min order value."
     )
-    enable_for_big_order = graphene.Float(
+    enable_for_big_order = graphene.Boolean(
         required=False, 
         description="Min order value."
     )

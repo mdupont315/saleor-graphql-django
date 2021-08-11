@@ -166,6 +166,7 @@ class StoreUpdateInput(graphene.InputObjectType):
     email_address = graphene.String(description="Email for notification")
 
     #Transaction cost
+    enable_transaction_fee = graphene.Boolean(description="Enable transaction all fee")
     contant_enable = graphene.Boolean(description="Enable transaction cost for contant")
     contant_cost = graphene.Float(description="Transaction cost for contant")
     stripe_enable = graphene.Boolean(description="Enable transaction cost for stripe")

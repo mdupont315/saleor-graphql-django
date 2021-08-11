@@ -47,6 +47,7 @@ class Store(CountableDjangoObjectType):
     email_address = graphene.String(description="Email for notification", required=False)
 
     #New order notifications
+    enable_transaction_fee = graphene.Boolean(description="Enable for all fee", required=False)
     contant_enable = graphene.Boolean(description="Enable transaction cost for contant", required=False)
     contant_cost = graphene.Float(description="Transaction cost for contant", required=False)
     stripe_enable = graphene.Boolean(description="Enable transaction cost for stripe", required=False)
@@ -77,6 +78,7 @@ class Store(CountableDjangoObjectType):
             "contant_cost",
             "stripe_enable",
             "stripe_cost",
+            "enable_transaction_fee",
             "id",
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
