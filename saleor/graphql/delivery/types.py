@@ -17,6 +17,9 @@ class Delivery(CountableDjangoObjectType):
     min_order = graphene.Float(
         description="Min order value setting."
     )
+    enable_for_big_order = graphene.Float(
+        description="Min order value setting."
+    )
     
     class Meta:
         description = (
@@ -27,6 +30,7 @@ class Delivery(CountableDjangoObjectType):
             "delivery_fee",
             "from_delivery",
             "min_order",
+            "enable_for_big_order",
             "id"
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]

@@ -31,4 +31,7 @@ class Delivery(MultitenantModelWithMetadata):
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
         default=0,
     )
+    enable_for_big_order = models.BooleanField(
+        default=False
+    )
     

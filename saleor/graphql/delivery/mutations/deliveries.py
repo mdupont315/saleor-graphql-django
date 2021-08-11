@@ -22,6 +22,10 @@ class DeliveryInput(graphene.InputObjectType):
         required=True, 
         description="Min order value."
     )
+    enable_for_big_order = graphene.Boolean(
+        required=False, 
+        description="Enable for big order."
+    )
 
 class DeliveryCreate(ModelMutation):
     class Arguments:
@@ -50,6 +54,10 @@ class DeliveryUpdateInput(graphene.InputObjectType):
         description="Free delivery from."
     )
     min_order = graphene.Float(
+        required=False, 
+        description="Min order value."
+    )
+    enable_for_big_order = graphene.Float(
         required=False, 
         description="Min order value."
     )
