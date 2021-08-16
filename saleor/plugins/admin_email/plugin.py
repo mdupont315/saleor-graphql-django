@@ -207,7 +207,6 @@ class AdminEmailPlugin(BasePlugin):
         # override the configuration for all store because the configuration is loaded by store_id
         # so when we add configuration by super admin we need override it
         tenant = get_current_tenant()
-        print('-----=-=-=-=-', tenant)
         unset_current_tenant()
         config_by_supper_admin = PluginConfiguration.objects.filter(identifier=self.PLUGIN_ID).first()
         if config_by_supper_admin:
