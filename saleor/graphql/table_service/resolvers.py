@@ -9,7 +9,13 @@ def resolve_table_service(info, id, **_kwargs):
     _type , _pk = from_global_id(id)
     table = models.TableService.objects.filter(id=_pk).first()
     if not table:
-        raise BadRequest(
-                "QR code doesn't exists"
-            )
+        # raise ValidationError(
+        #         {
+        #             "table_name": ValidationError(
+        #                 "QR Code doesn't exists",
+        #                 code=error_codes.TableServiceErrorCode.NOT_EXISTS,
+        #             )
+        #         }
+        #     )
+        raise BadRequest("QR Code doesn't exists")
     return table
