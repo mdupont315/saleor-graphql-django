@@ -1,5 +1,6 @@
 import json
 import logging
+from saleor.core.utils.logging import log_info
 from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser
@@ -139,6 +140,8 @@ def _finalize_checkout(
     checkout_info = fetch_checkout_info(
         checkout, lines, discounts, manager  # type: ignore
     )
+
+    log_info('Webhook', 'Webhook Respone', content=gateway_response.__dict__)
     order, _, _, _ = complete_checkout(
         manager=manager,
         checkout_info=checkout_info,

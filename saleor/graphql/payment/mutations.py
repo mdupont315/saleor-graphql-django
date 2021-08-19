@@ -1,4 +1,5 @@
 from decimal import Decimal
+from saleor.core.utils.logging import log_info
 from django.conf import settings
 import graphene
 from django.core.exceptions import ValidationError
@@ -163,6 +164,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         delivery_setting = Delivery.objects.all().first()
         current_strore = Store.objects.all().first()
         # implement delivery fee
+        delivery_fee = 0
         if delivery_setting:
             if delivery_setting.min_order > undiscount_checkout_total and checkout.order_type == settings.ORDER_TYPES[0][0]:
                 raise ValidationError(
@@ -172,15 +174,17 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             )
             if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
                (undiscount_checkout_total < delivery_setting.from_delivery or (undiscount_checkout_total >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
+                delivery_fee = delivery_setting.delivery_fee
                 checkout_total.gross.amount = checkout_total.gross.amount + delivery_setting.delivery_fee
         
         # implement transaction fee
+        transaction_fee = 0
         if current_strore.enable_transaction_fee:
             if data["gateway"] == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
-                checkout_total.gross.amount = checkout_total.gross.amount + current_strore.contant_cost
+                transaction_fee = current_strore.contant_cost
             if data["gateway"] == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
-                checkout_total.gross.amount = checkout_total.gross.amount + current_strore.stripe_cost
-      
+                transaction_fee = current_strore.stripe_cost
+            checkout_total.gross.amount = checkout_total.gross.amount + transaction_fee
 
         amount = data.get("amount", checkout_total.gross.amount)
         clean_checkout_shipping(checkout_info, lines, PaymentErrorCode)
@@ -191,6 +195,16 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         }
 
         cancel_active_payments(checkout)
+
+        # write log
+        log_info('Payment', 'Payment Info', content= {
+            "sub_total": undiscount_checkout_total,
+            "discount": checkout_info.checkout.discount.amount,
+            "gateway": data["gateway"],
+            "transaction_fee": transaction_fee,
+            "delivery_fee": delivery_fee,
+            "total": amount,
+        })
 
         payment = create_payment(
             gateway=gateway,
