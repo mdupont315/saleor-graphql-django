@@ -506,7 +506,6 @@ def _prepare_checkout(
     """Prepare checkout object to complete the checkout process."""
     checkout = checkout_info.checkout
     clean_checkout_shipping(checkout_info, lines, CheckoutErrorCode)
-    print('------------checkout_info', checkout_info)
     clean_checkout_payment(
         manager,
         checkout_info,
