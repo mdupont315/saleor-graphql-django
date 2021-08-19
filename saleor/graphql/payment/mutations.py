@@ -203,7 +203,8 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             "gateway": data["gateway"],
             "transaction_fee": transaction_fee,
             "delivery_fee": delivery_fee,
-            "total": amount,
+            "total_from_caculated": checkout_total.gross.amount,
+            "total_from_fe": amount,
         })
 
         payment = create_payment(
