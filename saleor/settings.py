@@ -279,9 +279,12 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'debug.log',
-            "formatter": "django",
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'logs/debug.log',
+            'when': 'D', # this specifies the interval
+            'interval': 1, # defaults to 1, only necessary for other values 
+            'backupCount': 10, # how many backup file to keep, 10 days
+            'formatter': 'django',
         },
     },
     'loggers': {

@@ -1,4 +1,5 @@
 import datetime
+from saleor.core.utils.logging import log_info
 from saleor.table_service.error_codes import TableServiceErrorCode
 from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple
 
@@ -383,6 +384,8 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         # Create the checkout object
         instance.save()
 
+        log_info('Checkout', 'Create Checkout', content=instance.__dict__)
+
         # Set checkout country
         country = cleaned_input["country"]
         instance.set_country(country)
@@ -495,6 +498,7 @@ class CheckoutInfoUpdate(BaseMutation):
             checkout.note = input.get("table_name")
         checkout.save()
         info.context.plugins.checkout_updated(checkout)
+        log_info('Checkout', 'Update Checkout', content=checkout.__dict__)
         return CheckoutLanguageCodeUpdate(checkout=checkout)
 
 class CheckoutLinesAdd(BaseMutation):
@@ -1057,6 +1061,10 @@ class CheckoutComplete(BaseMutation):
                 tracking_code=tracking_code,
                 redirect_url=data.get("redirect_url"),
             )
+        # write log
+        log_info('Checkout', 'Checkout Lines', content=lines)
+
+
         # If gateway returns information that additional steps are required we need
         # to inform the frontend and pass all required data
         return CheckoutComplete(

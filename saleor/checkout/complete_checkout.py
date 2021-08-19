@@ -1,5 +1,6 @@
 from datetime import date
 import decimal
+from saleor.core.utils.logging import log_info
 
 from prices.money import Money
 from saleor.core.prices import quantize_price
@@ -693,6 +694,10 @@ def complete_checkout(
             )
             # remove checkout after order is successfully created
             checkout.delete()
+            # write log
+            log_info('Order', 'Order', content={
+                "order": order.__dict__,
+                "address": vars(order.billing_address)})
         except InsufficientStock as e:
             release_voucher_usage(order_data)
             gateway.payment_refund_or_void(payment, manager, channel_slug=channel_slug)

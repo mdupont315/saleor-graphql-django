@@ -1,3 +1,4 @@
+from saleor.core.utils.logging import log_info
 from saleor.payment.gateways.stripe.consts import STRIPE_API_VERSION
 from saleor.checkout.models import Checkout
 from typing import List
@@ -62,7 +63,7 @@ def authorize(
             intent = client.PaymentIntent.create(
                 payment_method=payment_information.token,
                 amount=stripe_amount,
-                currency='eur',
+                currency=checkout.currency,
                 confirmation_method="automatic",
                 confirm=True,
                 capture_method=capture_method,
@@ -75,6 +76,7 @@ def authorize(
                 # return_url= "http://52.58.195.234:81/order-history" + "/" + payment.token + "?payment_token=true",
                 stripe_version=STRIPE_API_VERSION
             )
+        log_info("Stripe", "Stripe Intent", content=intent.__dict__)
         # if config.store_customer and not customer_id:
         #     with opentracing.global_tracer().start_active_span(
         #         "stripe.Customer.create"
