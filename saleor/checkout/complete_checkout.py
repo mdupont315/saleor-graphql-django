@@ -541,7 +541,6 @@ def _prepare_checkout(
         to_update.append("tracking_code")
 
     if to_update:
-        print('to_update--------', to_update)
         to_update.append("last_change")
         checkout.save(update_fields=to_update)
 

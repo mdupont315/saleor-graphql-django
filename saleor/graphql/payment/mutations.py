@@ -72,8 +72,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
 
     @classmethod
     def clean_payment_amount(cls, info, checkout_total, amount):
-        print('checkout_total', checkout_total.gross.amount)
-        print('amount', amount)
+        log_info('Payment', '-------Payment Price Error--------')
         if amount != checkout_total.gross.amount:
             raise ValidationError(
                 {
@@ -189,15 +188,10 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         amount = data.get("amount", checkout_total.gross.amount)
         clean_checkout_shipping(checkout_info, lines, PaymentErrorCode)
         clean_billing_address(checkout_info, PaymentErrorCode)
-        cls.clean_payment_amount(info, checkout_total, amount)
-        extra_data = {
-            "customer_user_agent": info.context.META.get("HTTP_USER_AGENT"),
-        }
-
-        cancel_active_payments(checkout)
 
         # write log
         log_info('Payment', 'Payment Info', content= {
+            "checkout_token": checkout.pk,
             "sub_total": undiscount_checkout_total,
             "discount": checkout_info.checkout.discount.amount,
             "gateway": data["gateway"],
@@ -206,6 +200,12 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             "total_from_caculated": checkout_total.gross.amount,
             "total_from_fe": amount,
         })
+        cls.clean_payment_amount(info, checkout_total, amount)
+        extra_data = {
+            "customer_user_agent": info.context.META.get("HTTP_USER_AGENT"),
+        }
+
+        cancel_active_payments(checkout)
 
         payment = create_payment(
             gateway=gateway,
