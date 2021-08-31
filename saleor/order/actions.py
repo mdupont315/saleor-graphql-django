@@ -142,11 +142,11 @@ def order_created(
     }
     if order.user_email:
         event = (NotifyEventType.ORDER_CREATED)
-        manager.user_notify(event, payload=payload, channel_slug=order.channel.slug)
+        manager.notify(event, payload=payload, channel_slug=order.channel.slug)
     if current_strore.email_notifications and current_strore.email_address:
         event = (NotifyEventType.ORDER_ADMIN_CREATED)
         payload["recipient_email"] = current_strore.email_address
-        manager.user_notify(event, payload=payload, channel_slug=order.channel.slug)
+        manager.notify(event, payload=payload, channel_slug=order.channel.slug)
 
 
 def order_confirmed(

@@ -11,6 +11,7 @@ SET_STAFF_PASSWORD_TEMPLATE_FIELD = "set_staff_password_template"
 CSV_PRODUCT_EXPORT_SUCCESS_TEMPLATE_FIELD = "csv_product_export_success_template"
 CSV_EXPORT_FAILED_TEMPLATE_FIELD = "csv_export_failed_template"
 STAFF_PASSWORD_RESET_TEMPLATE_FIELD = "staff_password_reset_template"
+ORDER_CREATED_TEMPLATE_FIELD = "order_created_template"
 
 
 TEMPLATE_FIELDS = [

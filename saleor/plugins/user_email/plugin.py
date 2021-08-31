@@ -1,9 +1,10 @@
 import logging
 from dataclasses import asdict, dataclass
 from typing import Optional
-
+from django_multitenant.utils import unset_current_tenant, get_current_tenant, set_current_tenant
 from ...core.notify_events import NotifyEventType, UserNotifyEvent
 from ..base_plugin import BasePlugin, ConfigurationTypeField
+from django.conf import settings
 from ..email_common import (
     DEFAULT_EMAIL_CONFIG_STRUCTURE,
     DEFAULT_EMAIL_CONFIGURATION,
@@ -32,6 +33,7 @@ from .notify_events import (
     send_order_confirmed,
     send_order_refund,
     send_payment_confirmation,
+    send_order_infomation,
 )
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,7 @@ class UserTemplate:
     order_payment_confirmation: Optional[str]
     order_canceled: Optional[str]
     order_refund_confirmation: Optional[str]
+    order_created: Optional[str]
 
 
 def get_user_template_map(templates: UserTemplate):
@@ -81,6 +84,7 @@ def get_user_template_map(templates: UserTemplate):
         ),
         UserNotifyEvent.ORDER_CANCELED: templates.order_canceled,
         UserNotifyEvent.ORDER_REFUND_CONFIRMATION: templates.order_refund_confirmation,
+        UserNotifyEvent.ORDER_CREATED: templates.order_created,
     }
 
 
@@ -102,13 +106,15 @@ def get_user_event_map():
         UserNotifyEvent.ORDER_PAYMENT_CONFIRMATION: send_payment_confirmation,
         UserNotifyEvent.ORDER_CANCELED: send_order_canceled,
         UserNotifyEvent.ORDER_REFUND_CONFIRMATION: send_order_refund,
+        UserNotifyEvent.ORDER_CREATED: send_order_infomation,
     }
 
 
 class UserEmailPlugin(BasePlugin):
     PLUGIN_ID = constants.PLUGIN_ID
     PLUGIN_NAME = "User emails"
-    CONFIGURATION_PER_CHANNEL = True
+    DEFAULT_ACTIVE = True
+    CONFIGURATION_PER_CHANNEL = False
 
     DEFAULT_CONFIGURATION = [
         {
@@ -212,6 +218,10 @@ class UserEmailPlugin(BasePlugin):
         },
         {
             "name": constants.ORDER_REFUND_CONFIRMATION_TEMPLATE_FIELD,
+            "value": DEFAULT_EMAIL_VALUE,
+        },
+        {
+            "name": constants.ORDER_CREATED_TEMPLATE_FIELD,
             "value": DEFAULT_EMAIL_VALUE,
         },
     ] + DEFAULT_EMAIL_CONFIGURATION  # type: ignore
@@ -357,21 +367,47 @@ class UserEmailPlugin(BasePlugin):
             "help_text": DEFAULT_TEMPLATE_HELP_TEXT,
             "label": "Order refund - template",
         },
+        constants.ORDER_CREATED_TEMPLATE_FIELD: {
+            "type": ConfigurationTypeField.MULTILINE,
+            "help_text": DEFAULT_TEMPLATE_HELP_TEXT,
+            "label": "New Order",
+        },
     }
     CONFIG_STRUCTURE.update(DEFAULT_EMAIL_CONFIG_STRUCTURE)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         configuration = {item["name"]: item["value"] for item in self.configuration}
+        # override the configuration for all store because the configuration is loaded by store_id
+        # so when we add configuration by super admin we need override it
+        tenant = get_current_tenant()
+        unset_current_tenant()
+        config_by_supper_admin = PluginConfiguration.objects.filter(identifier=self.PLUGIN_ID).first()
+        if config_by_supper_admin:
+            new_configuration = {item["name"]: item["value"] for item in config_by_supper_admin.configuration}
+            configuration["host"] = new_configuration["host"]
+            configuration["port"] = new_configuration["port"]
+            configuration["username"] = new_configuration["username"]
+            configuration["password"] = new_configuration["password"]
+            configuration["sender_name"] = new_configuration["sender_name"]
+            configuration["sender_address"] = new_configuration["sender_address"]
+            configuration["use_tls"] = new_configuration["use_tls"]
+            configuration["use_ssl"] = new_configuration["use_ssl"]
+        
+        # set current tenant again
+        if tenant:
+            set_current_tenant(tenant)
         self.config = EmailConfig(
-            host=configuration["host"],
-            port=configuration["port"],
-            username=configuration["username"],
-            password=configuration["password"],
+            host=configuration["host"] or settings.EMAIL_HOST,
+            port=configuration["port"] or settings.EMAIL_PORT,
+            username=configuration["username"] or settings.EMAIL_HOST_USER,
+            password=configuration["password"] or settings.EMAIL_HOST_PASSWORD,
             sender_name=configuration["sender_name"],
-            sender_address=configuration["sender_address"],
-            use_tls=configuration["use_tls"],
-            use_ssl=configuration["use_ssl"],
+            sender_address=(
+                configuration["sender_address"] or settings.DEFAULT_FROM_EMAIL
+            ),
+            use_tls=configuration["use_tls"] or settings.EMAIL_USE_TLS,
+            use_ssl=configuration["use_ssl"] or settings.EMAIL_USE_SSL,
         )
         self.templates = UserTemplate(
             account_confirmation=configuration[
@@ -408,6 +444,9 @@ class UserEmailPlugin(BasePlugin):
             order_refund_confirmation=configuration[
                 constants.ORDER_REFUND_CONFIRMATION_TEMPLATE_FIELD
             ],
+            order_created=configuration[
+                constants.ORDER_CREATED_TEMPLATE_FIELD
+            ],
         )
 
     def notify(self, event: NotifyEventType, payload: dict, previous_value):
@@ -430,5 +469,18 @@ class UserEmailPlugin(BasePlugin):
         configuration = plugin_configuration.configuration
         configuration = {item["name"]: item["value"] for item in configuration}
 
+        configuration["host"] = configuration["host"] or settings.EMAIL_HOST
+        configuration["port"] = configuration["port"] or settings.EMAIL_PORT
+        configuration["username"] = (
+            configuration["username"] or settings.EMAIL_HOST_USER
+        )
+        configuration["password"] = (
+            configuration["password"] or settings.EMAIL_HOST_PASSWORD
+        )
+        configuration["sender_address"] = (
+            configuration["sender_address"] or settings.DEFAULT_FROM_EMAIL
+        )
+        configuration["use_tls"] = configuration["use_tls"] or settings.EMAIL_USE_TLS
+        configuration["use_ssl"] = configuration["use_ssl"] or settings.EMAIL_USE_SSL
         validate_default_email_configuration(plugin_configuration, configuration)
         validate_format_of_provided_templates(plugin_configuration, TEMPLATE_FIELDS)

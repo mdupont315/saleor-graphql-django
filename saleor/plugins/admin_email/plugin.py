@@ -24,8 +24,6 @@ from .notify_events import (
     send_set_staff_password_email,
     send_staff_order_confirmation,
     send_staff_reset_password,
-    send_user_reset_password,
-    send_order_infomation,
     send_order_admin_infomation,
 )
 
@@ -39,6 +37,7 @@ class AdminTemplate:
     csv_product_export_success: Optional[str]
     csv_export_failed: Optional[str]
     staff_reset_password: Optional[str]
+    order_admin_created: Optional[str]
 
 
 def get_admin_template_map(templates: AdminTemplate):
@@ -52,14 +51,10 @@ def get_admin_template_map(templates: AdminTemplate):
         AdminNotifyEvent.ACCOUNT_STAFF_RESET_PASSWORD: (
             templates.set_staff_password_email
         ),
+        AdminNotifyEvent.ORDER_ADMIN_CREATED: (
+            templates.order_admin_created
+        )
     }
-
-# def get_user_template_map(templates: AdminTemplate):
-#     return {
-#         AdminNotifyEvent.STAFF_ORDER_CONFIRMATION: templates.staff_order_confirmation,
-#         AdminNotifyEvent.ACCOUNT_SET_STAFF_PASSWORD: templates.set_staff_password_email,
-#         UserNotifyEvent.ACCOUNT_PASSWORD_RESET: templates.s
-#     }
 
 def get_admin_event_map():
     return {
@@ -68,13 +63,7 @@ def get_admin_event_map():
         AdminNotifyEvent.ACCOUNT_STAFF_RESET_PASSWORD: send_staff_reset_password,
         AdminNotifyEvent.CSV_PRODUCT_EXPORT_SUCCESS: send_csv_product_export_success,
         AdminNotifyEvent.CSV_EXPORT_FAILED: send_csv_export_failed,
-    }
-
-def get_user_event_map():
-    return {
-        UserNotifyEvent.ACCOUNT_PASSWORD_RESET: send_user_reset_password,
-        UserNotifyEvent.ORDER_CREATED: send_order_infomation,
-        UserNotifyEvent.ORDER_ADMIN_CREATED: send_order_admin_infomation,
+        AdminNotifyEvent.ORDER_ADMIN_CREATED: send_order_admin_infomation,
     }
 
 
@@ -124,6 +113,10 @@ class AdminEmailPlugin(BasePlugin):
         },
         {
             "name": constants.CSV_EXPORT_FAILED_TEMPLATE_FIELD,
+            "value": DEFAULT_EMAIL_VALUE,
+        },
+        {
+            "name": constants.ORDER_CREATED_TEMPLATE_FIELD,
             "value": DEFAULT_EMAIL_VALUE,
         },
     ] + DEFAULT_EMAIL_CONFIGURATION  # type: ignore
@@ -179,6 +172,11 @@ class AdminEmailPlugin(BasePlugin):
             "help_text": DEFAULT_TEMPLATE_HELP_TEXT,
             "label": "CSV export failed template",
         },
+        constants.ORDER_CREATED_TEMPLATE_FIELD: {
+            "type": ConfigurationTypeField.MULTILINE,
+            "help_text": DEFAULT_TEMPLATE_HELP_TEXT,
+            "label": "Ordering tempalte",
+        },
     }
     CONFIG_STRUCTURE.update(DEFAULT_EMAIL_CONFIG_STRUCTURE)
     CONFIG_STRUCTURE["host"][
@@ -219,6 +217,8 @@ class AdminEmailPlugin(BasePlugin):
             configuration["sender_address"] = new_configuration["sender_address"]
             configuration["use_tls"] = new_configuration["use_tls"]
             configuration["use_ssl"] = new_configuration["use_ssl"]
+        
+        # set current tenant again
         if tenant:
             set_current_tenant(tenant)
         self.config = EmailConfig(
@@ -248,6 +248,9 @@ class AdminEmailPlugin(BasePlugin):
             staff_reset_password=configuration[
                 constants.STAFF_PASSWORD_RESET_TEMPLATE_FIELD
             ],
+            order_admin_created=configuration[
+                constants.ORDER_CREATED_TEMPLATE_FIELD
+            ],
         )
 
     def notify(self, event: NotifyEventType, payload: dict, previous_value):
@@ -262,18 +265,6 @@ class AdminEmailPlugin(BasePlugin):
         template_map = get_admin_template_map(self.templates)
         if not template_map.get(event):
             return previous_value
-        event_map[event](payload, asdict(self.config))  # type: ignore
-
-    def user_notify(self, event: NotifyEventType, payload: dict, previous_value):
-        if not self.active:
-            return previous_value
-        event_map = get_user_event_map()
-        if event not in UserNotifyEvent.CHOICES:
-            return previous_value
-        if event not in event_map:
-            logger.warning(f"Missing handler for event {event}")
-            return previous_value
-
         event_map[event](payload, asdict(self.config))  # type: ignore
 
     @classmethod
