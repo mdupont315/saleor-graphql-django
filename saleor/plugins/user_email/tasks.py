@@ -458,3 +458,21 @@ def send_order_confirmed_email_task(recipient_email, payload, config):
         user_id=payload.get("requester_user_id"),
         customer_email=recipient_email,
     )
+
+@app.task(compression="zlib", serializer='pickle', ignore_result=True)
+def send_order_infomation_email_task(recipient_email, payload, config):
+    email_config = EmailConfig(**config)
+    email_template_str = get_email_template_or_default(
+        None,
+        None,
+        constants.ORDER_CREATED_DEFAULT_TEMPLATE,
+        constants.DEFAULT_EMAIL_TEMPLATES_PATH,
+    )
+    subject = constants.ORDER_CREATED_DEFAULT_SUBJECT
+    send_email(
+        config=email_config,
+        recipient_list=[recipient_email],
+        context=payload,
+        subject=subject,
+        template_str=email_template_str,
+    )

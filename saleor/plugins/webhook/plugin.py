@@ -215,9 +215,12 @@ class WebhookPlugin(BasePlugin):
         if not self.active:
             return previous_value
         data = {"notify_event": event, "payload": payload}
-        trigger_webhooks_for_event.delay(
+        try:
+            trigger_webhooks_for_event.delay(
             WebhookEventType.NOTIFY_USER, json.dumps(data, cls=CustomJsonEncoder)
         )
+        except:
+            pass
 
     def page_created(self, page: "Page", previous_value: Any) -> Any:
         if not self.active:

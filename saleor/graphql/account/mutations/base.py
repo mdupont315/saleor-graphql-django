@@ -182,7 +182,7 @@ class RequestPasswordReset(BaseMutation):
             user,
             info.context.plugins,
             channel_slug=channel_slug,
-            staff=user.is_staff,
+            staff=user.is_staff or user.is_supplier,
         )
         return RequestPasswordReset()
 
