@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import date
 from logging import fatal
+from saleor.graphql.utils.validators import check_super_user
 from saleor.store.error_codes import StoreErrorCode
 from saleor.account.models import User
 from saleor.servicetime.models import ServiceTime
@@ -84,6 +85,9 @@ class StoreCreate(ModelMutation):
 
     @classmethod
     def perform_mutation(cls, root, info, **data):
+        # check if is super user
+        check_super_user(info.context)
+
         retval = super().perform_mutation(root, info, **data)
 
         # create user
@@ -236,6 +240,8 @@ class StoreDelete(ModelDeleteMutation):
     def perform_mutation(cls, _root, info, **data):
         if not cls.check_permissions(info.context):
             raise PermissionDenied()
+        # check if is super user
+        check_super_user(info.context)
         node_id = data.get("id")
         instance = cls.get_node_or_error(info, node_id, only_type=Store)
 

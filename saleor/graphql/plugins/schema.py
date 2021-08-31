@@ -1,3 +1,4 @@
+from saleor.graphql.utils.validators import check_super_user
 import graphene
 
 from ...core.permissions import PluginsPermissions
@@ -35,6 +36,7 @@ class PluginsQueries(graphene.ObjectType):
     @permission_required(PluginsPermissions.MANAGE_PLUGINS)
     @traced_resolver
     def resolve_plugins(self, info, **kwargs):
+        check_super_user(info.context)
         return resolve_plugins(info.context.plugins, **kwargs)
 
 
