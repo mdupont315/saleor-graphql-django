@@ -68,7 +68,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:thangprohoian123@localhost:5432/orderich"
+        default="postgres://postgres:admin@localhost:5432/saleor"
     )
 }
 
@@ -486,11 +486,11 @@ AUTHENTICATION_BACKENDS = [
 
 # CELERY SETTINGS
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_BROKER_URL = (
-    os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
-)
-# CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
-CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
+# CELERY_BROKER_URL = (
+#     os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
+# )
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
+#CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
