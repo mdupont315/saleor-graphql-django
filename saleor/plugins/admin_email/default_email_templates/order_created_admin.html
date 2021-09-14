@@ -164,7 +164,7 @@
     }
 
     .payment-status {
-      color: #e65050!important;
+      color: #e65050 !important;
     }
 
     .label-value {
@@ -192,6 +192,7 @@
     .td-price {
       text-align: right;
       font-weight: bold;
+      color: #222222;
     }
 
     .td-option {
@@ -204,7 +205,7 @@
       padding: 10px;
       border: 1px solid #000;
       border-top: none;
-      color: #222222!important;
+      color: #222222 !important;
     }
 
     .products>div {
@@ -229,7 +230,7 @@
 
     table {
       font-size: 12px;
-      color: #222222!important;
+      color: #222222 !important;
     }
 
     .total-row-price {
@@ -254,9 +255,9 @@
           <li>tuan.vuthanh@ncc.asia</li>
         </ul> -->
         {{#if table_name}}
-          <ul>
-            <li>{{table_name}}</li>
-          </ul>
+        <ul>
+          <li>{{table_name}}</li>
+        </ul>
         {{else}}
           {{#address_customer address}}{{/address_customer}}
         {{/if}}

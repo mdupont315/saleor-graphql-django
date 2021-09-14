@@ -5,10 +5,8 @@ from graphql.error import GraphQLError
 from graphql.language import ast
 from measurement.measures import Weight
 
-from ...core.weight import (
-    convert_weight_to_default_weight_unit,
-    get_default_weight_unit,
-)
+from ...core.weight import (convert_weight_to_default_weight_unit,
+                            get_default_weight_unit)
 
 
 class Decimal(graphene.Float):
@@ -31,6 +29,8 @@ class Decimal(graphene.Float):
             # Converting the float to str before parsing it to Decimal is
             # necessary to keep the decimal places as typed
             value = str(value)
+            if(value == "0"):
+                return 0
             return decimal.Decimal(value)
         except decimal.DecimalException:
             return None
