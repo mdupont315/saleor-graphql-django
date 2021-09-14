@@ -1,12 +1,15 @@
+from typing import Union
+
 from django.conf import settings
 from django.db import models
-from versatileimagefield.fields import VersatileImageField
-from ..core.utils.translations import TranslationProxy
-from ..core.models import CustomQueryset, MultitenantModelWithMetadata
-from ..seo.models import SeoModel
 from django.utils import timezone
-from typing import Union
+from versatileimagefield.fields import VersatileImageField
+
+from ..core.models import CustomQueryset, MultitenantModelWithMetadata
 from ..core.permissions import StorePermissions
+from ..core.utils.translations import TranslationProxy
+from ..seo.models import SeoModel
+
 
 class StoresQueryset(CustomQueryset):
     def visible_to_user(self, requestor: Union["User", "App"]):
@@ -18,6 +21,7 @@ class StoresQueryset(CustomQueryset):
             return self.filter(pk=store_pk)
         except:
             return None
+
 
 class Store(MultitenantModelWithMetadata, SeoModel):
     tenant_id = 'id'
@@ -38,34 +42,41 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     city = models.CharField(max_length=256, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
 
-    #Emergency setting feature
+    # Emergency setting feature
     webshop_status = models.DateTimeField(blank=True, null=True)
     delivery_status = models.DateTimeField(blank=True, null=True)
     pickup_status = models.DateTimeField(blank=True, null=True)
     table_service_status = models.DateTimeField(blank=True, null=True)
 
-    #New order notifications
-    email_notifications = models.BooleanField(blank=True, null=True,default=False)
+    # New order notifications
+    email_notifications = models.BooleanField(blank=True, null=True, default=False)
     email_address = models.EmailField(blank=True, null=True)
 
-    #Transaction cost
-    enable_transaction_fee = models.BooleanField(blank=True, null=True,default=False)
-    contant_enable = models.BooleanField(blank=True, null=True,default=False)
+    # Transaction cost
+    enable_transaction_fee = models.BooleanField(blank=True, null=True, default=False)
+    contant_enable = models.BooleanField(blank=True, null=True, default=False)
     contant_cost = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
         default=0,
     )
-    stripe_enable = models.BooleanField(blank=True, null=True,default=False)
+    stripe_enable = models.BooleanField(blank=True, null=True, default=False)
     stripe_cost = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
         default=0,
     )
 
+    # Index payment methods
+    index_stripe = models.IntegerField(
+        default=1,
+    )
+    index_cash = models.IntegerField(
+        default=0,
+    )
+
     objects = StoresQueryset.as_manager()
     translated = TranslationProxy()
-
 
     def __str__(self) -> str:
         return self.name
