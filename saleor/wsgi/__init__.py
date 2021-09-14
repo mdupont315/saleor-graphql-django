@@ -49,13 +49,12 @@ application(
 import socketio
 
 # create a Socket.IO server
-# sio = socketio.Server(async_mode='eventlet', cors_allowed_origins='*')
-sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
-# sio.emit('my event', {'data': 'foobar'})
+sio = socketio.Server(async_mode='eventlet', cors_allowed_origins='*')
+sio.emit('my event', {'data': 'foobar'})
 # wrap with ASGI application
 app = socketio.ASGIApp(sio, other_asgi_app=application)
 
-# import eventlet
-# import eventlet.wsgi
+import eventlet
+import eventlet.wsgi
 
-# eventlet.wsgi.server(eventlet.listen(('', 8080)), app)
+eventlet.wsgi.server(eventlet.listen(('', 8080)), app)
