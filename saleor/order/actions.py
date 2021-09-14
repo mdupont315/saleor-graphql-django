@@ -2,66 +2,44 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 
 from django.conf import settings
-from saleor.core.notify_events import NotifyEventType
-from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
+
+from saleor.core.notify_events import NotifyEventType
+
 from ..account.models import User
-from ..store.models import Store
 from ..core import analytics
-from ..core.exceptions import AllocationError, InsufficientStock, InsufficientStockData
+from ..core.exceptions import (AllocationError, InsufficientStock,
+                               InsufficientStockData)
 from ..core.tracing import traced_atomic_transaction
 from ..core.transactions import transaction_with_commit_on_errors
-from ..payment import (
-    ChargeStatus,
-    CustomPaymentChoices,
-    PaymentError,
-    TransactionKind,
-    gateway,
-)
+from ..payment import (ChargeStatus, CustomPaymentChoices, PaymentError,
+                       TransactionKind, gateway)
 from ..payment.models import Payment, Transaction
 from ..payment.utils import create_payment
-from ..warehouse.management import (
-    deallocate_stock,
-    deallocate_stock_for_order,
-    decrease_stock,
-    get_order_lines_with_track_inventory,
-)
+from ..store.models import Store
+from ..warehouse.management import (deallocate_stock,
+                                    deallocate_stock_for_order, decrease_stock,
+                                    get_order_lines_with_track_inventory)
 from ..warehouse.models import Stock
-from . import (
-    FulfillmentLineData,
-    FulfillmentStatus,
-    OrderLineData,
-    OrderOrigin,
-    OrderStatus,
-    events,
-    utils,
-)
+from . import (FulfillmentLineData, FulfillmentStatus, OrderLineData,
+               OrderOrigin, OrderStatus, events, utils)
 from .error_codes import OrderErrorCode
-from .events import (
-    draft_order_created_from_replace_event,
-    fulfillment_refunded_event,
-    fulfillment_replaced_event,
-    order_replacement_created,
-    order_returned_event,
-)
+from .events import (draft_order_created_from_replace_event,
+                     fulfillment_refunded_event, fulfillment_replaced_event,
+                     order_replacement_created, order_returned_event)
 from .models import Fulfillment, FulfillmentLine, Order, OrderLine
-from .notifications import (
-    send_fulfillment_confirmation_to_customer,
-    send_order_canceled_confirmation,
-    send_order_confirmed,
-    send_order_refunded_confirmation,
-    send_payment_confirmation,
-)
-from .utils import (
-    order_line_needs_automatic_fulfillment,
-    recalculate_order,
-    restock_fulfillment_lines,
-    update_order_status,
-)
+from .notifications import (send_fulfillment_confirmation_to_customer,
+                            send_order_canceled_confirmation,
+                            send_order_confirmed,
+                            send_order_refunded_confirmation,
+                            send_payment_confirmation)
+from .utils import (order_line_needs_automatic_fulfillment, recalculate_order,
+                    restock_fulfillment_lines, update_order_status)
 
 if TYPE_CHECKING:
     from ..plugins.manager import PluginsManager
@@ -106,23 +84,31 @@ def order_created(
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     protocol = "https" if settings.ENABLE_SSL else "http"
     # order_url = protocol + "://" + current_strore.domain + "order-history"
-    order_url = "{protocol}://{domain}/order-history/{token}".format(protocol=protocol, domain=current_strore.domain, token=order.token)
+    order_url = "{protocol}://{domain}/order-history/{token}".format(
+        protocol=protocol, domain=current_strore.domain, token=order.token)
     discounts = order.discounts.all()
     total_discount = 0
     for item in discounts:
         total_discount += item.amount.amount
     channel_symbol = order.get_channel_curreny_symbool()
+    is_check_pickup = order.get_order_type_display() == "Pickup"
+    is_check_delivery = order.get_order_type_display() == "Delivery"
+    full_store_address = "{}, {}, {}".format(
+        current_strore.address, current_strore.postal_code, current_strore.city)
     payload = {
         "order_num": order.pk,
         "expected_date": order.expected_date,
         "expected_time": order.expected_time,
         "recipient_email": order.user_email,
         "lines": order.lines.all(),
+        "full_store_address": full_store_address,
         "logo": current_strore.logo.url if current_strore.logo else '',
         "store_phone": current_strore.phone,
         "store_name": current_strore.name,
         "store_address": current_strore.address,
         "order_type": order.get_order_type_display(),
+        "is_check_pickup": is_check_pickup,
+        "is_check_delivery": is_check_delivery,
         "table_name": order.table_name,
         "is_delivery": False,
         "sub_total": order.get_subtotal().net.amount.quantize(TWOPLACES),

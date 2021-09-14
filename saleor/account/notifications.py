@@ -2,6 +2,7 @@ from typing import Optional
 from urllib.parse import urlencode
 
 from django.contrib.auth.tokens import default_token_generator
+from django_multitenant.utils import get_current_tenant
 
 from ..core.notifications import get_site_context
 from ..core.notify_events import NotifyEventType
@@ -30,8 +31,10 @@ def send_password_reset_notification(
     token = default_token_generator.make_token(user)
     params = urlencode({"email": user.email, "token": token})
     reset_url = prepare_url(params, redirect_url)
-
+    store = get_current_tenant()
     payload = {
+        "logo": store.logo.url,
+        "store_name": store.name,
         "user": get_default_user_payload(user),
         "recipient_email": user.email,
         "token": token,
