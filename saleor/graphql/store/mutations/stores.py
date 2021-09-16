@@ -1,26 +1,30 @@
 from collections import defaultdict
 from datetime import date
 from logging import fatal
-from saleor.graphql.utils.validators import check_super_user
-from saleor.store.error_codes import StoreErrorCode
-from saleor.account.models import User
-from saleor.servicetime.models import ServiceTime
-from saleor.delivery.models import Delivery
+
 import graphene
-from django.core.exceptions import ValidationError
 from django.conf import settings
-from ....store import models
-from ...core.mutations import ModelDeleteMutation, ModelMutation
-from ...core.types.common import StoreError
-from ...core.types import Upload
-from ....core.utils.url import validate_storefront_url
-from ....core.permissions import StorePermissions, get_permissions_default
-from ....core.exceptions import PermissionDenied
-from ....store.utils import delete_stores
 from django.contrib.auth import password_validation
-from ..types import Store
-from ....account.error_codes import AccountErrorCode
 from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
+
+from saleor.account.models import User
+from saleor.delivery.models import Delivery
+from saleor.graphql.utils.validators import check_super_user
+from saleor.servicetime.models import ServiceTime
+from saleor.store.error_codes import StoreErrorCode
+
+from ....account.error_codes import AccountErrorCode
+from ....core.exceptions import PermissionDenied
+from ....core.permissions import StorePermissions, get_permissions_default
+from ....core.utils.url import validate_storefront_url
+from ....store import models
+from ....store.utils import delete_stores
+from ...core.mutations import ModelDeleteMutation, ModelMutation
+from ...core.types import Upload
+from ...core.types.common import StoreError
+from ..types import Store
+
 
 class StoreInput(graphene.InputObjectType):
     name = graphene.String(description="Store name.")
@@ -44,7 +48,7 @@ class StoreCreate(ModelMutation):
 
     @classmethod
     def clean_input(cls, info, instance, data):
-        cleaned_input = super().clean_input(info, instance, data)        
+        cleaned_input = super().clean_input(info, instance, data)
 
         # Validate for create user
         if not settings.ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL:
@@ -74,7 +78,7 @@ class StoreCreate(ModelMutation):
             password_validation.validate_password(password, instance)
         except ValidationError as error:
             raise ValidationError({"password": error})
-        
+
         return cleaned_input
 
     def create_group_data(name, permissions, users):
@@ -106,11 +110,11 @@ class StoreCreate(ModelMutation):
             group_name += " management"
             group_name = group_name.capitalize()
             cls.create_group_data(group_name, [permission], [user])
-        
+
         # create default service time
         delivery = Delivery()
         delivery.store_id = retval.store.id
-        delivery.delivery_area = { "areas" : []}
+        delivery.delivery_area = {"areas": []}
         delivery.save()
 
         # create default service time
@@ -122,7 +126,8 @@ class StoreCreate(ModelMutation):
         service_time.dl_delivery_time = 10
         service_time.dl_preorder_day = 1
         service_time.dl_same_day_order = False
-        service_time.dl_service_time = {"dl":[{"days":[False,False,False,False,False,False,False],"open":"00:05","close":"23:55"}]}
+        service_time.dl_service_time = {"dl": [{"days": [
+            False, False, False, False, False, False, False], "open":"00:05", "close":"23:55"}]}
         # service_time.dl_service_time = None
         service_time.dl_time_gap = 10
 
@@ -131,14 +136,17 @@ class StoreCreate(ModelMutation):
         service_time.pu_delivery_time = 10
         service_time.pu_preorder_day = 1
         service_time.pu_same_day_order = False
-        service_time.pu_service_time = {"pu":[{"days":[False,False,False,False,False,False,False],"open":"00:05","close":"23:55"}]}
+        service_time.pu_service_time = {"pu": [{"days": [
+            False, False, False, False, False, False, False], "open":"00:05", "close":"23:55"}]}
         # service_time.pu_service_time = None
         service_time.pu_time_gap = 10
 
-        service_time.table_service_time = {"tb":[{"days":[False,False,False,False,False,False,False],"open":"00:05","close":"23:55"}]}
+        service_time.table_service_time = {"tb": [{"days": [
+            False, False, False, False, False, False, False], "open":"00:05", "close":"23:55"}]}
 
         service_time.save()
         return retval
+
 
 class StoreUpdateInput(graphene.InputObjectType):
     name = graphene.String(description="Store name.")
@@ -150,31 +158,33 @@ class StoreUpdateInput(graphene.InputObjectType):
     logo = Upload(description="Logo image file.")
     favicon = Upload(description="Logo image file.")
     cover_photo = Upload(description="Cover photo image file.")
-
-    #Emergency setting feature
+  
+    # Emergency setting feature
     webshop_status = graphene.DateTime(
         description="Webshop status setting."
     )
     delivery_status = graphene.DateTime(
         description="Delivery status setting."
     )
-    pickup_status =graphene.DateTime(
+    pickup_status = graphene.DateTime(
         description="Pickup status setting."
     )
-    table_service_status =graphene.DateTime(
+    table_service_status = graphene.DateTime(
         description="Pickup status setting."
     )
 
-    #New order notifications
+    # New order notifications
     email_notifications = graphene.Boolean(description="Enable notification")
     email_address = graphene.String(description="Email for notification")
 
-    #Transaction cost
+    # Transaction cost
     enable_transaction_fee = graphene.Boolean(description="Enable transaction all fee")
     contant_enable = graphene.Boolean(description="Enable transaction cost for contant")
     contant_cost = graphene.Float(description="Transaction cost for contant")
     stripe_enable = graphene.Boolean(description="Enable transaction cost for stripe")
     stripe_cost = graphene.Float(description="Transaction cost for stripe")
+    index_cash = graphene.Int(description="Index cash")
+    index_stripe = graphene.Int(description="Index stripe")
 
 class StoreUpdate(ModelMutation):
     class Arguments:
@@ -189,6 +199,7 @@ class StoreUpdate(ModelMutation):
         permissions = (StorePermissions.MANAGE_STORES,)
         error_type_class = StoreError
         error_type_field = "store_errors"
+
 
 class MyStoreUpdate(ModelMutation):
     class Arguments:
@@ -209,20 +220,19 @@ class MyStoreUpdate(ModelMutation):
         my_store = models.Store.objects.first()
         if my_store:
             for field_name, field_item in input._meta.fields.items():
-               if field_name in input:
+                if field_name in input:
                     value = input[field_name]
                     setattr(my_store, field_name, value)
             my_store.save()
             return cls.success_response(my_store)
         raise ValidationError(
-                {
-                    "store": ValidationError(
-                        "Store does not exists.",
-                        code=StoreErrorCode.NOT_EXISTS,
-                    )
-                }
-            )
-
+            {
+                "store": ValidationError(
+                    "Store does not exists.",
+                    code=StoreErrorCode.NOT_EXISTS,
+                )
+            }
+        )
 
 
 class StoreDelete(ModelDeleteMutation):

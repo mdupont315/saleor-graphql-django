@@ -48,7 +48,7 @@
       line-height: 24px;
       color: #808080;
       text-align: center;
-      font-weight: 600;
+      font-weight: 400;
     }
 
     a {
@@ -104,7 +104,7 @@
       line-height: 24px;
       color: #808080;
       text-align: center;
-      font-weight: normal;
+      font-weight: 600;
       font-style: normal;
     }
 
@@ -139,13 +139,16 @@
 
     .product-table .price {
       text-align: right;
-      font-weight: bold;
+      font-weight: 400;
+      color: #222222;
     }
 
     .product-table .total {
       font-weight: bold;
       height: 30px;
       text-align: left;
+      color: #222222;
+
     }
 
     .discount {
@@ -170,7 +173,7 @@
 
     .td-number {
       width: 30px;
-      font-weight: bold;
+      font-weight: 400;
     }
 
     .td-name {
@@ -179,13 +182,13 @@
       font-size: 16px;
       line-height: 24px;
       color: #1f1f1f;
-      font-weight: normal;
+      font-weight: 600;
       font-style: normal;
     }
 
     .td-price {
       text-align: right;
-      font-weight: bold;
+      font-weight: 400;
     }
 
     .td-option {
@@ -233,8 +236,8 @@
       font-size: 20px;
       line-height: 28px;
       text-align: left;
-      padding-bottom: 24px;
-      color: #222222!important;
+      padding-bottom: 8px;
+      color: #222222 !important;
     }
 
     .cash-logo {
@@ -243,14 +246,17 @@
     }
 
     .total-divide {
-      margin-bottom: 30px;
+      margin: 24px 0;
+      width: 100%;
+      height: 1px;
+      background-color: #dcdcdc;
     }
 
     .payment-method {
       text-align: left;
       padding-top: 10px;
-      font-size: 16px;
-      color: #222222!important;
+      font-size: 14px;
+      color: #808080 !important;
     }
 
     .checkout-button {
@@ -262,7 +268,7 @@
       padding-bottom: 10px;
       margin-top: 30px;
       display: block;
-      color: #FFFFFF!important;
+      color: #FFFFFF !important;
       font-weight: 600;
       font-size: 16px;
     }
@@ -271,6 +277,7 @@
       font-size: 16px;
       color: #808080;
       text-align: left;
+      margin-bottom: 24px;
     }
 
     .detail-label {
@@ -294,6 +301,7 @@
       margin: 0;
       padding: 0;
     }
+
     li {
       margin: 0;
       padding: 0;
@@ -306,8 +314,7 @@
     <div class="container">
       <div class="mail-body">
         <div class="mail-body-info">
-          <img width="100" height="100"
-            src="{{logo}}" />
+          <img width="100" height="100" src="{{logo}}" />
           <div class="mail-title">Thank you for ordering!</div>
           <span class="mail-title-message">Here’s the summary of your order #{{order_num}} on {{place_date}}.</span>
 
@@ -333,30 +340,38 @@
             </table> -->
             {{#product_customer items=lines channel=channel channel_symbol=channel_symbol}}{{/product_customer}}
 
-            <hr class="total-divide">
+            <div class="total-divide"></div>
             <table class="product-table">
               <tr>
                 <td class="total">Subtotal</td>
                 <td class="price">{{channel_symbol}} {{sub_total}}</td>
               </tr>
+              {{#if discount}}
               <tr>
                 <td class="total discount">Discount</td>
                 <td class="price discount">- {{channel_symbol}} {{discount}}</td>
               </tr>
+              {{/if}}
+              {{#if is_check_delivery}}
+              {{#if delivery_fee}}
               <tr>
                 <td class="total">Delivery cost</td>
                 <td class="price">{{delivery_fee}}</td>
               </tr>
+              {{/if}}
+              {{/if}}
+
+
+              {{#if transaction_cost}}
               <tr>
                 <td class="total">Transaction cost</td>
                 <td class="price">{{transaction_cost}}</td>
               </tr>
-              
+              {{/if}}
+
               <tr>
                 <td class="total">Total</td>
-                <td class="price"><img class="cash-logo"
-                    src="https://ci3.googleusercontent.com/proxy/fW7dPY9pR73dowq5miqcEbzeUqIKMZrsmK_BAet_W0o0vdxhN3-BHOJHGcNDb8ld3ZIwgPSWEwk874sfrA=s0-d-e1-ft#https://i.ibb.co/w70MhGf/coin-and-cash.png" />
-                    {{channel_symbol}} {{total}}</td>
+                <td class="total" style="text-align: right;">{{channel_symbol}} {{total}}</td>
               </tr>
             </table>
 
@@ -365,10 +380,10 @@
           </div>
 
           <div class="box">
-            <div class="box-title">Delivery details</div>
+            <div class="box-title">{{order_type}} details</div>
 
             <div class="detail-label">
-              Delivery moment
+              {{order_type}} moment
             </div>
             <div class="detail-value">
               <div>
@@ -378,6 +393,15 @@
                 {{expected_time}}
               </div>
             </div>
+            {{#if is_check_pickup}}
+            <div class="detail-label">
+              Pickup location
+            </div>
+            <div class="detail-value">
+              {{full_store_address}}
+            </div>
+            {{/if}}
+
 
             <div class="detail-label">
               Receiver
@@ -389,7 +413,16 @@
                 <li>crys@orderich.com</li>
                 <li>0612345678</li>
               </ul> -->
-              {{#address_customer address}}{{/address_customer}}
+              {{#if is_check_pickup}}
+                {{#address_customer_pickup address}}{{/address_customer_pickup}}
+              {{/if}}
+
+
+              {{#if is_check_delivery}}
+                {{#address_customer_delivery address}}{{/address_customer_delivery}}
+              {{/if}}
+
+
             </div>
 
             <div class="detail-label">

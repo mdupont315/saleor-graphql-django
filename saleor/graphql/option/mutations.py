@@ -1,24 +1,29 @@
-from saleor.graphql.core.scalars import PositiveDecimal
-from graphql_relay.node.node import from_global_id
-from .types import Option
 import graphene
-from ..core.mutations import ModelDeleteMutation, ModelMutation, ModelBulkDeleteMutation
-from ...product import models
-from ...core.permissions import ProductPermissions
-from ..core.types.common import OptionError
+from graphql_relay.node.node import from_global_id
+
+from saleor.graphql.core.scalars import Decimal
+
 from ...channel import models as channel_models
+from ...core.permissions import ProductPermissions
+from ...product import models
+from ..core.mutations import (ModelBulkDeleteMutation, ModelDeleteMutation,
+                              ModelMutation)
+from ..core.types.common import OptionError
+from .types import Option
 
 
 class OptionValueChannelInput(graphene.InputObjectType):
     channel_id = graphene.String(required=True, description="Channel")
-    price = PositiveDecimal(required=True, description="Channel")
+    price = Decimal(required=True, description="Channel")
     currency = graphene.String(required=True, description="currency")
+
 
 class OptionValueInput(graphene.InputObjectType):
     name = graphene.String(required=True, description="Name")
     channel_listing = graphene.List(
         OptionValueChannelInput, description="channel_listing"
     )
+
 
 class OptionCreateInput(graphene.InputObjectType):
     name = graphene.String(required=True, description="Name")
@@ -28,6 +33,7 @@ class OptionCreateInput(graphene.InputObjectType):
     required = graphene.Boolean(description="Required")
     type = graphene.String(required=True, description="Type")
 
+
 class OptionCreate(ModelMutation):
     option = graphene.Field(Option, description="The created attribute.")
 
@@ -35,7 +41,7 @@ class OptionCreate(ModelMutation):
         input = OptionCreateInput(
             required=True, description="Fields required to create an attribute."
         )
-    
+
     class Meta:
         description = "Create option for product."
         model = models.Option
@@ -48,16 +54,17 @@ class OptionCreate(ModelMutation):
         option_value_channel = models.OptionValueChannelListing()
         option_value_channel.price_amount = value["price"]
         option_value_channel.currency = value["currency"]
-        _type , _pk = from_global_id(value["channel_id"])
-        option_value_channel.channel = channel_models.Channel.objects.get(pk = _pk)
-        option_value_channel.option_value = models.OptionValue.objects.get(pk = option_value_id)
+        _type, _pk = from_global_id(value["channel_id"])
+        option_value_channel.channel = channel_models.Channel.objects.get(pk=_pk)
+        option_value_channel.option_value = models.OptionValue.objects.get(
+            pk=option_value_id)
         option_value_channel.save()
-    
+
     @classmethod
     def create_option_value(cls, value, option_id):
         option_value = models.OptionValue()
         option_value.name = value["name"]
-        option_value.option = models.Option.objects.get(pk = option_id)
+        option_value.option = models.Option.objects.get(pk=option_id)
         option_value.save()
         channel_listing = value["channel_listing"]
         if(channel_listing):
@@ -71,8 +78,9 @@ class OptionCreate(ModelMutation):
         if(data["input"]["values"]):
             for value in data["input"]["values"]:
                 cls.create_option_value(value, option.option.id)
-            
+
         return option
+
 
 class OptionUpdateInput(graphene.InputObjectType):
     name = graphene.String(required=False, description="Name")
@@ -96,40 +104,40 @@ class OptionUpdate(ModelMutation):
         input = OptionUpdateInput(
             required=True, description="Fields required to create an attribute."
         )
-    
+
     class Meta:
         description = "Create option for product."
         model = models.Option
         permissions = (ProductPermissions.MANAGE_PRODUCTS,)
         error_type_class = OptionError
         error_type_field = "option_errors"
-    
+
     def create_option_value_channel(value, option_value_id):
         option_value_channel = models.OptionValueChannelListing()
-        option_value_channel.price = value["price"]
-        _type , _pk = from_global_id(value["channel_id"])
-        option_value_channel.channel = channel_models.Channel.objects.get(pk = _pk)
-        option_value_channel.option_value = models.OptionValue.objects.get(pk = option_value_id)
+        option_value_channel.price_amount = value["price"]
+        _type, _pk = from_global_id(value["channel_id"])
+        option_value_channel.channel = channel_models.Channel.objects.get(pk=_pk)
+        option_value_channel.option_value = models.OptionValue.objects.get(
+            pk=option_value_id)
         option_value_channel.save()
-    
+
     @classmethod
     def create_option_value(cls, value, option_id):
         option_value = models.OptionValue()
         option_value.name = value["name"]
-        _type , _pk = from_global_id(option_id)
-        option_value.option = models.Option.objects.get(pk = _pk)
+        _type, _pk = from_global_id(option_id)
+        option_value.option = models.Option.objects.get(pk=_pk)
         option_value.save()
         channel_listing = value["channel_listing"]
         if(channel_listing):
             for channel in channel_listing:
                 cls.create_option_value_channel(channel, option_value.id)
-    
+
     def delete_option_value(option_id):
-        _type , _pk = from_global_id(option_id)
+        _type, _pk = from_global_id(option_id)
         option_value = models.OptionValue.objects.get(pk=_pk)
         if(option_value):
             option_value.delete()
-
 
     @classmethod
     def perform_mutation(cls, root, info, **data):
@@ -141,13 +149,13 @@ class OptionUpdate(ModelMutation):
             for value in add_values:
                 cls.create_option_value(value, data["id"])
 
-
         delete_values = data["input"].get("delete_values") or []
         if(delete_values):
             for value in delete_values:
                 cls.delete_option_value(value)
-            
+
         return option
+
 
 class OptionDelete(ModelDeleteMutation):
     class Arguments:
@@ -160,14 +168,18 @@ class OptionDelete(ModelDeleteMutation):
         error_type_class = OptionError
         error_type_field = "option_errors"
 
+
 class OptionValueChannelUpdateInput(OptionValueChannelInput):
     id = graphene.ID(required=True, description="ID of an option to update.")
+
 
 class UpdateOptionValueInput(graphene.InputObjectType):
     name = graphene.String(required=True, description="Name")
     channel_listing_update = graphene.List(
         OptionValueChannelUpdateInput, description="channel_listing"
     )
+
+
 class UpdateOptionValue(ModelMutation):
     class Arguments:
         id = graphene.ID(required=True, description="ID of an option to update.")
@@ -182,21 +194,21 @@ class UpdateOptionValue(ModelMutation):
         error_type_class = OptionError
         error_type_field = "option_errors"
 
-
     def create_option_value_channel(value, option_value_id):
         option_value_channel = models.OptionValueChannelListing()
-        option_value_channel.price = value["price"]
-        _type , _pk = from_global_id(value["channel_id"])
-        option_value_channel.channel = channel_models.Channel.objects.get(pk = _pk)
-        option_value_channel.option_value = models.OptionValue.objects.get(pk = option_value_id)
+        option_value_channel.price_amount = value["price"]
+        _type, _pk = from_global_id(value["channel_id"])
+        option_value_channel.channel = channel_models.Channel.objects.get(pk=_pk)
+        option_value_channel.option_value = models.OptionValue.objects.get(
+            pk=option_value_id)
         option_value_channel.save()
 
     @classmethod
     def update_option_value_channel(cls, channel, option_value_id):
         if channel["channel_id"]:
-            _type , _pk = from_global_id(channel["id"])
+            _type, _pk = from_global_id(channel["id"])
             option_value_channel = models.OptionValueChannelListing.objects.get(pk=_pk)
-            option_value_channel.price = channel["price"]
+            option_value_channel.price_amount = channel["price"]
             option_value_channel.save()
         else:
             cls.create_option_value_channel(channel, option_value_id)
@@ -208,13 +220,15 @@ class UpdateOptionValue(ModelMutation):
         if(channel_listing_update):
             for channel in channel_listing_update:
                 cls.update_option_value_channel(channel, option_value.optionValue.id)
-            
-        return option_value    
+
+        return option_value
+
+
 class DeleteBulkOptionValue(ModelBulkDeleteMutation):
     class Arguments:
         ids = graphene.List(
             graphene.ID,
-            required=True, 
+            required=True,
             description="List of option value IDs to delete."
         )
 
@@ -224,5 +238,3 @@ class DeleteBulkOptionValue(ModelBulkDeleteMutation):
         permissions = (ProductPermissions.MANAGE_PRODUCTS,)
         error_type_class = OptionError
         error_type_field = "option_errors"
-
-

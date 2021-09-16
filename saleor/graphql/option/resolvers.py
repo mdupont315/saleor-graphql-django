@@ -1,6 +1,8 @@
 import graphene
 from graphql_relay.node.node import from_global_id
+
 from ...product import models
+
 
 def resolve_options(self, info, **kwargs):
     return models.Option.objects.all()

@@ -1,6 +1,4 @@
 import datetime
-from saleor.order.models import OrderLine
-from saleor.checkout.models import CheckoutLine
 from typing import TYPE_CHECKING, Iterable, Optional, Union
 from uuid import uuid4
 
@@ -10,23 +8,9 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.db.models import JSONField  # type: ignore
-from django.db.models import (
-    BooleanField,
-    Case,
-    Count,
-    DateField,
-    Exists,
-    ExpressionWrapper,
-    F,
-    FilteredRelation,
-    OuterRef,
-    Q,
-    Subquery,
-    Sum,
-    TextField,
-    Value,
-    When,
-)
+from django.db.models import (BooleanField, Case, Count, DateField, Exists,
+                              ExpressionWrapper, F, FilteredRelation, OuterRef,
+                              Q, Subquery, Sum, TextField, Value, When)
 from django.db.models.functions import Coalesce
 from django.db.models.query import Prefetch, QuerySet
 from django.urls import reverse
@@ -37,11 +21,17 @@ from measurement.measures import Weight
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from versatileimagefield.fields import PPOIField, VersatileImageField
+
+from saleor.checkout.models import CheckoutLine
+from saleor.order.models import OrderLine
 from saleor.store.models import Store
+
 from ..account.utils import requestor_is_staff_member_or_app
 from ..channel.models import Channel
 from ..core.db.fields import SanitizedJSONField
-from ..core.models import CustomQueryset, ModelWithMetadata, MultitenantModelWithMetadata, PublishableModel, SortableModel
+from ..core.models import (CustomQueryset, ModelWithMetadata,
+                           MultitenantModelWithMetadata, PublishableModel,
+                           SortableModel)
 from ..core.permissions import ProductPermissions, ProductTypePermissions
 from ..core.units import WeightUnits
 from ..core.utils import build_absolute_uri
@@ -975,6 +965,7 @@ class OptionValueChannelListing(models.Model):
     price_amount = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
         blank=True,
         null=True,
     )

@@ -1,10 +1,13 @@
+import graphene
 from django_prices.models import MoneyField
+
 from saleor.core.tracing import traced_resolver
 from saleor.graphql.channel.types import Channel
-import graphene
+
 from ...product import models
 from ..core.connection import CountableDjangoObjectType
 from ..meta.types import ObjectWithMetadata
+
 
 class OptionValueChannelListing(CountableDjangoObjectType):
     price = MoneyField(description="Price")
