@@ -5,7 +5,6 @@ import re
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from email.headerregistry import Address
-from saleor.core.prices import quantize_price
 from typing import List, Optional
 
 import dateutil.parser
@@ -17,6 +16,8 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.mail.backends.smtp import EmailBackend
 from django_prices.utils.locale import get_locale_data
+
+from saleor.core.prices import quantize_price
 
 from ..product.product_images import get_thumbnail_size
 from .base_plugin import ConfigurationTypeField
@@ -178,6 +179,7 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
     )
     return pybars.strlist([formatted_price])
 
+
 def list_product_customer(this, options, items, channel, channel_symbol):
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     result = [u'<table class="product-table">']
@@ -190,7 +192,12 @@ def list_product_customer(this, options, items, channel, channel_symbol):
         result.append(thing.product_name)
         result.append(u'</td>')
         result.append(u'<td class="td-price">')
-        result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
+        # result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
+        result.append("{curency} {price}".format(
+            curency=channel_symbol,
+            price=(quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)
+        ))
+
         result.append(u'</td>')
         result.append(u'</tr>')
         option_values = thing.option_values.all()
@@ -202,12 +209,14 @@ def list_product_customer(this, options, items, channel, channel_symbol):
                     option=option_value.option.name,
                     name=option_value.name,
                     curency=channel_symbol,
-                    price=(quantize_price(option_value.get_price_amount_by_channel(channel), channel)).quantize(TWOPLACES)
-                    ))
+                    price=(quantize_price(option_value.get_price_amount_by_channel(
+                        channel), channel)).quantize(TWOPLACES)
+                ))
                 result.append(u'</td>')
                 result.append(u'</tr>')
     result.append(u'</table>')
     return result
+
 
 def customer_list_address(this, options, items):
     result = [u'<ul>']
@@ -225,6 +234,90 @@ def customer_list_address(this, options, items):
             result.append(u'</li>')
     result.append(u'</ul>')
     return result
+
+
+def customer_list_address_delivery(this, options, items):
+    result = [u'<ul>']
+    dict_items = items.items()
+    ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
+    result.append(u'<li>')
+    result.append(str(ctm_name)),
+    result.append(u'</li>')
+
+    full_address = []
+    email = ''
+    phone = ''
+    company = ''
+    for key, value in dict_items:
+        if key == 'street_address_1' or key == 'city' or key == 'postal_code':
+            if value:
+                full_address.append(value)
+        if key == 'email':
+            if value:
+                email = value
+        if key == 'phone':
+            if value:
+                phone = value
+        if key == 'company_name':
+            if value:
+                company = value
+    result.append(u'<li>')
+    result.append(str(", ".join(full_address))),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(email)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(phone)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(company)),
+    result.append(u'</li>')
+
+    result.append(u'</ul>')
+    return result
+
+
+def customer_list_address_pickup(this, options, items):
+    result = [u'<ul>']
+    dict_items = items.items()
+    ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
+    result.append(u'<li>')
+    result.append(str(ctm_name)),
+    result.append(u'</li>')
+    email = ''
+    phone = ''
+    company = ''
+    for key, value in dict_items:
+        if key == 'email':
+            if value:
+                email = value
+        if key == 'phone':
+            if value:
+                phone = value
+        if key == 'company_name':
+            if value:
+                company = value
+
+    result.append(u'<li>')
+    result.append(str(email)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(phone)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(company)),
+    result.append(u'</li>')
+
+    result.append(u'</ul>')
+
+    return result
+
 
 def send_email(
     config: EmailConfig, recipient_list, context, subject="", template_str=""
@@ -256,6 +349,9 @@ def send_email(
         "compare": compare,
         "product_customer": list_product_customer,
         "address_customer": customer_list_address,
+        "address_customer_delivery": customer_list_address_delivery,
+        "address_customer_pickup": customer_list_address_pickup,
+
     }
     message = template(context, helpers=helpers)
     subject_message = subject_template(context, helpers)
@@ -267,6 +363,7 @@ def send_email(
         html_message=message,
         connection=email_backend,
     )
+
 
 def validate_email_config(config: EmailConfig):
     email_backend = EmailBackend(
