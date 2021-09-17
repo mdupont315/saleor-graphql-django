@@ -1,17 +1,20 @@
-from datetime import date
 import decimal
-from saleor.core.utils.logging import log_info
-
-from prices.money import Money
-from saleor.core.prices import quantize_price
+import json
+from datetime import date
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 
+import graphene
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.encoding import smart_text
-import json
 from prices import TaxedMoney
+from prices.money import Money
+
+from saleor.core.prices import quantize_price
+from saleor.core.utils.logging import log_info
+from saleor.views import sio
 
 from ..account.error_codes import AccountErrorCode
 from ..account.models import User
@@ -22,17 +25,14 @@ from ..core.exceptions import InsufficientStock
 from ..core.taxes import TaxError, zero_taxed_money
 from ..core.tracing import traced_atomic_transaction
 from ..core.utils.url import validate_storefront_url
+from ..delivery.models import Delivery
 from ..discount import DiscountInfo, DiscountValueType, OrderDiscountType
 from ..discount.models import NotApplicable
-from ..discount.utils import (
-    add_voucher_usage_by_customer,
-    decrease_voucher_usage,
-    increase_voucher_usage,
-    remove_voucher_usage_by_customer,
-)
-from ..graphql.checkout.utils import (
-    prepare_insufficient_stock_checkout_validation_error,
-)
+from ..discount.utils import (add_voucher_usage_by_customer,
+                              decrease_voucher_usage, increase_voucher_usage,
+                              remove_voucher_usage_by_customer)
+from ..graphql.checkout.utils import \
+    prepare_insufficient_stock_checkout_validation_error
 from ..order import OrderLineData, OrderOrigin, OrderStatus
 from ..order.actions import order_created
 from ..order.models import Order, OrderLine
@@ -41,15 +41,14 @@ from ..payment import PaymentError, gateway
 from ..payment.models import Payment, Transaction
 from ..payment.utils import fetch_customer_id, store_customer_id
 from ..product.models import ProductTranslation, ProductVariantTranslation
+from ..store.models import Store
 from ..warehouse.availability import check_stock_quantity_bulk
 from ..warehouse.management import allocate_stocks
 from . import AddressType
 from .checkout_cleaner import clean_checkout_payment, clean_checkout_shipping
 from .models import Checkout
 from .utils import get_voucher_for_checkout
-from ..delivery.models import Delivery
-from ..store.models import Store
-from django.conf import settings
+
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self,o):
@@ -692,6 +691,9 @@ def complete_checkout(
             )
             # remove checkout after order is successfully created
             checkout.delete()
+            if order:
+            # emit event create
+                sio.emit("is_order_complete",{'data' : graphene.Node.to_global_id("Order", order.id)})
             # write log
             log_info('Order', 'Order', content={
                 "order": order.__dict__,

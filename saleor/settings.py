@@ -68,7 +68,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:admin@localhost:5432/saleor"
+        default="postgres://postgres:thangprohoian123@localhost:5432/orderich"
     )
 }
 
@@ -233,7 +233,7 @@ INSTALLED_APPS = [
     "mptt",
     "django_countries",
     "django_filters",
-    "phonenumber_field",
+    "phonenumber_field"
 ]
 
 ENABLE_DJANGO_EXTENSIONS = get_bool_from_env("ENABLE_DJANGO_EXTENSIONS", False)
@@ -395,7 +395,8 @@ TEST_RUNNER = "saleor.tests.runner.PytestTestRunner"
 
 PLAYGROUND_ENABLED = get_bool_from_env("PLAYGROUND_ENABLED", True)
 
-ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.10.9"))
+# ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS","localhost,127.0.0.1,192.168.10.9"))
+ALLOWED_HOSTS = ["*"]
 ALLOWED_GRAPHQL_ORIGINS = get_list(os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*"))
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -486,11 +487,11 @@ AUTHENTICATION_BACKENDS = [
 
 # CELERY SETTINGS
 CELERY_TIMEZONE = TIME_ZONE
-# CELERY_BROKER_URL = (
-#     os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
-# )
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
-#CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
+CELERY_BROKER_URL = (
+    os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
+)
+# CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
+CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
