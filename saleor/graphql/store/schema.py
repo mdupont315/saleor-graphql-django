@@ -1,23 +1,19 @@
 import graphene
-# from ..decorators import permission_required
 
-from .types import Store
+from saleor.views import sio
+
 from ..account.types import User
 from ..core.fields import FilterInputConnectionField
 from .filters import StoreFilterInput
+from .mutations.stores import (MyStoreUpdate, StoreCreate, StoreDelete,
+                               StoreUpdate)
+from .resolvers import (resolve_my_store, resolve_store, resolve_stores,
+                        resolve_user_store)
 from .sorters import StoreSortingInput
-from .mutations.stores import (
-    StoreCreate,
-    StoreDelete,
-    StoreUpdate,
-    MyStoreUpdate
-)
-from .resolvers import (
-    resolve_store,
-    resolve_stores,
-    resolve_user_store,
-    resolve_my_store
-)
+from .types import Store
+
+# from ..decorators import permission_required
+
 
 class StoreQueries(graphene.ObjectType):
     store = graphene.Field(
