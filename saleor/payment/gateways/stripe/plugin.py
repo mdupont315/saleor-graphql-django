@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 class StripeGatewayPlugin(BasePlugin):
     PLUGIN_NAME = GATEWAY_NAME
     PLUGIN_ID = "mirumee.payments.stripe"
+    CONFIGURATION_PER_CHANNEL = False
     DEFAULT_CONFIGURATION = [
         {"name": "Public API key", "value": None},
         {"name": "Secret API key", "value": None},
