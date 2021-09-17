@@ -27,19 +27,73 @@ def get_allowed_host_lazy():
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "saleor.settings")
 
-application = get_wsgi_application()
-application = health_check(application, "/health/")
+# application = get_wsgi_application()
+# application = health_check(application, "/health/")
 
-# Warm-up the django application instead of letting it lazy-load
-application(
-    {
-        "REQUEST_METHOD": "GET",
-        "SERVER_NAME": SimpleLazyObject(get_allowed_host_lazy),
-        "REMOTE_ADDR": "127.0.0.1",
-        "SERVER_PORT": 80,
-        "PATH_INFO": "/graphql/",
-        "wsgi.input": b"",
-        "wsgi.multiprocess": True,
-    },
-    lambda x, y: None,
-)
+# # Warm-up the django application instead of letting it lazy-load
+# application(
+#     {
+#         "REQUEST_METHOD": "GET",
+#         "SERVER_NAME": SimpleLazyObject(get_allowed_host_lazy),
+#         "REMOTE_ADDR": "127.0.0.1",
+#         "SERVER_PORT": 80,
+#         "PATH_INFO": "/graphql/",
+#         "wsgi.input": b"",
+#         "wsgi.multiprocess": True,
+#     },
+#     lambda x, y: None,
+# )
+
+# import socketio
+# from django.http import HttpResponse
+
+# sio = socketio.Server(async_mode=None)
+# thread = None
+
+# def background_thread():
+#     """Example of how to send server generated events to clients."""
+#     count = 0
+#     while True:
+#         sio.sleep(10)
+#         count += 1
+#         sio.emit('my_response', {'data': 'Server generated event'},
+#                  namespace='/test')
+
+# def index(request):
+#     global thread
+#     if thread is None:
+#         thread = sio.start_background_task(background_thread)
+#     return HttpResponse("====TEST===")
+# # create a Socket.IO server
+# # sio = socketio.Server(async_mode=None)
+# # sio.emit('my event', {'data': 'foobar'})
+# # wrap with ASGI application
+
+# @sio.on('connect')
+# def connect(sid, message):
+#     print("connected")
+#     sio.emit('my_response', {'data': 'Connected', 'count': 0}, room=sid)
+
+
+# import os
+
+import os
+
+import socketio
+from django.contrib.staticfiles.handlers import StaticFilesHandler
+from django.core.wsgi import get_wsgi_application
+
+from saleor.views import background_thread, sio
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chatbot.settings")
+django_app = StaticFilesHandler(get_wsgi_application())
+application = socketio.Middleware(sio, wsgi_app=django_app, socketio_path='socket.io')
+
+import eventlet
+import eventlet.wsgi
+
+thread = sio.start_background_task(background_thread)
+eventlet.wsgi.server(eventlet.listen(('', 8000)), application)
+
+
+
