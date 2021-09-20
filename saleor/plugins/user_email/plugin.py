@@ -91,7 +91,7 @@ def get_user_event_map():
         UserNotifyEvent.ACCOUNT_CHANGE_EMAIL_REQUEST: send_account_change_email_request,
         UserNotifyEvent.ACCOUNT_PASSWORD_RESET: send_account_password_reset_event,
         UserNotifyEvent.INVOICE_READY: send_invoice,
-        UserNotifyEvent.ORDER_CONFIRMATION: send_order_confirmation,
+        # UserNotifyEvent.ORDER_CONFIRMATION: send_order_confirmation,
         # UserNotifyEvent.ORDER_CONFIRMED: send_order_confirmed,
         UserNotifyEvent.ORDER_FULFILLMENT_CONFIRMATION: send_fulfillment_confirmation,
         UserNotifyEvent.ORDER_FULFILLMENT_UPDATE: send_fulfillment_update,
