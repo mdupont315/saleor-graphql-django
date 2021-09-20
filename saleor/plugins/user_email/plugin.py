@@ -1,40 +1,32 @@
 import logging
 from dataclasses import asdict, dataclass
 from typing import Optional
-from django_multitenant.utils import unset_current_tenant, get_current_tenant, set_current_tenant
+
+from django.conf import settings
+from django_multitenant.utils import (get_current_tenant, set_current_tenant,
+                                      unset_current_tenant)
+
 from ...core.notify_events import NotifyEventType, UserNotifyEvent
 from ..base_plugin import BasePlugin, ConfigurationTypeField
-from django.conf import settings
-from ..email_common import (
-    DEFAULT_EMAIL_CONFIG_STRUCTURE,
-    DEFAULT_EMAIL_CONFIGURATION,
-    DEFAULT_EMAIL_VALUE,
-    DEFAULT_SUBJECT_HELP_TEXT,
-    DEFAULT_TEMPLATE_HELP_TEXT,
-    EmailConfig,
-    validate_default_email_configuration,
-    validate_format_of_provided_templates,
-)
+from ..email_common import (DEFAULT_EMAIL_CONFIG_STRUCTURE,
+                            DEFAULT_EMAIL_CONFIGURATION, DEFAULT_EMAIL_VALUE,
+                            DEFAULT_SUBJECT_HELP_TEXT,
+                            DEFAULT_TEMPLATE_HELP_TEXT, EmailConfig,
+                            validate_default_email_configuration,
+                            validate_format_of_provided_templates)
 from ..models import PluginConfiguration
 from . import constants
 from .constants import TEMPLATE_FIELDS
-from .notify_events import (
-    send_account_change_email_confirm,
-    send_account_change_email_request,
-    send_account_confirmation,
-    send_account_delete,
-    send_account_password_reset_event,
-    send_account_set_customer_password,
-    send_fulfillment_confirmation,
-    send_fulfillment_update,
-    send_invoice,
-    send_order_canceled,
-    send_order_confirmation,
-    send_order_confirmed,
-    send_order_refund,
-    send_payment_confirmation,
-    send_order_infomation,
-)
+from .notify_events import (send_account_change_email_confirm,
+                            send_account_change_email_request,
+                            send_account_confirmation, send_account_delete,
+                            send_account_password_reset_event,
+                            send_account_set_customer_password,
+                            send_fulfillment_confirmation,
+                            send_fulfillment_update, send_invoice,
+                            send_order_canceled, send_order_confirmation,
+                            send_order_confirmed, send_order_infomation,
+                            send_order_refund, send_payment_confirmation)
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +66,7 @@ def get_user_template_map(templates: UserTemplate):
         UserNotifyEvent.ACCOUNT_PASSWORD_RESET: templates.account_password_reset,
         UserNotifyEvent.INVOICE_READY: templates.invoice_ready,
         UserNotifyEvent.ORDER_CONFIRMATION: templates.order_confirmation,
-        UserNotifyEvent.ORDER_CONFIRMED: templates.order_confirmed,
+        # UserNotifyEvent.ORDER_CONFIRMED: templates.order_confirmed,
         UserNotifyEvent.ORDER_FULFILLMENT_CONFIRMATION: (
             templates.order_fulfillment_confirmation
         ),
