@@ -122,7 +122,7 @@ def order_created(
         "channel_symbol": channel_symbol,
         "address": vars(order.billing_address),
         "payment_status": order.get_last_payment().charge_status,
-        "payment_method": 'Cash' if order.get_last_payment().gateway == 'mirumee.payments.dummy' else 'Ideal',
+        "payment_method": 'Cash' if order.get_last_payment().gateway == 'mirumee.payments.dummy' else 'iDEAL',
         "order_note": order.customer_note,
         "order_url": order_url
     }
