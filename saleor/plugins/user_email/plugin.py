@@ -95,7 +95,7 @@ def get_user_event_map():
         # UserNotifyEvent.ORDER_CONFIRMED: send_order_confirmed,
         UserNotifyEvent.ORDER_FULFILLMENT_CONFIRMATION: send_fulfillment_confirmation,
         UserNotifyEvent.ORDER_FULFILLMENT_UPDATE: send_fulfillment_update,
-        UserNotifyEvent.ORDER_PAYMENT_CONFIRMATION: send_payment_confirmation,
+        # UserNotifyEvent.ORDER_PAYMENT_CONFIRMATION: send_payment_confirmation,
         UserNotifyEvent.ORDER_CANCELED: send_order_canceled,
         UserNotifyEvent.ORDER_REFUND_CONFIRMATION: send_order_refund,
         UserNotifyEvent.ORDER_CREATED: send_order_infomation,

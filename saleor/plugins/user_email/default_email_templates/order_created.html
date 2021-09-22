@@ -277,7 +277,7 @@
       font-size: 16px;
       color: #808080;
       text-align: left;
-      margin-bottom: 24px;
+      margin: 0 0 14px 0 !important;
     }
 
     .detail-label {
@@ -414,12 +414,12 @@
                 <li>0612345678</li>
               </ul> -->
               {{#if is_check_pickup}}
-                {{#address_customer_pickup address}}{{/address_customer_pickup}}
+              {{#address_customer_pickup address}}{{/address_customer_pickup}}
               {{/if}}
 
 
               {{#if is_check_delivery}}
-                {{#address_customer_delivery address}}{{/address_customer_delivery}}
+              {{#address_customer_delivery address}}{{/address_customer_delivery}}
               {{/if}}
 
 
