@@ -18,6 +18,7 @@ from django.core.mail.backends.smtp import EmailBackend
 from django_prices.utils.locale import get_locale_data
 
 from saleor.core.prices import quantize_price
+from saleor.order.utils import formatComma
 
 from ..product.product_images import get_thumbnail_size
 from .base_plugin import ConfigurationTypeField
@@ -195,7 +196,8 @@ def list_product_customer(this, options, items, channel, channel_symbol):
         # result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
         result.append("{curency} {price}".format(
             curency=channel_symbol,
-            price=(quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)
+            price=formatComma(
+                (quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES))
         ))
 
         result.append(u'</td>')
@@ -209,8 +211,8 @@ def list_product_customer(this, options, items, channel, channel_symbol):
                     option=option_value.option.name,
                     name=option_value.name,
                     curency=channel_symbol,
-                    price=(quantize_price(option_value.get_price_amount_by_channel(
-                        channel), channel)).quantize(TWOPLACES)
+                    price=formatComma((quantize_price(option_value.get_price_amount_by_channel(
+                        channel), channel)).quantize(TWOPLACES))
                 ))
                 result.append(u'</td>')
                 result.append(u'</tr>')

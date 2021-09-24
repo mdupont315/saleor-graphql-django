@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.utils.text import slugify
+from django_multitenant.utils import get_current_tenant
 
 from ....attribute import AttributeInputType, AttributeType
 from ....attribute import models as attribute_models
@@ -24,14 +25,12 @@ from ....product.error_codes import CollectionErrorCode, ProductErrorCode
 from ....product.tasks import (
     update_product_discounted_price_task,
     update_products_discounted_prices_of_catalogues_task,
-    update_variants_names,
-)
+    update_variants_names)
 from ....product.thumbnails import (
     create_category_background_image_thumbnails,
-    create_collection_background_image_thumbnails,
-    create_product_thumbnails,
-)
-from ....product.utils import delete_categories, get_products_ids_without_variants
+    create_collection_background_image_thumbnails, create_product_thumbnails)
+from ....product.utils import (delete_categories,
+                               get_products_ids_without_variants)
 from ....product.utils.variants import generate_and_set_variant_name
 from ...attribute.types import AttributeValueInput
 from ...attribute.utils import AttributeAssignmentMixin, AttrValuesInput
@@ -41,30 +40,17 @@ from ...core.mutations import BaseMutation, ModelDeleteMutation, ModelMutation
 from ...core.scalars import WeightScalar
 from ...core.types import SeoInput, Upload
 from ...core.types.common import CollectionError, ProductError
-from ...core.utils import (
-    add_hash_to_file_name,
-    clean_seo_fields,
-    get_duplicated_values,
-    validate_image_file,
-    validate_slug_and_generate_if_needed,
-)
+from ...core.utils import (add_hash_to_file_name, clean_seo_fields,
+                           get_duplicated_values, validate_image_file,
+                           validate_slug_and_generate_if_needed)
 from ...core.utils.reordering import perform_reordering
 from ...utils import get_user_or_app_from_context
 from ...warehouse.types import Warehouse
-from ..types import (
-    Category,
-    Collection,
-    Product,
-    ProductMedia,
-    ProductType,
-    ProductVariant,
-)
-from ..utils import (
-    create_stocks,
-    get_draft_order_lines_data_for_variants,
-    get_used_attribute_values_for_variant,
-    get_used_variants_attribute_values,
-)
+from ..types import (Category, Collection, Product, ProductMedia, ProductType,
+                     ProductVariant)
+from ..utils import (create_stocks, get_draft_order_lines_data_for_variants,
+                     get_used_attribute_values_for_variant,
+                     get_used_variants_attribute_values)
 
 
 class CategoryInput(graphene.InputObjectType):
@@ -660,7 +646,6 @@ class ProductCreate(ModelMutation):
     def perform_mutation(cls, _root, info, **data):
         response = super().perform_mutation(_root, info, **data)
         product = getattr(response, cls._meta.return_field_name)
-
         # Wrap product instance with ChannelContext in response
         setattr(
             response,

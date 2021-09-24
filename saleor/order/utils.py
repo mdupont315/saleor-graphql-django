@@ -42,6 +42,10 @@ def get_order_country(order: Order) -> str:
     return address.country
 
 
+def formatComma(price) -> str:
+    return str(price).replace(".", ",")
+
+
 def order_line_needs_automatic_fulfillment(line: OrderLine) -> bool:
     """Check if given line is digital and should be automatically fulfilled."""
     digital_content_settings = get_default_digital_content_settings()
