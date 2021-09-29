@@ -85,7 +85,7 @@ from django.core.wsgi import get_wsgi_application
 
 from saleor.views import background_thread, sio
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chatbot.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "saleor.settings")
 django_app = StaticFilesHandler(get_wsgi_application())
 application = socketio.Middleware(sio, wsgi_app=django_app, socketio_path='socket.io')
 
