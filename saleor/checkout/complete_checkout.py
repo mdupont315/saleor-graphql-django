@@ -9,6 +9,7 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.encoding import smart_text
+from django_multitenant.utils import get_current_tenant
 from prices import TaxedMoney
 from prices.money import Money
 
@@ -51,10 +52,11 @@ from .utils import get_voucher_for_checkout
 
 
 class DecimalEncoder(json.JSONEncoder):
-    def default(self,o):
+    def default(self, o):
         if isinstance(o, decimal.Decimal):
             return float(o)
-        super(DecimalEncoder,self).default(o)
+        super(DecimalEncoder, self).default(o)
+
 
 if TYPE_CHECKING:
     from ..plugins.manager import PluginsManager
@@ -210,7 +212,8 @@ def _create_line_for_order(
         tax_rate=tax_rate,
     )
 
-    line_info = OrderLineData(line=line, quantity=quantity, variant=variant, option_values=option_values)
+    line_info = OrderLineData(line=line, quantity=quantity,
+                              variant=variant, option_values=option_values)
 
     return line_info
 
@@ -307,25 +310,28 @@ def _prepare_order_data(
     if delivery_setting:
         if delivery_setting.min_order > undiscount_checkout_total_amount and checkout.order_type == settings.ORDER_TYPES[0][0]:
             raise ValidationError(
-            {
-                "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=delivery_setting.min_order)
-            }
-        )
+                {
+                    "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=delivery_setting.min_order)
+                }
+            )
         if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
            (undiscount_checkout_total_amount < delivery_setting.from_delivery or (undiscount_checkout_total_amount >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
-            delivery_fee = Money(amount=delivery_setting.delivery_fee, currency=checkout.currency)
+            delivery_fee = Money(amount=delivery_setting.delivery_fee,
+                                 currency=checkout.currency)
             taxed_total = taxed_total + TaxedMoney(net=delivery_fee, gross=delivery_fee)
             order_data["delivery_fee"] = delivery_setting.delivery_fee
-    
+
     # implement transaction fee
     payment_gateway = checkout.get_last_active_payment().gateway
     if current_strore.enable_transaction_fee:
         if payment_gateway == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
-            contant_cost = Money(amount=current_strore.contant_cost, currency=checkout.currency)
+            contant_cost = Money(amount=current_strore.contant_cost,
+                                 currency=checkout.currency)
             taxed_total = taxed_total + TaxedMoney(net=contant_cost, gross=contant_cost)
             order_data["transaction_cost"] = current_strore.contant_cost
         if payment_gateway == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
-            stripe_cost =  Money(amount=current_strore.stripe_cost, currency=checkout.currency)
+            stripe_cost = Money(amount=current_strore.stripe_cost,
+                                currency=checkout.currency)
             taxed_total = taxed_total + TaxedMoney(net=stripe_cost, gross=stripe_cost)
             order_data["transaction_cost"] = current_strore.stripe_cost
 
@@ -451,18 +457,22 @@ def _create_order(
             option_values_list = []
             option_values_dict_list = []
             for option_values_in_line in option_values:
-                option_value_order_line = OrderLine.option_values.through(optionvalue_id=option_values_in_line.id, orderline_id=order_line_instance.id)
+                option_value_order_line = OrderLine.option_values.through(
+                    optionvalue_id=option_values_in_line.id, orderline_id=order_line_instance.id)
                 option_values_list.append(option_value_order_line)
                 option_values_dict = {}
-                option_values_dict["price"] = option_values_in_line.get_price_amount_by_channel(order.channel.slug)
+                option_values_dict["price"] = option_values_in_line.get_price_amount_by_channel(
+                    order.channel.slug)
                 option_values_dict["id"] = option_values_in_line.id
                 option_values_dict["name"] = option_values_in_line.name
                 option_values_dict["currency"] = order.channel.currency_code
                 option_values_dict["type"] = option_values_in_line.option.type
                 option_values_dict_list.append(option_values_dict)
-            order_line_instance.option_items = json.dumps(option_values_dict_list, cls=DecimalEncoder)
+            order_line_instance.option_items = json.dumps(
+                option_values_dict_list, cls=DecimalEncoder)
             order_line_instance.save()
-            order_line_instance.option_values.through.objects.bulk_create(option_values_list)
+            order_line_instance.option_values.through.objects.bulk_create(
+                option_values_list)
 
     country_code = checkout_info.get_country()
     allocate_stocks(order_lines_info, country_code, checkout_info.channel.slug)
@@ -632,7 +642,7 @@ def complete_checkout(
     site_settings=None,
     tracking_code=None,
     redirect_url=None,
-    txn: "dict"=None
+    txn: "dict" = None
 ) -> Tuple[Optional[Order], bool, dict]:
     """Logic required to finalize the checkout and convert it to order.
 
@@ -662,7 +672,7 @@ def complete_checkout(
     customer_id = None
     if store_source and payment:
         customer_id = fetch_customer_id(user=user, gateway=payment.gateway)
-    if txn is None:   
+    if txn is None:
         txn = _process_payment(
             payment=payment,  # type: ignore
             customer_id=customer_id,
@@ -691,9 +701,12 @@ def complete_checkout(
             )
             # remove checkout after order is successfully created
             checkout.delete()
+            store = get_current_tenant()
+
             if order:
-            # emit event create
-                sio.emit("is_order_complete",{'data' : graphene.Node.to_global_id("Order", order.id)})
+                # emit event create
+                sio.emit("is_order_complete", {'orderId': graphene.Node.to_global_id(
+                    "Order", order.id), 'storeId': graphene.Node.to_global_id("Store", store.id)})
             # write log
             log_info('Order', 'Order', content={
                 "order": order.__dict__,
@@ -703,5 +716,5 @@ def complete_checkout(
             gateway.payment_refund_or_void(payment, manager, channel_slug=channel_slug)
             error = prepare_insufficient_stock_checkout_validation_error(e)
             raise error
-            
+
     return order, action_required, action_data, checkout.redirect_url
