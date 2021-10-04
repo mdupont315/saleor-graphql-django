@@ -90,7 +90,7 @@ class Order(MultitenantModelWithMetadata):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     created = models.DateTimeField(default=now, editable=False)
     status = models.CharField(
         max_length=32, default=OrderStatus.UNFULFILLED, choices=OrderStatus.CHOICES
@@ -243,7 +243,7 @@ class Order(MultitenantModelWithMetadata):
         default=zero_weight,
     )
     redirect_url = models.URLField(blank=True, null=True)
-    
+
     order_type = models.CharField(
         max_length=35, choices=settings.ORDER_TYPES, default=settings.ORDER_TYPE_DEFAULT
     )
@@ -253,7 +253,7 @@ class Order(MultitenantModelWithMetadata):
     expected_time = models.CharField(
         max_length=50, blank=True, null=True
     )
-    
+
     delivery_fee = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
@@ -342,10 +342,10 @@ class Order(MultitenantModelWithMetadata):
 
     def get_total_quantity(self):
         return sum([line.quantity for line in self.lines.all()])
-    
+
     def get_discount_amout(self):
-        return self.undiscounted_total_net_amount - self.total_net_amount 
-    
+        return self.undiscounted_total_net_amount - self.total_net_amount
+
     def get_order_type_display(self):
         order_type = self.order_type
         for code, display in settings.ORDER_TYPES:
@@ -604,7 +604,7 @@ class Fulfillment(MultitenantModelWithMetadata):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     fulfillment_order = models.PositiveIntegerField(editable=False)
     order = models.ForeignKey(
         Order, related_name="fulfillments", editable=False, on_delete=models.CASCADE
@@ -680,7 +680,15 @@ class FulfillmentLine(models.Model):
     )
 
 
-class OrderEvent(models.Model):
+class OrderEvent(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="events",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     """Model used to store events that happened during the order lifecycle.
 
     Args:
