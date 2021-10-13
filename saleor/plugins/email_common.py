@@ -419,7 +419,6 @@ def validate_default_email_configuration(
         use_tls=configuration["use_tls"],
         use_ssl=configuration["use_ssl"],
     )
-
     if not config.sender_address:
         raise ValidationError(
             {
@@ -430,22 +429,25 @@ def validate_default_email_configuration(
             }
         )
 
-    try:
-        validate_email_config(config)
-    except Exception as e:
-        logger.warning("Unable to connect to email backend.", exc_info=e)
-        error_msg = (
-            "Unable to connect to email backend. Make sure that you provided "
-            "correct values."
-        )
-        raise ValidationError(
-            {
-                c: ValidationError(
-                    error_msg, code=PluginErrorCode.PLUGIN_MISCONFIGURED.value
-                )
-                for c in configuration.keys()
-            }
-        )
+    # try:
+    #     # validate_email_config(config)
+    #     print("hêrerererer")
+    # except Exception as e:
+    #     logger.warning("Unable to connect to email backend.", exc_info=e)
+    #     error_msg = (
+    #         "Unable to connect to email backend. Make sure that you provided "
+    #         "correct values."
+    #     )
+    #     print("erorsorosrosrosor")
+
+    #     raise ValidationError(
+    #         {
+    #             c: ValidationError(
+    #                 error_msg, code=PluginErrorCode.PLUGIN_MISCONFIGURED.value
+    #             )
+    #             for c in configuration.keys()
+    #         }
+    #     )
 
 
 def validate_format_of_provided_templates(
