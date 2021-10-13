@@ -24,20 +24,12 @@ from ...core.utils import add_hash_to_file_name, validate_image_file
 from ...decorators import staff_member_required
 from ...utils.validators import check_for_duplicates
 from ..utils import (
-    CustomerDeleteMixin,
-    StaffDeleteMixin,
-    UserDeleteMixin,
+    CustomerDeleteMixin, StaffDeleteMixin, UserDeleteMixin,
     get_groups_which_user_can_manage,
     get_not_manageable_permissions_when_deactivate_or_remove_users,
-    get_out_of_scope_users,
-)
-from .base import (
-    BaseAddressDelete,
-    BaseAddressUpdate,
-    BaseCustomerCreate,
-    CustomerInput,
-    UserInput,
-)
+    get_out_of_scope_users)
+from .base import (BaseAddressDelete, BaseAddressUpdate, BaseCustomerCreate,
+                   CustomerInput, UserInput)
 
 
 class StaffInput(UserInput):

@@ -32,16 +32,29 @@ def send_password_reset_notification(
     params = urlencode({"email": user.email, "token": token})
     reset_url = prepare_url(params, redirect_url)
     store = get_current_tenant()
-    payload = {
-        "logo": store.logo.url,
-        "store_name": store.name,
-        "user": get_default_user_payload(user),
-        "recipient_email": user.email,
-        "token": token,
-        "reset_url": reset_url,
-        "channel_slug": channel_slug,
-        **get_site_context(),
-    }
+
+    if staff:
+        payload = {
+            # "logo": store.logo.url,
+            # "store_name": store.name,
+            "user": get_default_user_payload(user),
+            "recipient_email": user.email,
+            "token": token,
+            "reset_url": reset_url,
+            "channel_slug": channel_slug,
+            **get_site_context(),
+        }
+    else:
+        payload = {
+            "logo": store.logo.url,
+            "store_name": store.name,
+            "user": get_default_user_payload(user),
+            "recipient_email": user.email,
+            "token": token,
+            "reset_url": reset_url,
+            "channel_slug": channel_slug,
+            **get_site_context(),
+        }
 
     event = (
         NotifyEventType.ACCOUNT_STAFF_RESET_PASSWORD
@@ -144,6 +157,9 @@ def send_set_password_notification(
     }
     if staff:
         event = NotifyEventType.ACCOUNT_SET_STAFF_PASSWORD
+        print("staff", payload)
     else:
         event = NotifyEventType.ACCOUNT_SET_CUSTOMER_PASSWORD
+        print("customer")
+
     manager.notify(event, payload=payload, channel_slug=channel_slug)
