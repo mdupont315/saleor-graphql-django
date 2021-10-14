@@ -41,6 +41,8 @@ from .notifications import (send_fulfillment_confirmation_to_customer,
 from .utils import (order_line_needs_automatic_fulfillment, recalculate_order,
                     restock_fulfillment_lines, update_order_status)
 
+from django.templatetags.static import static
+
 if TYPE_CHECKING:
     from ..plugins.manager import PluginsManager
     from ..warehouse.models import Warehouse
@@ -103,6 +105,7 @@ def order_created(
         "lines": order.lines.all(),
         "full_store_address": full_store_address,
         "logo": current_strore.logo.url if current_strore.logo else '',
+        'orderich_logo':static("images/orderich-logo.png"),
         "store_phone": current_strore.phone,
         "store_name": current_strore.name,
         "store_address": current_strore.address,
