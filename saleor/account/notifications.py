@@ -8,6 +8,7 @@ from ..core.notifications import get_site_context
 from ..core.notify_events import NotifyEventType
 from ..core.utils.url import prepare_url
 from .models import User
+from django.templatetags.static import static
 
 
 def get_default_user_payload(user: User):
@@ -32,6 +33,7 @@ def send_password_reset_notification(
     params = urlencode({"email": user.email, "token": token})
     reset_url = prepare_url(params, redirect_url)
     store = get_current_tenant()
+    orderich_logo = static("images/orderich-logo.png"),
 
     if staff:
         payload = {
@@ -42,6 +44,7 @@ def send_password_reset_notification(
             "token": token,
             "reset_url": reset_url,
             "channel_slug": channel_slug,
+            "orderich_logo": orderich_logo,
             **get_site_context(),
         }
     else:
@@ -53,6 +56,7 @@ def send_password_reset_notification(
             "token": token,
             "reset_url": reset_url,
             "channel_slug": channel_slug,
+            "orderich_logo": orderich_logo,
             **get_site_context(),
         }
 
@@ -157,9 +161,7 @@ def send_set_password_notification(
     }
     if staff:
         event = NotifyEventType.ACCOUNT_SET_STAFF_PASSWORD
-        print("staff", payload)
     else:
         event = NotifyEventType.ACCOUNT_SET_CUSTOMER_PASSWORD
-        print("customer")
 
     manager.notify(event, payload=payload, channel_slug=channel_slug)
