@@ -81,6 +81,7 @@ class Store(CountableDjangoObjectType):
             "phone",
             "address",
             "postal_code",
+            "pos_enable",
             "city",
             "webshop_status",
             "delivery_status",

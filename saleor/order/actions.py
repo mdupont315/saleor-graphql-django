@@ -80,7 +80,7 @@ def order_created(
     site_settings = Site.objects.get_current().settings
     if site_settings.automatically_confirm_all_new_orders:
         order_confirmed(order, user, manager)
-
+    print(static("static/images/orderich-logo.png"),"-------------")
     # sending email
     current_strore = Store.objects.all().first()
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
@@ -105,7 +105,7 @@ def order_created(
         "lines": order.lines.all(),
         "full_store_address": full_store_address,
         "logo": current_strore.logo.url if current_strore.logo else '',
-        'orderich_logo':static("images/orderich-logo.png"),
+        'orderich_logo':static("static/images/orderich-logo.png"),
         "store_phone": current_strore.phone,
         "store_name": current_strore.name,
         "store_address": current_strore.address,

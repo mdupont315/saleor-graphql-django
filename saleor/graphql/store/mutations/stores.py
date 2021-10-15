@@ -176,6 +176,7 @@ class StoreUpdateInput(graphene.InputObjectType):
     # New order notifications
     email_notifications = graphene.Boolean(description="Enable notification")
     email_address = graphene.String(description="Email for notification")
+    pos_enable = graphene.Boolean(description="Enable POS")
 
     # Transaction cost
     enable_transaction_fee = graphene.Boolean(description="Enable transaction all fee")
