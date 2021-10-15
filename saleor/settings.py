@@ -133,7 +133,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, "media")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
-STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+# STATIC_URL = os.environ.get("STATIC_URL", "/static/")
 STATICFILES_DIRS = [
     ("images", os.path.join(PROJECT_ROOT, "saleor", "static", "images"))
 ]
@@ -411,14 +411,16 @@ AWS_MEDIA_BUCKET_NAME = "saleor-orderich"
 AWS_MEDIA_CUSTOM_DOMAIN = os.environ.get("AWS_MEDIA_CUSTOM_DOMAIN")
 AWS_QUERYSTRING_AUTH = get_bool_from_env("AWS_QUERYSTRING_AUTH", False)
 AWS_QUERYSTRING_EXPIRE = get_bool_from_env("AWS_QUERYSTRING_EXPIRE", 3600)
-AWS_S3_CUSTOM_DOMAIN = os.environ.get("AWS_STATIC_CUSTOM_DOMAIN")
+AWS_STORAGE_BUCKET_NAME = "saleor-orderich"
+AWS_S3_CUSTOM_DOMAIN = os.environ.get("AWS_STATIC_CUSTOM_DOMAIN", f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com')
 AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 # AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", None)
 # AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 # AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = "eu-west-2"
 AWS_SECRET_ACCESS_KEY = "xtrvxilmgrrt4pu5yTK+Ei9vqwOQvE43LcCnXZlW"
-AWS_STORAGE_BUCKET_NAME = "saleor-orderich"
+
 # AWS_DEFAULT_ACL = os.environ.get("AWS_DEFAULT_ACL", None)
 AWS_DEFAULT_ACL = "public-read"
 AWS_S3_FILE_OVERWRITE = get_bool_from_env("AWS_S3_FILE_OVERWRITE", True)
@@ -440,6 +442,7 @@ if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
     GS_CREDENTIALS = os.environ.get("GS_CREDENTIALS")
 
 if AWS_STORAGE_BUCKET_NAME:
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 elif GS_BUCKET_NAME:
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
