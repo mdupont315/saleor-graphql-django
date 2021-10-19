@@ -146,7 +146,7 @@ class ProductType(MultitenantModelWithMetadata):
             self.name,
         )
 
-class OptionQueryset(QuerySet):
+class OptionQueryset(CustomQueryset):
     def visible_to_user(self, channel_slug: str):
         if channel_slug:
             return self.prefetch_related(Prefetch('option_values', 
