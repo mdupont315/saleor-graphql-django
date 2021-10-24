@@ -104,15 +104,15 @@ class CategoryTranslation(SeoModelTranslation):
         )
 
 
-class ProductType(MultitenantModelWithMetadata):
-    store = models.ForeignKey(
-        Store,
-        related_name="product_types",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-    tenant_id='store_id'
+class ProductType(ModelWithMetadata):
+    # store = models.ForeignKey(
+    #     Store,
+    #     related_name="product_types",
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    # )
+    # tenant_id='store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     has_variants = models.BooleanField(default=True)
