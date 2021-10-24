@@ -1073,7 +1073,7 @@ class ProductVariantDelete(ModelDeleteMutation):
 
 class ProductTypeInput(graphene.InputObjectType):
     name = graphene.String(description="Name of the product type.")
-    slug = graphene.String(description="Product type slug.")
+    slug = graphene.String(description="Product type slug.",)
     has_variants = graphene.Boolean(
         description=(
             "Determines if product of this type has multiple variants. This option "

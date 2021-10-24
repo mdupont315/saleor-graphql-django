@@ -859,6 +859,29 @@ def create_channel(channel_name, currency_code, slug=None):
     return f"Channel: {channel}"
 
 
+def create_product_type(name, has_variants, is_shipping_required, tax_code, weight, slug=None):
+# name
+# slug
+# has_variants
+# is_shipping_required
+# is_digital
+# weight
+    if not slug:
+        slug = slugify(name)
+    product_type, _ = ProductType.objects.get_or_create(
+        slug=slug,
+        # tax_code=tax_code,
+        name= name,
+        has_variants= has_variants,
+        is_shipping_required= is_shipping_required,
+        weight= weight
+        # defaults={
+
+        # },
+    )
+    return f"product_type: {product_type}"
+
+
 def create_channels():
     # yield create_channel(
     #     channel_name="Channel-USD",
@@ -869,6 +892,13 @@ def create_channels():
         channel_name="Channel-EUR",
         currency_code="EUR",
         slug=settings.DEFAULT_CHANNEL_SLUG,
+    )
+    yield create_product_type(
+        name="Simple",
+        has_variants=False,
+        is_shipping_required=False,
+        tax_code="",
+        weight=0
     )
 
 
