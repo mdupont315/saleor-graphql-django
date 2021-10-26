@@ -387,7 +387,7 @@ class ProductsQueryset(CustomQueryset):
         return self.prefetch_related("collections", "category", *common_fields)
 
 
-class Product(SortableModel, MultitenantModelWithMetadata,SeoModel):
+class Product(SortableModel, MultitenantModelWithMetadata, SeoModel):
     store = models.ForeignKey(
         Store,
         related_name="products",
@@ -442,12 +442,15 @@ class Product(SortableModel, MultitenantModelWithMetadata,SeoModel):
 
     class Meta:
         app_label = "product"
-        ordering = ("slug",)
+        ordering = ("sort_order", "pk")
         permissions = (
             (ProductPermissions.MANAGE_PRODUCTS.codename, "Manage products."),
         )
         indexes = [GinIndex(fields=["search_vector"])]
         indexes.extend(ModelWithMetadata.Meta.indexes)
+    
+    def get_ordering_queryset(self):
+        return self.category.products.all()
 
     def __iter__(self):
         if not hasattr(self, "__variants"):
