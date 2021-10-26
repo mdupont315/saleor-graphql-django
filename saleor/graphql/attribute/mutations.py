@@ -709,6 +709,9 @@ class AttributeReorderValues(BaseMutation):
             operations[m2m_info.pk] = move_info.sort_order
 
         with traced_atomic_transaction():
+            print(attribute.values,"==============================values_m2m")
+            print(operations,"------------operations")
+
             perform_reordering(values_m2m, operations)
         attribute.refresh_from_db(fields=["values"])
         return AttributeReorderValues(attribute=attribute)

@@ -85,6 +85,7 @@ from .mutations.products import (
     ProductVariantReorder,
     ProductVariantSetDefault,
     ProductVariantUpdate,
+    ReorderProducts,
     VariantMediaAssign,
     VariantMediaUnassign,
 )
@@ -416,6 +417,8 @@ class ProductMutations(graphene.ObjectType):
     product_bulk_delete = ProductBulkDelete.Field()
     product_update = ProductUpdate.Field()
     product_translate = ProductTranslate.Field()
+    reorder_products = ReorderProducts.Field()
+
 
     product_channel_listing_update = ProductChannelListingUpdate.Field()
 

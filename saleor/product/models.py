@@ -237,8 +237,8 @@ class ProductsQueryset(CustomQueryset):
                 ).values("id")
                 return self.filter(
                     Exists(channel_listings.filter(product_id=OuterRef("pk")))
-                )
-            return self.all()
+                ).order_by("sort_order")
+            return self.all().order_by("sort_order")
         return self.published_with_variants(channel_slug)
 
     def annotate_publication_info(self, channel_slug: str):
@@ -387,7 +387,7 @@ class ProductsQueryset(CustomQueryset):
         return self.prefetch_related("collections", "category", *common_fields)
 
 
-class Product(SeoModel, MultitenantModelWithMetadata):
+class Product(SortableModel, MultitenantModelWithMetadata,SeoModel):
     store = models.ForeignKey(
         Store,
         related_name="products",
