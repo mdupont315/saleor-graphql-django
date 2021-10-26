@@ -89,11 +89,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "saleor.settings")
 django_app = StaticFilesHandler(get_wsgi_application())
 application = socketio.Middleware(sio, wsgi_app=django_app, socketio_path='socket.io')
 
-import eventlet
-import eventlet.wsgi
+# import eventlet
+# import eventlet.wsgi
 
-thread = sio.start_background_task(background_thread)
-eventlet.wsgi.server(eventlet.listen(('', 8000)), application)
+# thread = sio.start_background_task(background_thread)
+# eventlet.wsgi.server(eventlet.listen(('', 8000)), application)
 
 
 

@@ -582,6 +582,7 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     is_available_for_purchase = graphene.Boolean(
         description="Whether the product is available for purchase."
     )
+    # sort_order = graphene.
 
     class Meta:
         default_resolver = ChannelContextType.resolver_with_context

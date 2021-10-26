@@ -51,8 +51,6 @@ from ..types import (Category, Collection, Product, ProductMedia, ProductType,
 from ..utils import (create_stocks, get_draft_order_lines_data_for_variants,
                      get_used_attribute_values_for_variant,
                      get_used_variants_attribute_values)
-
-
 class CategoryInput(graphene.InputObjectType):
     description = graphene.JSONString(description="Category description (JSON).")
     name = graphene.String(description="Category name.")
@@ -300,6 +298,54 @@ class MoveProductInput(graphene.InputObjectType):
             "backward, 0 leaves the item unchanged."
         )
     )
+class ReorderProducts(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the products of a collection."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = ProductError
+        error_type_field = "product_errors"
+
+    class Arguments:
+        moves = graphene.List(
+            MoveProductInput,
+            required=True,
+            description="The products position operations.",
+        )
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        operations = {}
+        products = models.Product.objects.all()
+
+        for move_info in moves:
+            product_pk = cls.get_global_id_or_error(
+                move_info.product_id, only_type=Product, field="moves"
+            )
+            try:
+                m2m_info = products.get(pk=int(product_pk))
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.product_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+
+        with traced_atomic_transaction():
+            # print(products)
+            print(operations,"------------operations")
+
+            perform_reordering(products, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderProducts()
+
 
 
 class CollectionReorderProducts(BaseMutation):
