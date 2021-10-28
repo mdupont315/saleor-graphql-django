@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from ..app.models import App
 
 
-class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel):
+class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel, SortableModel):
     store = models.ForeignKey(
         Store,
         related_name="categories",
@@ -61,7 +61,7 @@ class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     description = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
@@ -75,9 +75,17 @@ class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel):
 
     tree = TreeManager()
     translated = TranslationProxy()
+    class Meta:
+        ordering = ("sort_order", "pk")
+        permissions = (
+            (ProductPermissions.MANAGE_PRODUCTS.codename, "Manage products."),
+        )
 
     def __str__(self) -> str:
         return self.name
+
+    def get_ordering_queryset(self):
+        return self.objects.all()
 
 
 class CategoryTranslation(SeoModelTranslation):
@@ -146,12 +154,14 @@ class ProductType(ModelWithMetadata):
             self.name,
         )
 
+
 class OptionQueryset(CustomQueryset):
     def visible_to_user(self, channel_slug: str):
         if channel_slug:
-            return self.prefetch_related(Prefetch('option_values', 
-            queryset=OptionValue.objects.visible_to_user(channel_slug)))
+            return self.prefetch_related(Prefetch('option_values',
+                                                  queryset=OptionValue.objects.visible_to_user(channel_slug)))
         return self.all()
+
 
 class Option(MultitenantModelWithMetadata):
     store = models.ForeignKey(
@@ -161,7 +171,7 @@ class Option(MultitenantModelWithMetadata):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     name = models.CharField(max_length=256)
     type = models.CharField(max_length=128, blank=True, null=True)
     required = models.BooleanField(blank=True, null=True, default=False)
@@ -169,22 +179,22 @@ class Option(MultitenantModelWithMetadata):
 
     objects = OptionQueryset.as_manager()
 
-
     class Meta:
         ordering = ("name", "pk")
 
+
 class ProductOption(models.Model):
     option = models.ForeignKey(
-        Option, 
-        related_name="product_options", 
+        Option,
+        related_name="product_options",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
 
     product = models.ForeignKey(
-        "Product", 
-        related_name="product_options", 
+        "Product",
+        related_name="product_options",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -192,6 +202,7 @@ class ProductOption(models.Model):
 
     class Meta:
         unique_together = [["option", "product"]]
+
 
 class ProductsQueryset(CustomQueryset):
     def published(self, channel_slug: str):
@@ -395,7 +406,7 @@ class Product(SortableModel, MultitenantModelWithMetadata, SeoModel):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     product_type = models.ForeignKey(
         ProductType, related_name="products", on_delete=models.CASCADE
     )
@@ -440,6 +451,9 @@ class Product(SortableModel, MultitenantModelWithMetadata, SeoModel):
     objects = ProductsQueryset.as_manager()
     translated = TranslationProxy()
 
+    def get_ordering_queryset(self):
+        print("==TEST==", self.store.all())
+        return self.store.all()
     class Meta:
         app_label = "product"
         ordering = ("sort_order", "pk")
@@ -449,8 +463,7 @@ class Product(SortableModel, MultitenantModelWithMetadata, SeoModel):
         indexes = [GinIndex(fields=["search_vector"])]
         indexes.extend(ModelWithMetadata.Meta.indexes)
     
-    def get_ordering_queryset(self):
-        return self.category.products.all()
+
 
     def __iter__(self):
         if not hasattr(self, "__variants"):
@@ -580,7 +593,7 @@ class ProductVariant(SortableModel, MultitenantModelWithMetadata):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     sku = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255, blank=True)
     product = models.ForeignKey(
@@ -718,7 +731,7 @@ class DigitalContent(MultitenantModelWithMetadata):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     FILE = "file"
     TYPE_CHOICES = ((FILE, "digital_product"),)
     use_default_settings = models.BooleanField(default=True)
@@ -839,7 +852,7 @@ class Collection(SeoModel, MultitenantModelWithMetadata):
         null=True,
         blank=True,
     )
-    tenant_id='store_id'
+    tenant_id = 'store_id'
     name = models.CharField(max_length=250, unique=True)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     products = models.ManyToManyField(
@@ -914,14 +927,15 @@ class CollectionTranslation(SeoModelTranslation):
 class OptionValueQueryset(QuerySet):
     def visible_to_user(self, channel_slug: str):
         if channel_slug:
-            return self.prefetch_related(Prefetch('option_value_channels', 
-            queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug)))
+            return self.prefetch_related(Prefetch('option_value_channels',
+                                                  queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug)))
         return self.all()
+
 
 class OptionValue(models.Model):
     name = models.CharField(max_length=256)
     option = models.ForeignKey(
-        Option, related_name="option_values", 
+        Option, related_name="option_values",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -932,39 +946,43 @@ class OptionValue(models.Model):
     order_lines = models.ManyToManyField(OrderLine, related_name="option_values")
 
     objects = OptionValueQueryset.as_manager()
-    
+
     class Meta:
         ordering = ("name", "pk")
 
     def get_price_by_channel(self, channel_slug: str):
         if channel_slug:
-            option_value_channel = self.option_value_channels.get(channel__slug=channel_slug)
+            option_value_channel = self.option_value_channels.get(
+                channel__slug=channel_slug)
             option_value_price = option_value_channel.price
             return option_value_price or 0
         return 0
-    
+
     def get_price_amount_by_channel(self, channel_slug: str):
         if channel_slug:
-            option_value_channel = self.option_value_channels.get(channel__slug=channel_slug)
+            option_value_channel = self.option_value_channels.get(
+                channel__slug=channel_slug)
             option_value_price = option_value_channel.price_amount
             return option_value_price or 0
         return 0
 
+
 class OptionValueChannelListing(models.Model):
     option_value = models.ForeignKey(
-        OptionValue, 
-        related_name="option_value_channels", 
+        OptionValue,
+        related_name="option_value_channels",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
     channel = models.ForeignKey(
-        Channel, related_name="option_value_channels", 
+        Channel, related_name="option_value_channels",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
-    currency = models.CharField(max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH, blank=True, null=True)
+    currency = models.CharField(
+        max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH, blank=True, null=True)
     price_amount = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
