@@ -337,16 +337,67 @@ class ReorderProducts(BaseMutation):
             operations[m2m_info.pk] = move_info.sort_order
 
         with traced_atomic_transaction():
-            # print(products)
-            print(operations,"------------operations")
-
             perform_reordering(products, operations)
         # product=ChannelContext(node=product, channel_slug=None)
         # print(product, "-----------------move")
 
         return ReorderProducts()
+class MoveCategoryInput(graphene.InputObjectType):
+    category_id = graphene.ID(
+        description="The ID of the category to move.", required=True
+    )
+    sort_order = graphene.Int(
+        description=(
+            "The relative sorting position of the product (from -inf to +inf) "
+            "starting from the first given product's actual position."
+            "1 moves the item one position forward, -1 moves the item one position "
+            "backward, 0 leaves the item unchanged."
+        )
+    )
+class ReorderCategories(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the categories of a collection."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = ProductError
+        error_type_field = "product_errors"
 
+    class Arguments:
+        moves = graphene.List(
+            MoveCategoryInput,
+            required=True,
+            description="The products position operations.",
+        )
 
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        operations = {}
+        catgories = models.Category.objects.all()
+
+        for move_info in moves:
+            category_pk = cls.get_global_id_or_error(
+                move_info.category_id, only_type=Category, field="moves"
+            )
+            try:
+                m2m_info = catgories.get(pk=int(category_pk))
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.product_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+
+        with traced_atomic_transaction():
+            perform_reordering(catgories, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderCategories()
 
 class CollectionReorderProducts(BaseMutation):
     collection = graphene.Field(

@@ -93,7 +93,6 @@ def resolve_products(info, requestor, channel_slug=None, **_kwargs) -> ChannelQs
         qs = qs.filter(
             Exists(product_channel_listings.filter(product_id=OuterRef("pk")))
         )
-    print(qs,"-=------------------------------")
     return ChannelQsContext(qs=qs, channel_slug=channel_slug)
 
 

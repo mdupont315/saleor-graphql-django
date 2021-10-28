@@ -86,6 +86,7 @@ from .mutations.products import (
     ProductVariantSetDefault,
     ProductVariantUpdate,
     ReorderProducts,
+    ReorderCategories,
     VariantMediaAssign,
     VariantMediaUnassign,
 )
@@ -401,6 +402,7 @@ class ProductMutations(graphene.ObjectType):
     category_bulk_delete = CategoryBulkDelete.Field()
     category_update = CategoryUpdate.Field()
     category_translate = CategoryTranslate.Field()
+    reorder_categories = ReorderCategories.Field()
 
     collection_add_products = CollectionAddProducts.Field()
     collection_create = CollectionCreate.Field()
