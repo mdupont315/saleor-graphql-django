@@ -596,7 +596,7 @@ class ProductVariant(SortableModel, MultitenantModelWithMetadata):
         blank=True,
     )
     tenant_id = 'store_id'
-    sku = models.CharField(max_length=255, unique=True,blank=True)
+    sku = models.CharField(max_length=255, unique=False,blank=True)
     name = models.CharField(max_length=255, blank=True)
     product = models.ForeignKey(
         Product, related_name="variants", on_delete=models.CASCADE
