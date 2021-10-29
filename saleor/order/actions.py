@@ -80,7 +80,6 @@ def order_created(
     site_settings = Site.objects.get_current().settings
     if site_settings.automatically_confirm_all_new_orders:
         order_confirmed(order, user, manager)
-    print(static("static/images/orderich-logo.png"),"-------------")
     # sending email
     current_strore = Store.objects.all().first()
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')

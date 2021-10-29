@@ -16,6 +16,7 @@ from django.db.models.query import Prefetch, QuerySet
 from django.urls import reverse
 from django.utils.encoding import smart_text
 from django_measurement.models import MeasurementField
+from django_multitenant.utils import get_current_tenant
 from django_prices.models import MoneyField
 from measurement.measures import Weight
 from mptt.managers import TreeManager
@@ -85,7 +86,8 @@ class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel, SortableModel)
         return self.name
 
     def get_ordering_queryset(self):
-        return self.objects.all()
+        store_category = get_current_tenant()
+        return store_category.categories.all()
 
 
 class CategoryTranslation(SeoModelTranslation):
@@ -452,8 +454,8 @@ class Product(SortableModel, MultitenantModelWithMetadata, SeoModel):
     translated = TranslationProxy()
 
     def get_ordering_queryset(self):
-        print("==TEST==", self.store.all())
-        return self.store.all()
+        store_product = get_current_tenant()
+        return store_product.products.all()
     class Meta:
         app_label = "product"
         ordering = ("sort_order", "pk")
@@ -594,7 +596,7 @@ class ProductVariant(SortableModel, MultitenantModelWithMetadata):
         blank=True,
     )
     tenant_id = 'store_id'
-    sku = models.CharField(max_length=255, unique=True)
+    sku = models.CharField(max_length=255, unique=True,blank=True)
     name = models.CharField(max_length=255, blank=True)
     product = models.ForeignKey(
         Product, related_name="variants", on_delete=models.CASCADE
