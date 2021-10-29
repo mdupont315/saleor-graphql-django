@@ -8,6 +8,7 @@ from email.headerregistry import Address
 from typing import List, Optional
 
 import dateutil.parser
+from django_multitenant.utils import get_current_tenant
 import html2text
 import i18naddress
 import pybars
@@ -324,7 +325,8 @@ def customer_list_address_pickup(this, options, items):
 def send_email(
     config: EmailConfig, recipient_list, context, subject="", template_str=""
 ):
-    sender_name = config.sender_name or ""
+    store = get_current_tenant()
+    sender_name = '{} {}'.format(store.name, config.sender_name) or ""
     sender_address = config.sender_address
 
     from_email = str(Address(sender_name, addr_spec=sender_address))
