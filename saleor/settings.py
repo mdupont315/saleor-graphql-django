@@ -184,6 +184,7 @@ MIDDLEWARE = [
     "saleor.core.middleware.site",
     "saleor.core.middleware.plugins",
     "saleor.core.middleware.jwt_refresh_token_middleware",
+    # "saleor.core.middleware.multitenant_middleware",
 ]
 
 INSTALLED_APPS = [

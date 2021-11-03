@@ -8,6 +8,9 @@ from django.utils import timezone
 from django.utils.functional import SimpleLazyObject
 from django.utils.translation import get_language
 
+from saleor.store.models import Store
+from django_multitenant.utils import set_current_tenant, unset_current_tenant
+
 from ..discount.utils import fetch_discounts
 from ..plugins.manager import get_plugins_manager
 from . import analytics
@@ -37,6 +40,35 @@ def google_analytics(get_response):
 
     return _google_analytics_middleware
 
+def multitenant_middleware(get_response):
+    """Report a page view to Google Analytics."""
+
+    def _multitenant_middleware(request):
+        domain = request.META.get('HTTP_ORIGIN')
+        if domain:
+            domain = domain.split(":")[1][2:]
+            print(request.user,"-------------request.user.is_superuser")
+            s_store = Store.objects.filter(domain=domain).first()
+            # print(s_store,"-------------")
+            # Request from dashboard
+            if request.META.get('HTTP_FROMDB'):
+                if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
+                    # print("-----------1---")
+                    unset_current_tenant()
+                elif s_store:
+                    # print("-----------2---")
+                    set_current_tenant(s_store)
+                else:
+                    # print("-----------3---")
+                    unset_current_tenant()
+            # Request from storefront
+            else:
+                # print("-----------4---")
+                set_current_tenant(s_store)
+        return get_response(request)
+
+
+    return _multitenant_middleware
 
 def request_time(get_response):
     def _stamp_request(request):
