@@ -322,17 +322,13 @@ def customer_list_address_pickup(this, options, items):
     return result
 
 
-def send_email(
-    config: EmailConfig, recipient_list, context, subject="", template_str=""
-):
+def send_email(config: EmailConfig, recipient_list, context, subject="", template_str=""):
     store = get_current_tenant()
-    log_info('_______________', message='Send email', content=store.__dict__)
-    sender_name = '{} {}'.format(store.name, config.sender_name) or ""
-    #
-    logging.getLogger('django').info(
-        '---sender_name----{sender_name}------'.format(sender_name=sender_name))
+    sender_name = '{} {}'.format(context.get("store_name"), config.sender_name) if config.sender_name else ""
+    # 
+    logging.getLogger('django').info('---sender_name----{sender_name}------'.format(sender_name=sender_name) )
     sender_address = config.sender_address
-    print("===sender_name===", sender_name)
+    # logging.getLogger('django').info('---sender_name----{sender_name}------'.format(sender_name=sender_name))
 
     from_email = str(Address(sender_name, addr_spec=sender_address))
     if not config.host or not config.port or not config.username or not config.password:

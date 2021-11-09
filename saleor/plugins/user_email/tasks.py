@@ -8,6 +8,7 @@ from ..email_common import (EmailConfig, get_email_subject,
                             get_email_template_or_default, send_email)
 from ..models import PluginConfiguration
 from . import constants
+import logging
 
 
 def get_plugin_configuration() -> Optional[PluginConfiguration]:
@@ -441,7 +442,6 @@ def send_order_confirmed_email_task(recipient_email, payload, config):
         constants.ORDER_CONFIRMED_SUBJECT_FIELD,
         constants.ORDER_CONFIRMED_DEFAULT_SUBJECT,
     )
-
     send_email(
         config=email_config,
         recipient_list=[recipient_email],
