@@ -11,6 +11,7 @@ from .views import API_PATH, GraphQLView
 from django_multitenant.utils import set_current_tenant, unset_current_tenant
 from ..store.models import Store
 
+
 def get_user(request):
     if not hasattr(request, "_cached_user"):
         request._cached_user = authenticate(request=request)
@@ -32,16 +33,14 @@ class JWTMiddleware:
             s_store = Store.objects.filter(domain=domain).first()
             # Request from dashboard
             if request.META.get('HTTP_FROMDB'):
-                if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
-                    unset_current_tenant()
-                elif s_store:
+                if s_store:
                     set_current_tenant(s_store)
-                else:
+                elif request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
                     unset_current_tenant()
             # Request from storefront
             else:
                 set_current_tenant(s_store)
-        
+
         return next(root, info, **kwargs)
 
 
