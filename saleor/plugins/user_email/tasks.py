@@ -467,6 +467,7 @@ def send_order_infomation_email_task(recipient_email, payload, config):
     )
     # constants.ORDER_CREATED_DEFAULT_SUBJECT
     # ,payload.get("store_name"),"!"
+    print("-----------------vaoday")
     subject = "Thanks for ordering from {}!".format(payload.get("store_name"))
     send_email(
         config=email_config,

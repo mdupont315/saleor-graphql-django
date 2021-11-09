@@ -11,6 +11,11 @@ that later delegates to the Django one. For example, you could introduce WSGI
 middleware here, or combine a Django application with an application of another
 framework.
 """
+import eventlet.wsgi
+import eventlet
+from saleor.views import background_thread, sio
+from django.contrib.staticfiles.handlers import StaticFilesHandler
+import socketio
 import os
 
 from django.core.wsgi import get_wsgi_application
@@ -77,23 +82,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "saleor.settings")
 
 # import os
 
-import os
-
-import socketio
-from django.contrib.staticfiles.handlers import StaticFilesHandler
-from django.core.wsgi import get_wsgi_application
-
-from saleor.views import background_thread, sio
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "saleor.settings")
 django_app = StaticFilesHandler(get_wsgi_application())
 application = socketio.Middleware(sio, wsgi_app=django_app, socketio_path='socket.io')
 
-import eventlet
-import eventlet.wsgi
 
 thread = sio.start_background_task(background_thread)
 eventlet.wsgi.server(eventlet.listen(('', 8000)), application)
-
-
-

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from email.headerregistry import Address
 from typing import List, Optional
-
+from saleor.core.utils.logging import log_info
 import dateutil.parser
 from django_multitenant.utils import get_current_tenant
 import html2text
@@ -326,9 +326,11 @@ def send_email(
     config: EmailConfig, recipient_list, context, subject="", template_str=""
 ):
     store = get_current_tenant()
+    log_info('_______________', message='Send email', content=store.__dict__)
     sender_name = '{} {}'.format(store.name, config.sender_name) or ""
-    # 
-    logging.getLogger('django').info('---sender_name----{sender_name}------'.format(sender_name=sender_name) )
+    #
+    logging.getLogger('django').info(
+        '---sender_name----{sender_name}------'.format(sender_name=sender_name))
     sender_address = config.sender_address
     print("===sender_name===", sender_name)
 
