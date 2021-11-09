@@ -37,6 +37,14 @@ class JWTMiddleware:
                     set_current_tenant(s_store)
                 elif request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
                     unset_current_tenant()
+
+                # if request.user.is_superuser:
+                # if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
+                #     unset_current_tenant()
+                # elif s_store:
+                #     set_current_tenant(s_store)
+                # else:
+                #     unset_current_tenant()
             # Request from storefront
             else:
                 set_current_tenant(s_store)
