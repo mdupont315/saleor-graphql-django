@@ -1,6 +1,6 @@
 import graphene
 from graphql.error import GraphQLError
-
+import logging
 from saleor.core.tracing import traced_resolver
 
 from ...account.utils import requestor_is_staff_member_or_app
