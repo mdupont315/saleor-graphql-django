@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser
 from django.utils.functional import SimpleLazyObject
 
+from saleor.account.models import User
+
 from ..app.models import App
 from ..core.exceptions import ReadOnlyException
 from .views import API_PATH, GraphQLView
@@ -24,20 +26,46 @@ class JWTMiddleware:
 
         def user():
             return get_user(request) or AnonymousUser()
-
+        
         request.user = SimpleLazyObject(lambda: user())
-
+        # print(request.user.is_superuser, "-------------")
+        # print(request._cached_user, "-------rêrererer------")
+       
         domain = request.META.get('HTTP_ORIGIN')
         if domain:
             domain = domain.split(":")[1][2:]
             s_store = Store.objects.filter(domain=domain).first()
+            s_user = User.objects.filter(store_id=s_store.id)
+            check_in_tenant = s_user.filter(id=request.user.id).exists()
+
             # Request from dashboard
             if request.META.get('HTTP_FROMDB'):
-                if s_store:
-                    set_current_tenant(s_store)
-                elif request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
-                    unset_current_tenant()
+                print('vaoday',check_in_tenant)
+                # if check_in_tenant:
 
+                
+                if request.user.is_superuser == False and request.user.id == None:
+                    unset_current_tenant()
+                    pass
+                else:
+                    if request.user.is_superuser and request.user.id:
+                        unset_current_tenant()
+
+                    elif s_store:
+                        set_current_tenant(s_store)
+                    else:
+                        unset_current_tenant()
+
+                #     return next(root, info, **kwargs)
+                # if s_store:
+                #     # if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
+                #     #     unset_current_tenant()
+                #     # else:
+                #     set_current_tenant(s_store)
+                # else:
+                #     unset_current_tenant()
+                # elif request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') or request.user.is_superuser):
+                #     unset_current_tenant()
                 # if request.user.is_superuser:
                 # if request.META.get('HTTP_AUTHORIZATION') == "null" or request.META.get('HTTP_AUTHORIZATION') == None or (hasattr(request, 'user') and request.user.is_superuser):
                 #     unset_current_tenant()

@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING, Iterable, Optional, Union
 from uuid import uuid4
 
@@ -965,8 +966,8 @@ class OptionValue(models.Model):
             option_value_channel = self.option_value_channels.get(
                 channel__slug=channel_slug)
             option_value_price = option_value_channel.price_amount
-            return option_value_price or 0
-        return 0
+            return option_value_price or Decimal(0)
+        return Decimal(0)
 
 
 class OptionValueChannelListing(models.Model):

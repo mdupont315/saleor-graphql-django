@@ -375,7 +375,11 @@
               </tr>
             </table>
 
-            <div class="payment-method">Unpaid with {{payment_method}}</div>
+            {{#if is_payment_with_stripe}}
+            <div class="payment-method">Paid {{payment_method}} on {{order_type}}</div>
+            {{else}}
+            <div class="payment-method">Unpaid {{payment_method}} on {{order_type}}</div>
+            {{/if}}
             <!-- <a href="{{order_url}}" target="_blank" class="checkout-button">Track your order</a> -->
           </div>
 
@@ -453,9 +457,7 @@
               </div>
             </div>
           </div>
-          <img class="orderich-img"
-            src="{{orderich_logo}}"
-            alt="">
+          <img class="orderich-img" src="{{orderich_logo}}" alt="">
           <div class="orderich-footer">
             {{store_name}}, powered by <a href="https://orderich.com/" target="_blank">Orderich</a>
           </div>
