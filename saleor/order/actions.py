@@ -94,6 +94,7 @@ def order_created(
     channel_symbol = order.get_channel_curreny_symbool()
     is_check_pickup = order.get_order_type_display() == "Pickup"
     is_check_delivery = order.get_order_type_display() == "Delivery"
+    is_payment_with_stripe = order.get_last_payment().gateway != 'mirumee.payments.dummy'
     full_store_address = "{}, {}, {}".format(
         current_strore.address, current_strore.postal_code, current_strore.city)
     payload = {
@@ -126,7 +127,8 @@ def order_created(
         "payment_status": order.get_last_payment().charge_status,
         "payment_method": 'Cash' if order.get_last_payment().gateway == 'mirumee.payments.dummy' else 'iDEAL',
         "order_note": order.customer_note,
-        "order_url": order_url
+        "order_url": order_url,
+        "is_payment_with_stripe": is_payment_with_stripe,
     }
     if order.user_email:
         event = (NotifyEventType.ORDER_CREATED)

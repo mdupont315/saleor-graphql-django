@@ -205,6 +205,10 @@ def list_product_customer(this, options, items, channel, channel_symbol):
         result.append(u'</tr>')
         option_values = thing.option_values.all()
         if option_values:
+            print(option_values[0].get_price_amount_by_channel(channel),"=============option_value===========")
+
+            print(option_values[1].get_price_amount_by_channel(channel),"=============option_value===========")
+
             for option_value in option_values:
                 result.append(u'<tr>')
                 result.append(u'<td class="td-option" colspan="3">')
