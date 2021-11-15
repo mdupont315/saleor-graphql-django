@@ -205,10 +205,6 @@ def list_product_customer(this, options, items, channel, channel_symbol):
         result.append(u'</tr>')
         option_values = thing.option_values.all()
         if option_values:
-            print(option_values[0].get_price_amount_by_channel(channel),"=============option_value===========")
-
-            print(option_values[1].get_price_amount_by_channel(channel),"=============option_value===========")
-
             for option_value in option_values:
                 result.append(u'<tr>')
                 result.append(u'<td class="td-option" colspan="3">')
@@ -328,9 +324,11 @@ def customer_list_address_pickup(this, options, items):
 
 def send_email(config: EmailConfig, recipient_list, context, subject="", template_str=""):
     store = get_current_tenant()
-    sender_name = '{} {}'.format(context.get("store_name"), config.sender_name) if config.sender_name else ""
-    # 
-    logging.getLogger('django').info('---sender_name----{sender_name}------'.format(sender_name=sender_name) )
+    sender_name = '{} {}'.format(context.get("store_name"),
+                                 config.sender_name) if config.sender_name else ""
+    #
+    logging.getLogger('django').info(
+        '---sender_name----{sender_name}------'.format(sender_name=sender_name))
     sender_address = config.sender_address
     # logging.getLogger('django').info('---sender_name----{sender_name}------'.format(sender_name=sender_name))
 
