@@ -29,7 +29,7 @@ from ....order.utils import (
 from ....payment import PaymentError, TransactionKind, gateway
 from ....shipping import models as shipping_models
 from ...account.types import AddressInput
-from ...core.mutations import BaseMutation, ModelMutation
+from ...core.mutations import BaseMutation, ModelDeleteMutation, ModelMutation
 from ...core.scalars import PositiveDecimal
 from ...core.types.common import OrderError
 from ...core.utils import validate_required_string_field
@@ -742,6 +742,18 @@ class OrderLinesCreate(EditableOrderValidationMixin, BaseMutation):
 
         recalculate_order(order)
         return OrderLinesCreate(order=order, order_lines=lines)
+
+
+class OrderDelete(ModelDeleteMutation):
+    class Arguments:
+        id = graphene.ID(description="ID of the order to delete.", required=True)
+
+    class Meta:
+        description = "Deletes an order from an order."
+        model = models.Order
+        permissions = (OrderPermissions.MANAGE_ORDERS,)
+        error_type_class = OrderError
+        error_type_field = "order_errors"
 
 
 class OrderLineDelete(EditableOrderValidationMixin, BaseMutation):

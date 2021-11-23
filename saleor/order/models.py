@@ -86,7 +86,7 @@ class Order(MultitenantModelWithMetadata):
     store = models.ForeignKey(
         Store,
         related_name="orders",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
@@ -100,7 +100,7 @@ class Order(MultitenantModelWithMetadata):
         blank=True,
         null=True,
         related_name="orders",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE
     )
     language_code = models.CharField(
         max_length=35, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
@@ -118,11 +118,16 @@ class Order(MultitenantModelWithMetadata):
         related_name="+",
         editable=False,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
+
+        # on_delete=models.SET_NULL,
     )
     user_email = models.EmailField(blank=True, default="")
     original = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.SET_NULL
+        "self", null=True, blank=True,
+        on_delete=models.CASCADE,
+
+        # on_delete=models.SET_NULL
     )
     origin = models.CharField(max_length=32, choices=OrderOrigin.CHOICES)
 
@@ -135,7 +140,9 @@ class Order(MultitenantModelWithMetadata):
         blank=True,
         null=True,
         related_name="orders",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
+
+        # on_delete=models.SET_NULL,
     )
     shipping_method_name = models.CharField(
         max_length=255, null=True, default=None, blank=True, editable=False
@@ -143,7 +150,9 @@ class Order(MultitenantModelWithMetadata):
     channel = models.ForeignKey(
         Channel,
         related_name="orders",
-        on_delete=models.PROTECT,
+        # on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
+
     )
     shipping_price_net_amount = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,

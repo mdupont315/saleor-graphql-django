@@ -62,6 +62,7 @@ def resolve_order_by_token(token):
         .first()
     )
 
+
 def resolve_order_by_payment_token(token):
     payment = Payment.objects.filter(token=token).first()
     return payment.order
