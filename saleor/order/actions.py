@@ -57,6 +57,8 @@ QuantityType = int
 def order_created(
     order: "Order", user: "User", manager: "PluginsManager", from_draft: bool = False
 ):
+    # print(order.lines.all(),"=========action")
+
     events.order_created_event(order=order, user=user, from_draft=from_draft)
     manager.order_created(order)
     payment = order.get_last_payment()
@@ -98,7 +100,6 @@ def order_created(
     ).gateway != 'mirumee.payments.dummy' if order.get_last_payment() else False
     full_store_address = "{}, {}, {}".format(
         current_strore.address, current_strore.postal_code, current_strore.city)
-    print(order.__dict__,"==============================")
     def get_payment_method():
         if order.get_last_payment():
             if order.get_last_payment().gateway == 'mirumee.payments.dummy':

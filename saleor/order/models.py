@@ -100,7 +100,7 @@ class Order(MultitenantModelWithMetadata):
         blank=True,
         null=True,
         related_name="orders",
-        on_delete=models.CASCADE
+        on_delete=models.PROTECT
     )
     language_code = models.CharField(
         max_length=35, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
@@ -118,14 +118,14 @@ class Order(MultitenantModelWithMetadata):
         related_name="+",
         editable=False,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
 
         # on_delete=models.SET_NULL,
     )
     user_email = models.EmailField(blank=True, default="")
     original = models.ForeignKey(
         "self", null=True, blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
 
         # on_delete=models.SET_NULL
     )
@@ -140,7 +140,7 @@ class Order(MultitenantModelWithMetadata):
         blank=True,
         null=True,
         related_name="orders",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
 
         # on_delete=models.SET_NULL,
     )
@@ -151,7 +151,7 @@ class Order(MultitenantModelWithMetadata):
         Channel,
         related_name="orders",
         # on_delete=models.PROTECT,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
 
     )
     shipping_price_net_amount = models.DecimalField(
