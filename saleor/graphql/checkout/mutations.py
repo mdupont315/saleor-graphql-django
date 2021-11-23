@@ -568,6 +568,7 @@ class CheckoutLinesAdd(BaseMutation):
         )
         discounts = info.context.discounts
         manager = info.context.plugins
+        print(lines,"======lines")
 
         variant_ids = [line.get("variant_id") for line in lines]
         variants = cls.get_nodes_or_error(variant_ids, "variant_id", ProductVariant)

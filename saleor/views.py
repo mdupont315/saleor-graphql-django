@@ -1,17 +1,15 @@
 # set async_mode to 'threading', 'eventlet', 'gevent' or 'gevent_uwsgi' to
 # force a mode else, the best mode is selected automatically from what's
 # installed
+from django.http import HttpResponse
+import socketio
+import os
 async_mode = None
 
-import os
-
-import socketio
-from django.http import HttpResponse
 
 basedir = os.path.dirname(os.path.realpath(__file__))
 sio = socketio.Server(async_mode="eventlet", cors_allowed_origins='*')
 thread = None
-
 
 
 def index(request):
@@ -20,17 +18,14 @@ def index(request):
     #     # thread = sio.start_background_task(background_thread)
     #     print("hello")
     # return HttpResponse(open(os.path.join(basedir, 'static/index.html')))
-    sio.emit('is_order_complete', {'data':'T3JkZXI6NzY='})
+    sio.emit('is_order_complete', {'data': 'T3JkZXI6NzY='})
     return HttpResponse("test_socket")
-
 
 
 def background_thread():
     """Example of how to send server generated events to clients."""
-    count = 0
     while True:
         sio.sleep(10)
-        count += 1
         sio.emit('my_response', {'data': 'Server generated event'},
                  namespace='/test')
 
@@ -85,6 +80,7 @@ def connect(sid, environ):
 @sio.event
 def disconnect(sid):
     print('Client disconnected')
+
 
 @sio.event
 def order_created(order_id):

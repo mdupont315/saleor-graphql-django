@@ -203,7 +203,7 @@ class OrderEventsEmails:
 class OrderLineData:
     line: "OrderLine"
     quantity: int
-    option_values: "OptionValue"
+    option_values: "OptionValue" = None
     variant: Optional["ProductVariant"] = None
     replace: bool = False
     warehouse_pk: Optional[str] = None

@@ -8,7 +8,7 @@ from django.utils.functional import SimpleLazyObject
 from saleor.account.models import User
 
 from ..app.models import App
-from ..core.exceptions import ReadOnlyException
+from ..core.exceptions import ReadOnlyException, PermissionDenied
 from .views import API_PATH, GraphQLView
 from django_multitenant.utils import set_current_tenant, unset_current_tenant
 from ..store.models import Store
@@ -35,28 +35,18 @@ class JWTMiddleware:
         if domain:
             domain = domain.split(":")[1][2:]
             s_store = Store.objects.filter(domain=domain).first()
-            s_user = User.objects.filter(store_id=s_store.id)
-            check_in_tenant = s_user.filter(id=request.user.id).exists()
+            if domain == "localhost-admin":
+                # if normal user
+                if request.user.is_superuser == False and request.user.id:
+                    raise PermissionDenied()
 
-            # Request from dashboard
-            if s_store:
-                if request.META.get('HTTP_FROMDB'):
-                    print('vaoday', check_in_tenant)
-                    # if check_in_tenant:
-                    if request.user.is_superuser == False and request.user.id == None:
-                        unset_current_tenant()
-                        pass
+            else:
+                if s_store:
+                    if request.user.is_superuser  and request.user.id:
+                        raise PermissionDenied()
                     else:
-                        if request.user.is_superuser and request.user.id:
-                            unset_current_tenant()
-
-                        elif s_store:
-                            set_current_tenant(s_store)
-                        else:
-                            unset_current_tenant()
-                # Request from storefront
-                else:
-                    set_current_tenant(s_store)
+                        set_current_tenant(s_store)
+            # else ---------------
 
         return next(root, info, **kwargs)
 

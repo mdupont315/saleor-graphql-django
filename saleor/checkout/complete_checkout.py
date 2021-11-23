@@ -211,7 +211,7 @@ def _create_line_for_order(
         total_price=total_line_price,
         tax_rate=tax_rate,
     )
-
+    print(option_values,"=====================")
     line_info = OrderLineData(line=line, quantity=quantity,
                               variant=variant, option_values=option_values)
 
@@ -707,6 +707,7 @@ def complete_checkout(
                 # emit event create
                 sio.emit("is_order_complete", {'orderId': graphene.Node.to_global_id(
                     "Order", order.id), 'storeId': graphene.Node.to_global_id("Store", store.id)})
+                
             # write log
             log_info('Order', 'Order', content={
                 "order": order.__dict__,
