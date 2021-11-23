@@ -34,7 +34,6 @@ def send_password_reset_notification(
     reset_url = prepare_url(params, redirect_url)
     store = get_current_tenant()
     orderich_logo = static("static/images/orderich-logo.png")
-    print(orderich_logo,"------logo")
     if staff:
         payload = {
             # "logo": store.logo.url,

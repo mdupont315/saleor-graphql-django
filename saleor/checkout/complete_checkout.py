@@ -211,7 +211,6 @@ def _create_line_for_order(
         total_price=total_line_price,
         tax_rate=tax_rate,
     )
-    print(option_values,"=====================")
     line_info = OrderLineData(line=line, quantity=quantity,
                               variant=variant, option_values=option_values)
 
