@@ -32,21 +32,26 @@ class JWTMiddleware:
         # print(request._cached_user, "-------rêrererer------")
 
         domain = request.META.get('HTTP_ORIGIN')
+
         if domain:
             domain = domain.split(":")[1][2:]
             s_store = Store.objects.filter(domain=domain).first()
-            if domain == "localhost-admin":
+            if domain == "ipserver":
+                unset_current_tenant()
+            elif domain == "localhost-a":
                 # if normal user
                 if request.user.is_superuser == False and request.user.id:
                     raise PermissionDenied()
 
             else:
                 if s_store:
-                    if request.user.is_superuser  and request.user.id:
+                    if request.user.is_superuser and request.user.id:
                         raise PermissionDenied()
                     else:
                         set_current_tenant(s_store)
             # else ---------------
+                else:
+                    unset_current_tenant()
 
         return next(root, info, **kwargs)
 
