@@ -209,3 +209,6 @@ websockets==8.1; python_full_version >= "3.6.1"
 wrapt==1.12.1; python_version >= "3.6" and python_version < "4.0"
 yarl==1.6.3; python_version >= "3.6"
 django_multitenant==2.3.2
+websockets==8.1
+python-socketio==5.4.0
+eventlet==0.32.0
