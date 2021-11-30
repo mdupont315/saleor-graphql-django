@@ -197,9 +197,13 @@ def list_product_customer(this, options, items, channel, channel_symbol):
         # result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
         result.append("{curency} {price}".format(
             curency=channel_symbol,
-            price=formatComma(
-                (quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES))
+            price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
+            # quantize_price(thing.total_price_net.amount, channel)
+           
         ))
+
+        logging.getLogger('django').info('---price----{sender_name}------'.format(sender_name=thing.total_price_net.amount) )
+
 
         result.append(u'</td>')
         result.append(u'</tr>')

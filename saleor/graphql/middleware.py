@@ -6,11 +6,12 @@ from django.contrib.auth.models import AnonymousUser
 from django.utils.functional import SimpleLazyObject
 
 from saleor.account.models import User
+from saleor.core.utils.logging import log_info
 
 from ..app.models import App
 from ..core.exceptions import ReadOnlyException, PermissionDenied
 from .views import API_PATH, GraphQLView
-from django_multitenant.utils import set_current_tenant, unset_current_tenant
+from django_multitenant.utils import set_current_tenant, unset_current_tenant, get_current_tenant
 from ..store.models import Store
 
 
@@ -32,9 +33,21 @@ class JWTMiddleware:
         # print(request._cached_user, "-------rêrererer------")
 
         domain = request.META.get('HTTP_ORIGIN')
+       
         if domain:
             domain = domain.split(":")[1][2:]
+
+            log_info('dmain', 'dmain', content={
+                "dmainm": domain,
+                })
+
+            log_info("cyrrtenant","currtenant", content={
+                "curtennant": get_current_tenant()
+            })
             s_store = Store.objects.filter(domain=domain).first()
+            log_info('store', 'store', content={
+                "order": s_store,
+                })
             if domain == "localhost-admin":
                 # if normal user
                 if request.user.is_superuser == False and request.user.id:
@@ -46,6 +59,8 @@ class JWTMiddleware:
                         raise PermissionDenied()
                     else:
                         set_current_tenant(s_store)
+                else: 
+                    unset_current_tenant()
             # else ---------------
 
         return next(root, info, **kwargs)

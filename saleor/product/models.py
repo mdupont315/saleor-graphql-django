@@ -2,6 +2,7 @@ import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Iterable, Optional, Union
 from uuid import uuid4
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
