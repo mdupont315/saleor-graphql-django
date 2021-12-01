@@ -72,7 +72,7 @@ ALLOWED_CLIENT_HOSTS = ["*"]
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:12345678@orderich-dev.cfjzznwjctx7.eu-central-1.rds.amazonaws.com:5432/orderich"
+        default="postgres://postgres:X8jCNMRcwg@orderich-db-prod.cfjzznwjctx7.eu-central-1.rds.amazonaws.com/orderich"
     )
 }
 
