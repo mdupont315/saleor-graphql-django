@@ -48,6 +48,18 @@ def request_time(get_response):
 
     return _stamp_request
 
+def request_set_tenant(get_response):
+    def _request_set_tenant(request):
+        domain = request.META.get('HTTP_ORIGIN')
+        if domain:
+            domain = domain.split(":")[1][2:]
+            s_store = Store.objects.filter(domain=domain).first()
+            if s_store:
+                set_current_tenant(s_store)
+
+        return get_response(request)
+
+    return _request_set_tenant
 
 def discounts(get_response):
     """Assign active discounts to `request.discounts`."""

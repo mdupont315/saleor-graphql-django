@@ -29,40 +29,7 @@ class JWTMiddleware:
             return get_user(request) or AnonymousUser()
 
         request.user = SimpleLazyObject(lambda: user())
-        # print(request.user.is_superuser, "-------------")
-        # print(request._cached_user, "-------rêrererer------")
-
-        domain = request.META.get('HTTP_ORIGIN')
-       
-        if domain:
-            domain = domain.split(":")[1][2:]
-
-            log_info('dmain', 'dmain', content={
-                "dmainm": domain,
-                })
-
-            log_info("cyrrtenant","currtenant", content={
-                "curtennant": get_current_tenant()
-            })
-            s_store = Store.objects.filter(domain=domain).first()
-            log_info('store', 'store', content={
-                "order": s_store,
-                })
-            if domain == "localhost-admin":
-                # if normal user
-                if request.user.is_superuser == False and request.user.id:
-                    raise PermissionDenied()
-
-            else:
-                if s_store:
-                    if request.user.is_superuser  and request.user.id:
-                        raise PermissionDenied()
-                    else:
-                        set_current_tenant(s_store)
-                else: 
-                    unset_current_tenant()
-            # else ---------------
-
+        
         return next(root, info, **kwargs)
 
 
