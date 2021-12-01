@@ -44,35 +44,31 @@ PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 
 ROOT_URLCONF = "saleor.urls"
 
-WSGI_APPLICATION = "saleor.wsgi.application"
-
-# ALLOWED_CLIENT_HOSTS="shinkai.nl,*"
-# ALLOWED_HOSTS=["shinkai.nl,*"]
-ALLOWED_HOSTS= ["*"]
+# WSGI_APPLICATION = "saleor.wsgi.application"
+ASGI_APPLICATION = "saleor.routing.application"
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 MANAGERS = ADMINS
 
-# _DEFAULT_CLIENT_HOSTS = "shinkai.nl,*"
+_DEFAULT_CLIENT_HOSTS = "localhost,127.0.0.1"
 
-# ALLOWED_CLIENT_HOSTS = os.environ.get("ALLOWED_CLIENT_HOSTS")
-# if not ALLOWED_CLIENT_HOSTS:
-#     if DEBUG:
-#         ALLOWED_CLIENT_HOSTS = _DEFAULT_CLIENT_HOSTS
-#     else:
-#         raise ImproperlyConfigured(
-#             "ALLOWED_CLIENT_HOSTS environment variable must be set when DEBUG=False."
-#         )
+ALLOWED_CLIENT_HOSTS = os.environ.get("ALLOWED_CLIENT_HOSTS")
+if not ALLOWED_CLIENT_HOSTS:
+    if DEBUG:
+        ALLOWED_CLIENT_HOSTS = _DEFAULT_CLIENT_HOSTS
+    else:
+        raise ImproperlyConfigured(
+            "ALLOWED_CLIENT_HOSTS environment variable must be set when DEBUG=False."
+        )
 
-# ALLOWED_CLIENT_HOSTS = get_list(ALLOWED_CLIENT_HOSTS)
-ALLOWED_CLIENT_HOSTS = ["*"]
+ALLOWED_CLIENT_HOSTS = get_list(ALLOWED_CLIENT_HOSTS)
 
-# INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
+INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:X8jCNMRcwg@orderich-db-prod.cfjzznwjctx7.eu-central-1.rds.amazonaws.com/orderich"
+        default="postgres://postgres:thangprohoian123@localhost:5432/orderich"
     )
 }
 
@@ -194,6 +190,7 @@ MIDDLEWARE = [
 INSTALLED_APPS = [
     # External apps that need to go before django's
     "storages",
+    'channels',
     # Django modules
     "django.contrib.contenttypes",
     "django.contrib.sites",
@@ -301,6 +298,7 @@ LOGGING = {
         },
     },
 }
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 # LOGGING = {
 #     "version": 1,
 #     "disable_existing_loggers": False,
@@ -400,6 +398,7 @@ TEST_RUNNER = "saleor.tests.runner.PytestTestRunner"
 
 PLAYGROUND_ENABLED = get_bool_from_env("PLAYGROUND_ENABLED", True)
 
+# ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS","localhost,127.0.0.1,192.168.10.9"))
 ALLOWED_HOSTS = ["*"]
 ALLOWED_GRAPHQL_ORIGINS = get_list(os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*"))
 
@@ -494,11 +493,11 @@ AUTHENTICATION_BACKENDS = [
 
 # CELERY SETTINGS
 CELERY_TIMEZONE = TIME_ZONE
-#CELERY_BROKER_URL = (
-#    os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
-# )
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
-#CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
+CELERY_BROKER_URL = (
+    os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
+)
+# CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
+CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -531,6 +530,7 @@ GRAPHENE = {
         "saleor.graphql.middleware.JWTMiddleware",
         "saleor.graphql.middleware.app_middleware",
     ],
+    # "SUBSCRIPTION_PATH": "/graphql/"
 }
 
 PLUGINS = [
@@ -593,8 +593,6 @@ if "JAEGER_AGENT_HOST" in os.environ:
     ).initialize_tracer()
 
 
-#ALLOWED_CLIENT_HOSTS=["*"]
-#ALLOWED_HOSTS=["*"]
 # Some cloud providers (Heroku) export REDIS_URL variable instead of CACHE_URL
 REDIS_URL = os.environ.get("REDIS_URL")
 if REDIS_URL:
