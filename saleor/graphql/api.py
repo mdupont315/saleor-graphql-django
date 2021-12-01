@@ -29,7 +29,7 @@ from .option.shcema import OptionMutations, OptionQueries
 from .table_service.schema import TableServiceMutations, TableServiceQueries
 
 from .delivery.schema import DeliveryQueries, DeliveryMutations
-
+from .notifications.schema import AppNotification
 
 class Query(
     AccountQueries,
@@ -61,6 +61,10 @@ class Query(
 ):
     pass
 
+class Subscription(
+    AppNotification
+):
+    pass
 
 class Mutation(
     AccountMutations,
@@ -93,4 +97,4 @@ class Mutation(
     pass
 
 
-schema = build_schema(Query, mutation=Mutation, types=unit_enums)
+schema = build_schema(Query, mutation=Mutation,subscription=Subscription ,types=unit_enums)
