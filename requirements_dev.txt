@@ -212,3 +212,5 @@ django_multitenant==2.3.2
 websockets==8.1
 python-socketio==5.4.0
 eventlet==0.32.0
+channels==3.0.4
+django-channels-graphql-ws==0.9.0
