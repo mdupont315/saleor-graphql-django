@@ -1,5 +1,4 @@
 from channels.routing import ProtocolTypeRouter, URLRouter
-from .graphql.notifications.sockets import MyGraphqlWsConsumer
 from django.urls import path
 from django.conf.urls import url
 from channels.staticfiles import StaticFilesHandler
@@ -8,6 +7,8 @@ import channels
 from django.urls import re_path
 from channels.auth import AuthMiddlewareStack
 import django
+
+from saleor.graphql.api import MyGraphqlWsConsumer
 # websocket_urlPattern = [
 #     path("", MyGraphqlWsConsumer.as_asgi()),
 # ]
@@ -17,7 +18,7 @@ import django
 #         URLRouter(websocket_urlPattern)
 #     ),
 # })
-print("==application==")
+# print("==application==")
 application = channels.routing.ProtocolTypeRouter(
     {
         "http": django.core.asgi.get_asgi_application(),

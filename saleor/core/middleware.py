@@ -56,7 +56,7 @@ def request_set_tenant(get_response):
             s_store = Store.objects.filter(domain=domain).first()
             if s_store:
                 set_current_tenant(s_store)
-
+            
         return get_response(request)
 
     return _request_set_tenant

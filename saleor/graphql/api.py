@@ -31,6 +31,8 @@ from .table_service.schema import TableServiceMutations, TableServiceQueries
 from .delivery.schema import DeliveryQueries, DeliveryMutations
 from .notifications.schema import AppNotification
 
+import channels_graphql_ws
+
 class Query(
     AccountQueries,
     AppQueries,
@@ -98,3 +100,19 @@ class Mutation(
 
 
 schema = build_schema(Query, mutation=Mutation,subscription=Subscription ,types=unit_enums)
+class MyGraphqlWsConsumer(channels_graphql_ws.GraphqlWsConsumer):
+    schema = schema
+
+    # Uncomment to send keepalive message every 42 seconds.
+    # send_keepalive_every = 42
+
+    # Uncomment to process requests sequentially (useful for tests).
+    # strict_ordering = True
+
+    async def on_connect(self, payload):
+        self.scope['domain'] = payload.get('domain')
+        print(f"Connected to {self.channel_name}")
+        print("New client connected!")
+
+    async def disconnect(self, code):
+        print("Client Disconnected!")
