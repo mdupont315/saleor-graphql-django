@@ -94,7 +94,7 @@ class StoreCreate(ModelMutation):
     @classmethod
     def perform_mutation(cls, root, info, **data):
         # check if is super user
-        check_super_user(info.context)
+        # check_super_user(info.context)
         retval = super().perform_mutation(root, info, **data)
         create_new_record(data["input"]["domain"])
         # create user
