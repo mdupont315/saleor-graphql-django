@@ -7,10 +7,12 @@ from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from route53 import create_new_record
 
 from saleor.account.models import User
 from saleor.delivery.models import Delivery
 from saleor.graphql.utils.validators import check_super_user
+from saleor.route53 import check_exist_record
 from saleor.servicetime.models import ServiceTime
 from saleor.store.error_codes import StoreErrorCode
 
@@ -49,8 +51,21 @@ class StoreCreate(ModelMutation):
     @classmethod
     def clean_input(cls, info, instance, data):
         cleaned_input = super().clean_input(info, instance, data)
-
         # Validate for create user
+        
+
+      
+        password = data["password"]
+        try:
+            password_validation.validate_password(password, instance)
+        except ValidationError as error:
+            raise ValidationError({"password": error})
+        
+        try:        
+            check_exist_record(data["domain"])
+        except ValidationError as error:
+            raise ValidationError({"domain": error})
+        
         if not settings.ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL:
             return cleaned_input
         elif not data.get("redirect_url"):
@@ -61,7 +76,6 @@ class StoreCreate(ModelMutation):
                     )
                 }
             )
-
         try:
             validate_storefront_url(data["redirect_url"])
         except ValidationError as error:
@@ -72,12 +86,6 @@ class StoreCreate(ModelMutation):
                     )
                 }
             )
-
-        password = data["password"]
-        try:
-            password_validation.validate_password(password, instance)
-        except ValidationError as error:
-            raise ValidationError({"password": error})
 
         return cleaned_input
 
@@ -91,9 +99,8 @@ class StoreCreate(ModelMutation):
     def perform_mutation(cls, root, info, **data):
         # check if is super user
         check_super_user(info.context)
-
         retval = super().perform_mutation(root, info, **data)
-
+        create_new_record(data["input"]["domain"])
         # create user
         user = User()
         user.is_supplier = True
