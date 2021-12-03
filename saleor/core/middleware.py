@@ -51,20 +51,18 @@ def request_time(get_response):
 def request_set_tenant(get_response):
     def _request_set_tenant(request):
         domain = request.META.get('HTTP_ORIGIN')
-        if domain:
-            domain = domain.split(":")[1][2:]
-            print("---- domain")
+        if domain is None:
+            domain = request.META.get('HTTP_HOST')
 
+        if domain:
+            if ":" in domain: 
+                domain = domain.split(":")[1][2:]
             s_store = Store.objects.filter(domain=domain).first()
             if s_store:
-                print("----hahah")
                 set_current_tenant(s_store)
             else:
                 unset_current_tenant()
-        else:
-            print("----no domain")
-
-            unset_current_tenant()   
+            
         return get_response(request)
 
     return _request_set_tenant

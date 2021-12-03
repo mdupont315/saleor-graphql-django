@@ -1,7 +1,3 @@
-from collections import defaultdict
-from datetime import date
-from logging import fatal
-
 import graphene
 from django.conf import settings
 from django.contrib.auth import password_validation
@@ -44,7 +40,7 @@ class StoreCreate(ModelMutation):
     class Meta:
         description = "Creates a new store."
         model = models.Store
-        permissions = (StorePermissions.MANAGE_STORES,)
+        # permissions = (StorePermissions.MANAGE_STORES,)
         error_type_class = StoreError
         error_type_field = "store_errors"
 
@@ -109,7 +105,6 @@ class StoreCreate(ModelMutation):
         password = data["input"]["password"]
         user.set_password(password)
         user.save()
-
         permissions = get_permissions_default()
         for permission in permissions:
             base_name = permission.codename.split("_")[1:]
@@ -117,12 +112,14 @@ class StoreCreate(ModelMutation):
             group_name += " management"
             group_name = group_name.capitalize()
             cls.create_group_data(group_name, [permission], [user])
+        # print("----3")
 
         # create default service time
         delivery = Delivery()
         delivery.store_id = retval.store.id
         delivery.delivery_area = {"areas": []}
         delivery.save()
+        # print("----4")
 
         # create default service time
         service_time = ServiceTime()
@@ -152,6 +149,8 @@ class StoreCreate(ModelMutation):
             False, False, False, False, False, False, False], "open":"00:05", "close":"23:55"}]}
 
         service_time.save()
+        # print("----5")
+
         return retval
 
 
@@ -165,7 +164,7 @@ class StoreUpdateInput(graphene.InputObjectType):
     logo = Upload(description="Logo image file.")
     favicon = Upload(description="Logo image file.")
     cover_photo = Upload(description="Cover photo image file.")
-  
+
     # Emergency setting feature
     webshop_status = graphene.DateTime(
         description="Webshop status setting."
@@ -193,6 +192,7 @@ class StoreUpdateInput(graphene.InputObjectType):
     stripe_cost = graphene.Float(description="Transaction cost for stripe")
     index_cash = graphene.Int(description="Index cash")
     index_stripe = graphene.Int(description="Index stripe")
+
 
 class StoreUpdate(ModelMutation):
     class Arguments:

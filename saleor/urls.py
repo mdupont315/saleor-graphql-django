@@ -13,6 +13,7 @@ from .plugins.views import (handle_global_plugin_webhook,
 from .product.views import digital_product
 
 urlpatterns = [
+    # url(r'^test/', views.index, name='index'),
     url(r"^graphql/$", csrf_exempt(GraphQLView.as_view(schema=schema)), name="api"),
     url(
         r"^digital-download/(?P<token>[0-9A-Za-z_\-]+)/$",
