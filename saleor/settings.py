@@ -66,6 +66,10 @@ ALLOWED_CLIENT_HOSTS = get_list(ALLOWED_CLIENT_HOSTS)
 
 INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    DATABASE_URL="postgres://postgres:thangprohoian123@localhost:5432/orderich"
+
 DATABASES = {
     "default": dj_database_url.config(
         default="postgres://postgres:thangprohoian123@localhost:5432/orderich"
@@ -285,7 +289,7 @@ LOGGING = {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': 'logs/debug.log',
             'when': 'D', # this specifies the interval
-            'interval': 1, # defaults to 1, only necessary for other values 
+            'interval': 1, # defaults to 1, only necessary for other values
             'backupCount': 10, # how many backup file to keep, 10 days
             'formatter': 'django',
             'encoding':'utf8',
@@ -396,34 +400,32 @@ MAX_CHECKOUT_LINE_QUANTITY = int(os.environ.get("MAX_CHECKOUT_LINE_QUANTITY", 50
 
 TEST_RUNNER = "saleor.tests.runner.PytestTestRunner"
 
-
 PLAYGROUND_ENABLED = get_bool_from_env("PLAYGROUND_ENABLED", True)
 
-# ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS","localhost,127.0.0.1,192.168.10.9"))
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS","localhost,127.0.0.1"))
+# ALLOWED_HOSTS = ["*"]
 ALLOWED_GRAPHQL_ORIGINS = get_list(os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*"))
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Amazon S3 configuration
 # See https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
-# AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_ACCESS_KEY_ID = "AKIAY5IP4U6KWPDYZLUT"
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_LOCATION = os.environ.get("AWS_LOCATION", "")
-# AWS_MEDIA_BUCKET_NAME = os.environ.get("AWS_MEDIA_BUCKET_NAME")
-AWS_MEDIA_BUCKET_NAME = "saleor-orderich"
+AWS_MEDIA_BUCKET_NAME = os.environ.get("AWS_MEDIA_BUCKET_NAME", "")
+
 AWS_MEDIA_CUSTOM_DOMAIN = os.environ.get("AWS_MEDIA_CUSTOM_DOMAIN")
 AWS_QUERYSTRING_AUTH = get_bool_from_env("AWS_QUERYSTRING_AUTH", False)
 AWS_QUERYSTRING_EXPIRE = get_bool_from_env("AWS_QUERYSTRING_EXPIRE", 3600)
-AWS_STORAGE_BUCKET_NAME = "saleor-orderich"
+
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
+
 AWS_S3_CUSTOM_DOMAIN = os.environ.get("AWS_STATIC_CUSTOM_DOMAIN", f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com')
 AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
 AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-# AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", None)
-# AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-# AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME = "eu-west-2"
-AWS_SECRET_ACCESS_KEY = "xtrvxilmgrrt4pu5yTK+Ei9vqwOQvE43LcCnXZlW"
+
+AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
 # AWS_DEFAULT_ACL = os.environ.get("AWS_DEFAULT_ACL", None)
 AWS_DEFAULT_ACL = "public-read"
@@ -531,7 +533,6 @@ GRAPHENE = {
         "saleor.graphql.middleware.JWTMiddleware",
         "saleor.graphql.middleware.app_middleware",
     ],
-    # "SUBSCRIPTION_PATH": "/graphql/"
 }
 
 PLUGINS = [
