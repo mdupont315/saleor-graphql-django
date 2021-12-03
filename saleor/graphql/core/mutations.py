@@ -414,7 +414,6 @@ class ModelMutation(BaseMutation):
         Override this method to provide custom transformations of incoming
         data.
         """
-
         def is_list_of_ids(field):
             if isinstance(field.type, graphene.List):
                 of_type = field.type.of_type
@@ -520,7 +519,10 @@ class ModelMutation(BaseMutation):
         """
         instance = cls.get_instance(info, **data)
         data = data.get("input")
+        
         cleaned_input = cls.clean_input(info, instance, data)
+        print("======vaoday")
+
         instance = cls.construct_instance(instance, cleaned_input)
         cls.clean_instance(info, instance)
         cls.save(info, instance, cleaned_input)

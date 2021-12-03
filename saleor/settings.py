@@ -22,6 +22,7 @@ from sentry_sdk.integrations.logging import ignore_logger
 from . import patched_print_object
 
 
+
 def get_list(text):
     return [item.strip() for item in text.split(",")]
 
@@ -72,7 +73,7 @@ ALLOWED_CLIENT_HOSTS = ["*"]
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:12345678@orderich-dev.cfjzznwjctx7.eu-central-1.rds.amazonaws.com:5432/orderich"
+        default="postgres://postgres:thangprohoian123@localhost:5432/orderich"
     )
 }
 
@@ -194,6 +195,7 @@ MIDDLEWARE = [
 
 INSTALLED_APPS = [
     # External apps that need to go before django's
+    "boto3",
     "storages",
     # Django modules
     "django.contrib.contenttypes",
