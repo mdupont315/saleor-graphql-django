@@ -1,10 +1,10 @@
 import boto3
-
+import os
 from saleor.core.exceptions import DomainIsExist
 
 client = boto3.client('route53',
-    aws_access_key_id="AKIAY5IP4U6KWOLKAUG6",
-    aws_secret_access_key="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",
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
 )
 
 # response = client.list_resource_record_sets(
@@ -12,7 +12,7 @@ client = boto3.client('route53',
 # )
 def check_exist_record(name):
     response = client.list_resource_record_sets(
-        HostedZoneId='Z0262282S9NCMR75O7T9'
+        HostedZoneId=os.environ.get("HOSTED_ZONE_ID")
     )
     if any(obj['Name'] == name+'.' for obj in response.get('ResourceRecordSets')):
         raise DomainIsExist()
@@ -30,7 +30,7 @@ def create_new_record(name):
                         'Name': name,
                         'ResourceRecords': [
                             {
-                                'Value': '3.66.10.99',
+                                'Value': os.environ.get('STATIC_IP'),
                             },
                         ],
                         'TTL': 60,
@@ -40,7 +40,7 @@ def create_new_record(name):
             ],
             'Comment': 'Web Server',
         },
-        HostedZoneId='Z0262282S9NCMR75O7T9',
+        HostedZoneId=os.environ.get("HOSTED_ZONE_ID"),
     )
     if(response):
         print("successs", response)

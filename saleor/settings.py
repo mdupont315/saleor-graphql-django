@@ -50,6 +50,13 @@ ASGI_APPLICATION = "saleor.routing.application"
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
+
+os.environ['AWS_ACCESS_KEY_ID'] = 'AKIAY5IP4U6KWOLKAUG6'
+os.environ['AWS_SECRET_ACCESS_KEY'] = 'g1EgkksahzT9eCFj1khvGXcCNYTYW/DReQHpBD/T'
+os.environ['HOSTED_ZONE_ID'] = 'Z0262282S9NCMR75O7T9'
+os.environ['STATIC_IP'] = '3.66.10.99'
+
+
 MANAGERS = ADMINS
 
 _DEFAULT_CLIENT_HOSTS = "localhost,127.0.0.1"
@@ -69,7 +76,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:thangprohoian123@localhost:5432/orderich"
+        default="postgres://postgres:X8jCNMRcwg@orderich-db-prod.cfjzznwjctx7.eu-central-1.rds.amazonaws.com:5432/orderich"
     )
 }
 
