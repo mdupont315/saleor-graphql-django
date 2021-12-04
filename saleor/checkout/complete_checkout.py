@@ -15,6 +15,7 @@ from prices.money import Money
 
 from saleor.core.prices import quantize_price
 from saleor.core.utils.logging import log_info
+from saleor.graphql.notifications.schema import LiveNotification
 from saleor.views import sio
 
 from ..account.error_codes import AccountErrorCode
@@ -704,8 +705,10 @@ def complete_checkout(
 
             if order:
                 # emit event create
-                sio.emit("is_order_complete", {'orderId': graphene.Node.to_global_id(
-                    "Order", order.id), 'storeId': graphene.Node.to_global_id("Store", store.id)})
+                LiveNotification.new_message(
+                    graphene.Node.to_global_id("Store", store.id),
+                    graphene.Node.to_global_id("Order", order.id))
+                
                 
             # write log
             log_info('Order', 'Order', content={
