@@ -145,7 +145,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, "media")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
-# STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
 STATICFILES_DIRS = [
     ("images", os.path.join(PROJECT_ROOT, "saleor", "static", "images"))
 ]
@@ -542,6 +542,7 @@ GRAPHENE = {
         "saleor.graphql.middleware.JWTMiddleware",
         "saleor.graphql.middleware.app_middleware",
     ],
+    "SUBSCRIPTION_PATH": "/graphql"
 }
 
 PLUGINS = [
