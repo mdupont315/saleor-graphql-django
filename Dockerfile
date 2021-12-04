@@ -53,7 +53,7 @@ ENV PYTHONUNBUFFERED 1
 ARG COMMIT_ID
 ARG PROJECT_VERSION
 ENV PROJECT_VERSION="${PROJECT_VERSION}"
-RUN mkdir /app/logs && touch /app/logs/debug.log
+RUN mkdir -p /app/logs && touch /app/logs/debug.log
 
 LABEL org.opencontainers.image.title="mirumee/saleor"                                  \
       org.opencontainers.image.description="\
