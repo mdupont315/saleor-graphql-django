@@ -497,7 +497,18 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_URL = (
     os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
 )
-# CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
+
+CELERY_BROKER_URL = 'sqs://{0}:{1}@'.format(
+    urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
+    urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
+)
+BROKER_TRANSPORT_OPTIONS = {
+    'polling_interval': 3,
+    'region': AWS_S3_REGION_NAME,
+    'visibility_timeout': 3600,
+    'queue_name_prefix': 'orderich-%s-' % os.environ.get('APP_ENV', 'dev'),
+}
+
 CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ["json", "pickle"]
 CELERY_TASK_SERIALIZER = "json"
@@ -513,7 +524,6 @@ DEFAULT_MENUS = {"top_menu_name": "navbar", "bottom_menu_name": "footer"}
 
 # Slug for channel precreated in Django migrations
 DEFAULT_CHANNEL_SLUG = os.environ.get("DEFAULT_CHANNEL_SLUG", "default-channel")
-
 
 #  Sentry
 sentry_sdk.utils.MAX_STRING_LENGTH = 4096
