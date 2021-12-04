@@ -533,6 +533,7 @@ GRAPHENE = {
         "saleor.graphql.middleware.JWTMiddleware",
         "saleor.graphql.middleware.app_middleware",
     ],
+    "SUBSCRIPTION_PATH": "/graphql"
 }
 
 PLUGINS = [
