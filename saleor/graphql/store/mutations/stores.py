@@ -3,12 +3,11 @@ from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
-from route53 import create_new_record
 
 from saleor.account.models import User
 from saleor.delivery.models import Delivery
 from saleor.graphql.utils.validators import check_super_user
-from saleor.route53 import check_exist_record
+from saleor.route53 import check_exist_record,create_new_record
 from saleor.servicetime.models import ServiceTime
 from saleor.store.error_codes import StoreErrorCode
 
