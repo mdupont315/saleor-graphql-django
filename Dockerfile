@@ -10,6 +10,7 @@ RUN apt-get -y update \
 # Install Python dependencies
 COPY requirements_dev.txt /app/
 WORKDIR /app
+RUN touch /app/logs/debug.log
 RUN pip install -r requirements_dev.txt
 
 ### Final image
