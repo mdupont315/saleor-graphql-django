@@ -59,9 +59,9 @@ os.environ['STATIC_IP'] = '3.66.10.99'
 
 MANAGERS = ADMINS
 
-_DEFAULT_CLIENT_HOSTS = "localhost,127.0.0.1"
+_DEFAULT_CLIENT_HOSTS = "*"
 
-ALLOWED_CLIENT_HOSTS = os.environ.get("ALLOWED_CLIENT_HOSTS")
+ALLOWED_CLIENT_HOSTS = os.environ.get("ALLOWED_CLIENT_HOSTS", "*")
 if not ALLOWED_CLIENT_HOSTS:
     if DEBUG:
         ALLOWED_CLIENT_HOSTS = _DEFAULT_CLIENT_HOSTS
@@ -411,7 +411,7 @@ TEST_RUNNER = "saleor.tests.runner.PytestTestRunner"
 
 PLAYGROUND_ENABLED = get_bool_from_env("PLAYGROUND_ENABLED", True)
 
-ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS","localhost,127.0.0.1"))
+ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS","*"))
 # ALLOWED_HOSTS = ["*"]
 ALLOWED_GRAPHQL_ORIGINS = get_list(os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*"))
 
