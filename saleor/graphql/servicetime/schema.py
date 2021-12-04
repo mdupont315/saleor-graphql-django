@@ -1,3 +1,4 @@
+from saleor.graphql.notifications.schema import LiveNotification
 from saleor.graphql.servicetime.types import ServiceTime
 import graphene
 from ..decorators import permission_required
@@ -13,8 +14,9 @@ class ServiceTimeQueries(graphene.ObjectType):
         ServiceTime,
         description="List of the servicetime.",
     )
-
+    
     def resolve_servie_times(self, info, **kwargs):
+        
         return resolve_service_time(self, info, **kwargs)
 
 class ServiceTimeMutations(graphene.ObjectType):
