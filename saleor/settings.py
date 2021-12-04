@@ -137,7 +137,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, "media")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
-# STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
 STATICFILES_DIRS = [
     ("images", os.path.join(PROJECT_ROOT, "saleor", "static", "images"))
 ]
@@ -288,7 +288,7 @@ LOGGING = {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': 'logs/debug.log',
             'when': 'D', # this specifies the interval
-            'interval': 1, # defaults to 1, only necessary for other values 
+            'interval': 1, # defaults to 1, only necessary for other values
             'backupCount': 10, # how many backup file to keep, 10 days
             'formatter': 'django',
             'encoding':'utf8',
