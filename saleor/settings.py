@@ -423,7 +423,7 @@ AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
 AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-APP_QUEUE = 'orderich-%s-queue' % os.environ.get('APP_ENV', 'dev')
+APP_QUEUE = 'orderich-%s-' % os.environ.get('APP_ENV', 'dev')
 # AWS_DEFAULT_ACL = os.environ.get("AWS_DEFAULT_ACL", None)
 AWS_DEFAULT_ACL = "public-read"
 AWS_S3_FILE_OVERWRITE = get_bool_from_env("AWS_S3_FILE_OVERWRITE", True)
@@ -498,14 +498,10 @@ CELERY_BROKER_URL = (
     os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
 )
 
-CELERY_BROKER_URL = 'sqs://{0}:{1}@'.format(
-    urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
-    urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
-)
 BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 3,
-    'region': AWS_S3_REGION_NAME,
     'visibility_timeout': 3600,
+    'queue_name_prefix': APP_QUEUE,
 }
 
 CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
