@@ -67,13 +67,17 @@ ALLOWED_CLIENT_HOSTS = get_list(ALLOWED_CLIENT_HOSTS)
 INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_SCHEMA = os.environ.get("DATABASE_SCHEMA", "public")
 if not DATABASE_URL:
     DATABASE_URL="postgres://postgres:thangprohoian123@localhost:5432/orderich"
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:thangprohoian123@localhost:5432/orderich"
-    )
+        default=DATABASE_URL,
+    ),
+    'OPTIONS': {
+        'options': f'-c search_path={DATABASE_SCHEMA}'
+    },
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
