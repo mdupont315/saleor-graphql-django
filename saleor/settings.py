@@ -423,7 +423,7 @@ AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
 AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-
+APP_QUEUE = 'orderich-%s-queue' % os.environ.get('APP_ENV', 'dev')
 # AWS_DEFAULT_ACL = os.environ.get("AWS_DEFAULT_ACL", None)
 AWS_DEFAULT_ACL = "public-read"
 AWS_S3_FILE_OVERWRITE = get_bool_from_env("AWS_S3_FILE_OVERWRITE", True)
@@ -506,14 +506,20 @@ BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 3,
     'region': AWS_S3_REGION_NAME,
     'visibility_timeout': 3600,
-    'queue_name_prefix': 'orderich-%s-' % os.environ.get('APP_ENV', 'dev'),
 }
 
 CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
-CELERY_ACCEPT_CONTENT = ["json", "pickle"]
+CELERY_ACCEPT_CONTENT = ["json", "pickle", "application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", None)
+
+CELERY_DEFAULT_QUEUE = APP_QUEUE
+CELERY_CONTENT_ENCODING = "utf-8"
+CELERY_ENABLE_REMOTE_CONTROL = False
+CELERY_SEND_EVENTS = False
+# Reason why we need the above is explained in Configuration Gotchas section.
+SQS_QUEUE_NAME = APP_QUEUE
 
 # Change this value if your application is running behind a proxy,
 # e.g. HTTP_CF_Connecting_IP for Cloudflare or X_FORWARDED_FOR

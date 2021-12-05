@@ -32,6 +32,7 @@ RUN apt-get update \
   libpq5 \
   shared-mime-info \
   mime-support \
+  curl \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
