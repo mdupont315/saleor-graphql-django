@@ -66,4 +66,5 @@ GraphQL, Django, and ReactJS."                                                  
       org.opencontainers.image.authors="Mirumee Software (https://mirumee.com)"        \
       org.opencontainers.image.licenses="BSD 3"
 
+# CMD ["celery", "-A", "saleor", "--app=saleor.celeryconf:app", "worker", "--loglevel=info", "-E"]
 CMD ["gunicorn", "--bind", ":80", "--preload", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "saleor.asgi:application"]
