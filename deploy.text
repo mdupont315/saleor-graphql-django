@@ -1,0 +1,3 @@
+1. change deploy.example to deploy.env
+2. use docker compose to run
+3. exec to the instance run cmd: python3 manage.py collectstatic --no-input
