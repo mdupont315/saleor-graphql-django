@@ -18,8 +18,10 @@ from pytimeparse import parse
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
-
+from dotenv import load_dotenv
 from . import patched_print_object
+
+load_dotenv()
 
 
 
@@ -51,16 +53,9 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
-os.environ['AWS_ACCESS_KEY_ID'] = 'AKIAY5IP4U6KWOLKAUG6'
-os.environ['AWS_SECRET_ACCESS_KEY'] = 'g1EgkksahzT9eCFj1khvGXcCNYTYW/DReQHpBD/T'
-os.environ['HOSTED_ZONE_ID'] = 'Z0262282S9NCMR75O7T9'
-os.environ['STATIC_IP'] = '3.66.10.99'
-
-
 MANAGERS = ADMINS
 
 _DEFAULT_CLIENT_HOSTS = "*"
-
 ALLOWED_CLIENT_HOSTS = os.environ.get("ALLOWED_CLIENT_HOSTS", "*")
 if not ALLOWED_CLIENT_HOSTS:
     if DEBUG:
@@ -75,9 +70,8 @@ ALLOWED_CLIENT_HOSTS = get_list(ALLOWED_CLIENT_HOSTS)
 INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    DATABASE_URL="postgres://postgres:thangprohoian123@localhost:5432/orderich"
-
+# if not DATABASE_URL:
+#     DATABASE_URL="postgres://postgres:thangprohoian123@localhost:5432/orderich"
 DATABASES = {
     "default": dj_database_url.config(
         default=DATABASE_URL,
