@@ -2,7 +2,7 @@ import ast
 import os.path
 import warnings
 from datetime import timedelta
-
+import urllib
 import dj_database_url
 import dj_email_url
 import django_cache_url
@@ -80,8 +80,8 @@ if not DATABASE_URL:
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://postgres:X8jCNMRcwg@orderich-db-prod.cfjzznwjctx7.eu-central-1.rds.amazonaws.com:5432/orderich"
-    )
+        default=DATABASE_URL,
+    ),
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -145,7 +145,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, "media")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
-STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+
 STATICFILES_DIRS = [
     ("images", os.path.join(PROJECT_ROOT, "saleor", "static", "images"))
 ]
@@ -426,16 +426,13 @@ AWS_MEDIA_BUCKET_NAME = os.environ.get("AWS_MEDIA_BUCKET_NAME", "")
 AWS_MEDIA_CUSTOM_DOMAIN = os.environ.get("AWS_MEDIA_CUSTOM_DOMAIN")
 AWS_QUERYSTRING_AUTH = get_bool_from_env("AWS_QUERYSTRING_AUTH", False)
 AWS_QUERYSTRING_EXPIRE = get_bool_from_env("AWS_QUERYSTRING_EXPIRE", 3600)
-
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
-
 AWS_S3_CUSTOM_DOMAIN = os.environ.get("AWS_STATIC_CUSTOM_DOMAIN", f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com')
-AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
-AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-
 AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+APP_QUEUE = 'orderich-%s-' % os.environ.get('APP_ENV', 'dev')
 # AWS_DEFAULT_ACL = os.environ.get("AWS_DEFAULT_ACL", None)
 AWS_DEFAULT_ACL = "public-read"
 AWS_S3_FILE_OVERWRITE = get_bool_from_env("AWS_S3_FILE_OVERWRITE", True)
@@ -456,6 +453,7 @@ GS_FILE_OVERWRITE = get_bool_from_env("GS_FILE_OVERWRITE", True)
 if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
     GS_CREDENTIALS = os.environ.get("GS_CREDENTIALS")
 
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
 if AWS_STORAGE_BUCKET_NAME:
     STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
@@ -508,12 +506,26 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_URL = (
     os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
 )
-# CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672'
+
+BROKER_TRANSPORT_OPTIONS = {
+    'polling_interval': 3,
+    'visibility_timeout': 3600,
+    'queue_name_prefix': APP_QUEUE,
+}
+
+CELERY_EVENT_QUEUE_PREFIX=APP_QUEUE
 CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
-CELERY_ACCEPT_CONTENT = ["json", "pickle"]
+CELERY_ACCEPT_CONTENT = ["json", "pickle", "application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", None)
+
+CELERY_DEFAULT_QUEUE = APP_QUEUE
+CELERY_CONTENT_ENCODING = "utf-8"
+CELERY_ENABLE_REMOTE_CONTROL = False
+CELERY_SEND_EVENTS = False
+# Reason why we need the above is explained in Configuration Gotchas section.
+SQS_QUEUE_NAME = APP_QUEUE
 
 # Change this value if your application is running behind a proxy,
 # e.g. HTTP_CF_Connecting_IP for Cloudflare or X_FORWARDED_FOR
@@ -524,7 +536,6 @@ DEFAULT_MENUS = {"top_menu_name": "navbar", "bottom_menu_name": "footer"}
 
 # Slug for channel precreated in Django migrations
 DEFAULT_CHANNEL_SLUG = os.environ.get("DEFAULT_CHANNEL_SLUG", "default-channel")
-
 
 #  Sentry
 sentry_sdk.utils.MAX_STRING_LENGTH = 4096
