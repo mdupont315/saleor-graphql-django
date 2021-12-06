@@ -4,7 +4,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from collections import defaultdict
-
+import os
 
 from saleor.account.models import User
 from saleor.delivery.models import Delivery
@@ -14,7 +14,7 @@ from saleor.servicetime.models import ServiceTime
 from saleor.store.error_codes import StoreErrorCode
 
 from ....account.error_codes import AccountErrorCode
-from ....core.exceptions import PermissionDenied
+from ....core.exceptions import DomainIsExist, PermissionDenied
 from ....core.permissions import StorePermissions, get_permissions_default
 from ....core.utils.url import validate_storefront_url
 from ....store import models
@@ -68,8 +68,9 @@ class StoreCreate(ModelMutation):
         except ValidationError as error:
             raise ValidationError({"password": error})
         
-        try:        
-            check_exist_record(data["domain"])
+        try:     
+            if check_exist_record(data["domain"]):
+                raise DomainIsExist()
         except ValidationError as error:
             error.code = StoreErrorCode.ALREADY_EXISTS.value
             raise ValidationError({"domain": error})
@@ -108,7 +109,8 @@ class StoreCreate(ModelMutation):
         # check if is super user
         # check_super_user(info.context)
         retval = super().perform_mutation(root, info, **data)
-        create_new_record(data["input"]["domain"])
+        domain="{}.{}".format(data["input"]["domain"],os.environ.get('STATIC_DOMAIN'))
+        create_new_record(domain)
         # create user
         user = User()
         user.is_supplier = True
