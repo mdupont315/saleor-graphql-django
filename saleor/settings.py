@@ -23,8 +23,6 @@ from . import patched_print_object
 
 load_dotenv()
 
-
-
 def get_list(text):
     return [item.strip() for item in text.split(",")]
 

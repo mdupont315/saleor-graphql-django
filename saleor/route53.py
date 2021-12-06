@@ -15,12 +15,13 @@ def check_exist_record(name):
         HostedZoneId=os.environ.get("HOSTED_ZONE_ID")
     )
     if any(obj['Name'] == name+'.' for obj in response.get('ResourceRecordSets')):
-        raise DomainIsExist()
+        return True
     else:
-        pass
+        return False
 
 def create_new_record(name):
-    check_exist_record(name)
+    if check_exist_record(name): 
+        return
     response = client.change_resource_record_sets(
         ChangeBatch={
             'Changes': [
@@ -42,7 +43,34 @@ def create_new_record(name):
         },
         HostedZoneId=os.environ.get("HOSTED_ZONE_ID"),
     )
-    if(response):
+    if response:
+        print("successs", response)
+    else:
+        print("faillllll")
+
+def delete_record(name):
+    response = client.change_resource_record_sets(
+        ChangeBatch={
+            'Changes': [
+                {
+                    'Action': 'DELETE',
+                    'ResourceRecordSet': {
+                        'Name': name,
+                        'ResourceRecords': [
+                            {
+                                'Value': os.environ.get('STATIC_IP'),
+                            },
+                        ],
+                        'TTL': 300,
+                        'Type': 'A',
+                    },
+                },
+            ],
+            'Comment': 'delete record',
+        },
+        HostedZoneId=os.environ.get("HOSTED_ZONE_ID"),
+    )
+    if response:
         print("successs", response)
     else:
         print("faillllll")
