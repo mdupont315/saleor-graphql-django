@@ -521,8 +521,6 @@ class ModelMutation(BaseMutation):
         data = data.get("input")
         
         cleaned_input = cls.clean_input(info, instance, data)
-        print("======vaoday")
-
         instance = cls.construct_instance(instance, cleaned_input)
         cls.clean_instance(info, instance)
         cls.save(info, instance, cleaned_input)

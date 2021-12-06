@@ -3,6 +3,8 @@ from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from collections import defaultdict
+
 
 from saleor.account.models import User
 from saleor.delivery.models import Delivery
@@ -43,6 +45,16 @@ class StoreCreate(ModelMutation):
         error_type_class = StoreError
         error_type_field = "store_errors"
 
+    # @classmethod
+    # def clean_instance(cls, info, instance):
+    #     errors = defaultdict(list)
+    #     cls.check_exist_domain(info, [instance], "domain", errors)
+    #     if errors:
+    #         raise ValidationError(errors)
+    # @classmethod
+    # def check_exist_domain(cls, info, instances, field, errors):
+    #    pass
+
     @classmethod
     def clean_input(cls, info, instance, data):
         cleaned_input = super().clean_input(info, instance, data)
@@ -59,6 +71,7 @@ class StoreCreate(ModelMutation):
         try:        
             check_exist_record(data["domain"])
         except ValidationError as error:
+            error.code = StoreErrorCode.ALREADY_EXISTS.value
             raise ValidationError({"domain": error})
         
         if not settings.ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL:
