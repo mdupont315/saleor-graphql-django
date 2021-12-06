@@ -9,7 +9,7 @@ import os
 from saleor.account.models import User
 from saleor.delivery.models import Delivery
 from saleor.graphql.utils.validators import check_super_user
-from saleor.route53 import check_exist_record,create_new_record
+from saleor.route53 import check_exist_record,create_new_record, delete_record
 from saleor.servicetime.models import ServiceTime
 from saleor.store.error_codes import StoreErrorCode
 
@@ -30,8 +30,10 @@ class StoreInput(graphene.InputObjectType):
     domain = graphene.String(description="Store domain.")
     email = graphene.String(description="The email address of the user.", required=True)
     password = graphene.String(description="Password.", required=True)
-
-
+    postal_code = graphene.String(description="Postal code.")
+    address = graphene.String(description="Address.")
+    phone = graphene.String(description="Phone.")
+    city = graphene.String(description="City.")
 class StoreCreate(ModelMutation):
     class Arguments:
         input = StoreInput(
@@ -108,8 +110,9 @@ class StoreCreate(ModelMutation):
     def perform_mutation(cls, root, info, **data):
         # check if is super user
         # check_super_user(info.context)
-        retval = super().perform_mutation(root, info, **data)
         domain="{}.{}".format(data["input"]["domain"],os.environ.get('STATIC_DOMAIN'))
+        data["input"]["domain"]=domain
+        retval = super().perform_mutation(root, info, **data)
         create_new_record(domain)
         # create user
         user = User()
@@ -276,8 +279,9 @@ class StoreDelete(ModelDeleteMutation):
         check_super_user(info.context)
         node_id = data.get("id")
         instance = cls.get_node_or_error(info, node_id, only_type=Store)
-
+        # domain = "{}.{}".format(instance.domain, os.environ.get('STATIC_DOMAIN'))
         db_id = instance.id
         delete_stores([db_id])
+        delete_record(instance.domain)
         instance.id = db_id
         return cls.success_response(instance)

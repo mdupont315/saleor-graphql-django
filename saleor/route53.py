@@ -49,6 +49,8 @@ def create_new_record(name):
         print("faillllll")
 
 def delete_record(name):
+    if not check_exist_record(name):
+        raise DomainIsExist(message="Domain doesn't exist")
     response = client.change_resource_record_sets(
         ChangeBatch={
             'Changes': [
@@ -61,7 +63,7 @@ def delete_record(name):
                                 'Value': os.environ.get('STATIC_IP'),
                             },
                         ],
-                        'TTL': 300,
+                        'TTL': 60,
                         'Type': 'A',
                     },
                 },
@@ -70,9 +72,6 @@ def delete_record(name):
         },
         HostedZoneId=os.environ.get("HOSTED_ZONE_ID"),
     )
-    if response:
-        print("successs", response)
-    else:
-        print("faillllll")
+    print(response)
 
 # print(response)
