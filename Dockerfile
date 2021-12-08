@@ -68,4 +68,4 @@ GraphQL, Django, and ReactJS."                                                  
       org.opencontainers.image.licenses="BSD 3"
 
 # CMD ["celery", "-A", "saleor", "--app=saleor.celeryconf:app", "worker", "--loglevel=info", "-E"]
-CMD ["gunicorn", "--bind", ":80", "--preload", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "saleor.asgi:application"]
+CMD ["gunicorn", "--bind", ":80", "--preload", "--workers", "4", "--worker-class", "saleor.uvicorn.UvicornWorker", "saleor.asgi:application"]
