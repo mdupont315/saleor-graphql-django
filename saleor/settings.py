@@ -305,6 +305,17 @@ LOGGING = {
     },
 }
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+REDIS_CHANNEL = os.environ.get("REDIS_CHANNEL", "")
+if REDIS_CHANNEL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(REDIS_CHANNEL, 6379)],
+            },
+        },
+    }
+
 # LOGGING = {
 #     "version": 1,
 #     "disable_existing_loggers": False,
