@@ -705,10 +705,13 @@ def complete_checkout(
 
             if order:
                 # emit event create
+                print("-------store----------")
+                print(store.id)
+                print("-------order store id----------")
+                print(order.store_id)
                 LiveNotification.new_message(
-                    graphene.Node.to_global_id("Store", store.id),
+                    graphene.Node.to_global_id("Store", order.store_id),
                     graphene.Node.to_global_id("Order", order.id))
-                
                 
             # write log
             log_info('Order', 'Order', content={
