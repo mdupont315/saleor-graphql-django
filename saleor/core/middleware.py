@@ -55,14 +55,13 @@ def request_set_tenant(get_response):
             domain = request.META.get('HTTP_HOST')
 
         if domain:
-            if ":" in domain: 
+            if ":" in domain:
                 domain = domain.split(":")[1][2:]
+            unset_current_tenant()
             s_store = Store.objects.filter(domain=domain).first()
             if s_store:
                 set_current_tenant(s_store)
-            else:
-                unset_current_tenant()
-            
+
         return get_response(request)
 
     return _request_set_tenant
