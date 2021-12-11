@@ -305,7 +305,7 @@ LOGGING = {
     },
 }
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
-REDIS_CHANNEL = os.environ.get("REDIS_CHANNEL", "")
+REDIS_CHANNEL = os.environ.get("REDIS_CHANNEL")
 if REDIS_CHANNEL:
     CHANNEL_LAYERS = {
         "default": {
