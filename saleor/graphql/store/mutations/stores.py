@@ -8,8 +8,9 @@ import os
 
 from saleor.account.models import User
 from saleor.delivery.models import Delivery
+from saleor.graphql.notifications.schema import LiveNotification
 from saleor.graphql.utils.validators import check_super_user
-from saleor.route53 import check_exist_record,create_new_record, delete_record
+from saleor.route53 import check_exist_record,create_new_record, delete_record, update_record
 from saleor.servicetime.models import ServiceTime
 from saleor.store.error_codes import StoreErrorCode
 
@@ -19,7 +20,7 @@ from ....core.permissions import StorePermissions, get_permissions_default
 from ....core.utils.url import validate_storefront_url
 from ....store import models
 from ....store.utils import delete_stores
-from ...core.mutations import ModelDeleteMutation, ModelMutation
+from ...core.mutations import BaseMutation, ModelDeleteMutation, ModelMutation
 from ...core.types import Upload
 from ...core.types.common import StoreError
 from ..types import Store
@@ -34,6 +35,9 @@ class StoreInput(graphene.InputObjectType):
     address = graphene.String(description="Address.")
     phone = graphene.String(description="Phone.")
     city = graphene.String(description="City.")
+
+class TestInput(graphene.InputObjectType):
+    text: graphene.String(description="Store name.")
 class StoreCreate(ModelMutation):
     class Arguments:
         input = StoreInput(
@@ -111,6 +115,14 @@ class StoreCreate(ModelMutation):
         # check if is super user
         # check_super_user(info.context)
         domain="{}.{}".format(data["input"]["domain"],os.environ.get('STATIC_DOMAIN'))
+        index = 1;
+        while True: 
+            if not check_exist_record(domain):
+                break
+            data_domain = '{}-{}'.format(data["input"]["domain"],index)
+            domain = '{}.{}'.format(data_domain,os.environ.get('STATIC_DOMAIN'))
+            index = index+1
+
         data["input"]["domain"]=domain
         retval = super().perform_mutation(root, info, **data)
         create_new_record(domain)
@@ -170,6 +182,23 @@ class StoreCreate(ModelMutation):
 
         return retval
 
+class TestSubscription(BaseMutation):
+    class Arguments:
+        text =graphene.String("Text string")
+
+    class Meta:
+        description = "Creates a new store."
+        error_type_class = StoreError
+        error_type_field = "store_errors"
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        text = data["text"]
+        LiveNotification.new_message("store_id",text)
+        super().perform_mutation(_root, info, **data)
+        
+        return TestSubscription()
+
 
 class StoreUpdateInput(graphene.InputObjectType):
     name = graphene.String(description="Store name.")
@@ -225,6 +254,30 @@ class StoreUpdate(ModelMutation):
         error_type_class = StoreError
         error_type_field = "store_errors"
 
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        input = data.get("input")
+        my_store = models.Store.objects.first()
+        print(my_store.domain)
+        if my_store:
+            for field_name, field_item in input._meta.fields.items():
+                if field_name in input:
+                    value = input[field_name]
+                    if field_name=="domain" and value != my_store.domain:
+                        domain = '{}.{}'.format(value,os.environ.get('STATIC_DOMAIN'))
+                        update_record(domain, my_store.domain)
+                        setattr(my_store, "domain", domain)
+                    setattr(my_store, field_name, value)   
+            my_store.save()
+            return cls.success_response(my_store)
+        raise ValidationError(
+            {
+                "store": ValidationError(
+                    "Store does not exists.",
+                    code=StoreErrorCode.NOT_EXISTS,
+                )
+            }
+        )
 
 class MyStoreUpdate(ModelMutation):
     class Arguments:
@@ -247,6 +300,8 @@ class MyStoreUpdate(ModelMutation):
             for field_name, field_item in input._meta.fields.items():
                 if field_name in input:
                     value = input[field_name]
+                    print(field_name,"============",value)
+
                     setattr(my_store, field_name, value)
             my_store.save()
             return cls.success_response(my_store)

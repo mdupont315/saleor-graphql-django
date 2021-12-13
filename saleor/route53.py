@@ -20,8 +20,8 @@ def check_exist_record(name):
         return False
 
 def create_new_record(name):
-    if check_exist_record(name): 
-        raise DomainIsExist()
+    # if check_exist_record(name): 
+    #     raise DomainIsExist()
     response = client.change_resource_record_sets(
         ChangeBatch={
             'Changes': [
@@ -74,4 +74,8 @@ def delete_record(name):
     )
     print(response)
 
-# print(response)
+def update_record(name,old_name):
+    delete_record(old_name)
+    if check_exist_record(name):
+        raise DomainIsExist(message="Domain does exist")
+    create_new_record(name)

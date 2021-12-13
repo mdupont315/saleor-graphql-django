@@ -6,7 +6,7 @@ from ..account.types import User
 from ..core.fields import FilterInputConnectionField
 from .filters import StoreFilterInput
 from .mutations.stores import (MyStoreUpdate, StoreCreate, StoreDelete,
-                               StoreUpdate)
+                               StoreUpdate,TestSubscription)
 from .resolvers import (resolve_my_store, resolve_store, resolve_stores,
                         resolve_user_store)
 from .sorters import StoreSortingInput
@@ -58,6 +58,8 @@ class StoreQueries(graphene.ObjectType):
 class StoreMutations(graphene.ObjectType):
     # store mutations
     store_create = StoreCreate.Field()
+    test_subscription = TestSubscription.Field()
+
     store_delete = StoreDelete.Field()
     store_update = StoreUpdate.Field()
     my_store_update = MyStoreUpdate.Field()
