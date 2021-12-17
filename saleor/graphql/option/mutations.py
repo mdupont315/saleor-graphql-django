@@ -112,9 +112,11 @@ class OptionUpdate(ModelMutation):
         error_type_class = OptionError
         error_type_field = "option_errors"
 
-    def create_option_value_channel(value, option_value_id):
+    @classmethod
+    def create_option_value_channel(cls, value, option_value_id):
         option_value_channel = models.OptionValueChannelListing()
         option_value_channel.price_amount = value["price"]
+        option_value_channel.currency = value["currency"]
         _type, _pk = from_global_id(value["channel_id"])
         option_value_channel.channel = channel_models.Channel.objects.get(pk=_pk)
         option_value_channel.option_value = models.OptionValue.objects.get(
