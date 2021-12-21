@@ -337,6 +337,7 @@ class StoreDelete(ModelDeleteMutation):
         # domain = "{}.{}".format(instance.domain, os.environ.get('STATIC_DOMAIN'))
         db_id = instance.id
         delete_stores([db_id])
-        delete_record(instance.domain)
+        if check_exist_record(instance.domain):
+            delete_record(instance.domain)
         instance.id = db_id
         return cls.success_response(instance)
