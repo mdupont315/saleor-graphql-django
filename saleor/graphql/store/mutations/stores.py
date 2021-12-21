@@ -254,30 +254,30 @@ class StoreUpdate(ModelMutation):
         error_type_class = StoreError
         error_type_field = "store_errors"
 
-    @classmethod
-    def perform_mutation(cls, _root, info, **data):
-        input = data.get("input")
-        my_store = models.Store.objects.first()
-        print(my_store.domain)
-        if my_store:
-            for field_name, field_item in input._meta.fields.items():
-                if field_name in input:
-                    value = input[field_name]
-                    if field_name=="domain" and value != my_store.domain:
-                        domain = '{}.{}'.format(value,os.environ.get('STATIC_DOMAIN'))
-                        update_record(domain, my_store.domain)
-                        setattr(my_store, "domain", domain)
-                    setattr(my_store, field_name, value)   
-            my_store.save()
-            return cls.success_response(my_store)
-        raise ValidationError(
-            {
-                "store": ValidationError(
-                    "Store does not exists.",
-                    code=StoreErrorCode.NOT_EXISTS,
-                )
-            }
-        )
+    # @classmethod
+    # def perform_mutation(cls, _root, info, **data):
+    #     input = data.get("input")
+    #     my_store = models.Store.objects.first()
+    #     print(my_store.domain)
+    #     if my_store:
+    #         for field_name, field_item in input._meta.fields.items():
+    #             if field_name in input:
+    #                 value = input[field_name]
+    #                 if field_name=="domain" and value != my_store.domain:
+    #                     domain = '{}.{}'.format(value,os.environ.get('STATIC_DOMAIN'))
+    #                     update_record(domain, my_store.domain)
+    #                     setattr(my_store, "domain", domain)
+    #                 setattr(my_store, field_name, value)   
+    #         my_store.save()
+    #         return cls.success_response(my_store)
+    #     raise ValidationError(
+    #         {
+    #             "store": ValidationError(
+    #                 "Store does not exists.",
+    #                 code=StoreErrorCode.NOT_EXISTS,
+    #             )
+    #         }
+    #     )
 
 class MyStoreUpdate(ModelMutation):
     class Arguments:
