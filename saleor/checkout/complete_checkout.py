@@ -701,14 +701,8 @@ def complete_checkout(
             )
             # remove checkout after order is successfully created
             checkout.delete()
-            store = get_current_tenant()
-
             if order:
                 # emit event create
-                print("-------store----------")
-                print(store.id)
-                print("-------order store id----------")
-                print(order.store_id)
                 LiveNotification.new_message(
                     graphene.Node.to_global_id("Store", order.store_id),
                     graphene.Node.to_global_id("Order", order.id))
