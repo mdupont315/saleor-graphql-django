@@ -29,6 +29,7 @@ from .consts import (
     WEBHOOK_SUCCESS_EVENT,
 )
 from .stripe_api import construct_stripe_event, retrieve_payment_intent
+import stripe
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +40,11 @@ def handle_webhook(request: WSGIRequest, gateway_config: "GatewayConfig"):
     sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
     endpoint_secret = gateway_config.connection_params["webhook_secret"]
     api_key = gateway_config.connection_params["private_key"]
+
+    stripe.api_key= api_key
     try:
-        event = construct_stripe_event(
-            api_key=api_key,
-            payload=payload,
-            sig_header=sig_header,
-            endpoint_secret=endpoint_secret,
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
         )
     except ValueError as e:
         # Invalid payload
