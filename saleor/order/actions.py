@@ -83,7 +83,7 @@ def order_created(
     if site_settings.automatically_confirm_all_new_orders:
         order_confirmed(order, user, manager)
     # sending email
-    current_strore = Store.objects.all().first()
+    current_strore = Store.objects.filter(pk=order.store_id).first()
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     protocol = "https" if settings.ENABLE_SSL else "http"
     # order_url = protocol + "://" + current_strore.domain + "order-history"
