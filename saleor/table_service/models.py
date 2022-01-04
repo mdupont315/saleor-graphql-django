@@ -2,7 +2,7 @@ from saleor.store.models import Store
 from django.db import models
 from ..core.models import MultitenantModelWithMetadata
 from ..core.permissions import TableServicePermissions
-from ..core.db.fields import SanitizedJSONField
+# from ..core.db.fields import SanitizedJSONField
 
 class TableService(MultitenantModelWithMetadata):
     store = models.ForeignKey(

@@ -23,3 +23,22 @@ class StoreSortingInput(SortInputObjectType):
     class Meta:
         sort_enum = StoreSortField
         type_name = "stores"
+
+class CustomDomainSortField(graphene.Enum):
+    NAME = ["domain_custom", "id"]
+
+    @property
+    def description(self):
+        # pylint: disable=no-member
+        descriptions = {
+            CustomDomainSortInput.NAME.name: "domain_custom",
+        }
+        if self.name in descriptions:
+            return f"Sort table services by {descriptions[self.name]}."
+        raise ValueError("Unsupported enum value: %s" % self.value)
+
+
+class CustomDomainSortInput(SortInputObjectType):
+    class Meta:
+        sort_enum = CustomDomainSortField
+        type_name = "custom domain types"
