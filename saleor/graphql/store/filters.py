@@ -1,6 +1,8 @@
 import django_filters
-from ...store.models import Store
-from ..utils.filters import filter_by_query_param, filter_range_field
+
+from saleor.graphql.core.filters import MetadataFilterBase
+from ...store import models
+from ..utils.filters import filter_by_query_param, filter_fields_containing_value, filter_range_field
 from ..core.types import FilterInputObjectType
 
 def filter_store_type(qs, _, value):
@@ -19,7 +21,7 @@ class StoreFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method=filter_search)
 
     class Meta:
-        model = Store
+        model = models.Store
         fields = [
             "store_type",            
             "search",
@@ -28,3 +30,17 @@ class StoreFilter(django_filters.FilterSet):
 class StoreFilterInput(FilterInputObjectType):
     class Meta:
         filterset_class = StoreFilter
+
+class CustomDomainFilter(MetadataFilterBase):
+    search = django_filters.CharFilter(
+        method=filter_fields_containing_value("table_name")
+    )
+
+    class Meta:
+        model = models.CustomDomain
+        fields = ["domain_custom"]
+
+
+class CustomDomainFilterInput(FilterInputObjectType):
+    class Meta:
+        filterset_class = CustomDomainFilter

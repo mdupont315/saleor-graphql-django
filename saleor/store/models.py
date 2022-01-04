@@ -42,6 +42,7 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     city = models.CharField(max_length=256, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
     pos_enable = models.BooleanField(blank=True, null=True, default=False)
+    custom_domain_enable = models.BooleanField(blank=True, null=True, default=False)
 
     # Emergency setting feature
     webshop_status = models.DateTimeField(blank=True, null=True)
@@ -84,6 +85,29 @@ class Store(MultitenantModelWithMetadata, SeoModel):
 
     class Meta:
         ordering = ("name", "pk")
+        app_label = "store"
+        permissions = (
+            (
+                StorePermissions.MANAGE_STORES.codename,
+                "Manage store.",
+            ),
+        )
+
+
+class CustomDomain(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="customdomain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id ='store_id'
+    domain_custom = models.CharField(max_length=256, null=False, blank=False, unique=True)
+    status = models.BooleanField(default=False, null=False, blank=False)
+
+    class Meta:
+        ordering = ("domain_custom", "pk")
         app_label = "store"
         permissions = (
             (

@@ -1,9 +1,12 @@
 import graphene
+from graphql_relay.node.node import from_global_id
 
 from ...store import models
 from ..core.validators import validate_one_of_args_is_in_query
 from .types import Store
 from ...account.models import User
+from django.core.exceptions import BadRequest
+
 
 def resolve_user_store(info, store_id, slug=None):
     _type, store_pk = graphene.Node.from_global_id(store_id)
@@ -27,3 +30,21 @@ def resolve_stores(info, **_kwargs):
 
 def resolve_my_store(info, **_kwargs):
     return models.Store.objects.all().first()
+
+def resolve_custom_domains(info, **_kwargs):
+    return models.CustomDomain.objects.all()
+
+def resolve_custom_domain(info, id, **_kwargs):
+    _type , _pk = from_global_id(id)
+    domain = models.CustomDomain.objects.filter(id=_pk).first()
+    if not domain:
+        # raise ValidationError(
+        #         {
+        #             "table_name": ValidationError(
+        #                 "QR Code doesn't exists",
+        #                 code=error_codes.TableServiceErrorCode.NOT_EXISTS,
+        #             )
+        #         }
+        #     )
+        raise BadRequest("domain doesn't exists")
+    return domain
