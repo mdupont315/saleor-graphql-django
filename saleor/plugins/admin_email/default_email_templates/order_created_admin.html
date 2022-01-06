@@ -8,337 +8,158 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style type="text/css">
-    #outlook a {
-      padding: 0;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      -webkit-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-    }
-
-    table,
-    td {
-      border-collapse: collapse;
-      mso-table-lspace: 0pt;
-      mso-table-rspace: 0pt;
-    }
-
-    img {
-      border: 0;
-      height: auto;
-      line-height: 100%;
-      outline: none;
-      text-decoration: none;
-      -ms-interpolation-mode: bicubic;
-    }
-
-    p {
-      display: block;
-      margin: 13px 0;
-    }
-
-    .orderich-footer {
-      text-decoration: none;
-      padding-bottom: 8px;
-      font-size: 16px;
-      line-height: 24px;
-      color: #808080;
-      text-align: center;
-    }
-
-    a {
-      text-decoration: none;
-    }
-
-    .product-table {
-      width: 100%;
-    }
-
-    .product-table .price {
-      text-align: right;
-      font-weight: bold;
-    }
-
-    .product-table .total {
-      font-weight: bold;
-    }
-  </style>
   <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
   <style type="text/css">
     @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
   </style>
 
-
-
-  <style type="text/css">
-    @media only screen and (min-width:480px) {
-      .mj-column-per-100 {
-        width: 100% !important;
-        max-width: 100%;
-      }
-    }
-  </style>
-
-
-  <style type="text/css">
-
-
-  </style>
-  <style type="text/css">
-    .container {
-      font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-      width: 500px;
-      margin: 0 auto;
-      padding-top: 20px;
-      padding-bottom: 20px;
-      color: #000;
-      font-size: 12px;
-      line-height: 14px;
-    }
-
-    .div-head {
-      text-align: center;
-      vertical-align: center;
-      padding: 20px;
-      border: 1px solid #000;
-    }
-
-    .order-code {
-      font-size: 12px;
-    }
-
-    .place-time {
-      font-size: 12px;
-      line-height: 14px;
-    }
-
-    .info {
-      border: 1px solid #000;
-      border-top: none;
-      padding: 5px;
-    }
-
-    .info>div {
-      display: inline-block;
-      width: 49%;
-    }
-
-    .info-left {
-      float: left;
-      border-right: 1px solid #000;
-      font-size: 12px;
-      line-height: 14px;
-      min-height: 140px;
-    }
-
-    ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    li {
-      margin: 0;
-      padding-left: 10px;
-    }
-
-    .clearfix {
-      overflow: auto;
-    }
-
-    .info-left-header {
-      padding-bottom: 10px;
-      width: 49%;
-    }
-
-    .order-common li {
-      padding-bottom: 10px;
-    }
-
-    .order-common .label {
-      line-height: 14px;
-    }
-
-    .payment-status {
-      color: #e65050 !important;
-    }
-
-    .label-value {
-      font-weight: bold;
-    }
-
-    .order-note {
-      border: 1px solid #000;
-      border-top: none;
-      padding: 20px;
-    }
-
-    .td-number {
-      width: 30px;
-      font-weight: bold;
-    }
-
-    .td-name {
-      width: auto;
-      color: #1f1f1f;
-      font-weight: bold;
-      font-style: normal;
-    }
-
-    .td-price {
-      text-align: right;
-      font-weight: bold;
-      color: #222222;
-    }
-
-    .td-option {
-      font-size: 12px;
-      line-height: 20px;
-      color: #808080;
-    }
-
-    .products {
-      padding: 10px;
-      border: 1px solid #000;
-      border-top: none;
-      color: #222222 !important;
-    }
-
-    .products>div {
-      width: 50%;
-      display: inline-block;
-    }
-
-    .products-right {
-      float: right;
-      font-size: 12px;
-      line-height: 14px;
-    }
-
-    .total-row {
-      padding-bottom: 10px;
-      font-weight: bold;
-    }
-
-    .discout {
-      color: #4caf50;
-    }
-
-    table {
-      font-size: 12px;
-      color: #222222 !important;
-    }
-
-    .total-row-price {
-      text-align: right;
-    }
-  </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class=div-head>
-      <span class="order-code">New {{order_type}} order <b>#{{order_num}}</b></span><br />
-      <span class="place-time">Placed on {{place_date}} at {{place_time}}</span>
-    </div>
+  <div style="margin:0px auto;max-width:600px; border: 1px solid #000;">
 
-    <div class="info clearfix">
-      <div class="info-left">
-        <span class="info-left-header">CUSTOMER INFORMATION</span>
-        <!-- <ul>
-          <li>test test</li>
-          <li>121212</li>
-          <li>tuan.vuthanh@ncc.asia</li>
-        </ul> -->
-        {{#if table_name}}
-        <ul>
-          <li>{{table_name}}</li>
-        </ul>
-        {{else}}
-          {{#address_customer address}}{{/address_customer}}
-        {{/if}}
-      </div>
-      <div class="info-right">
-        <ul class="order-common">
-          <li>
-            <div class="label">ORDER TYPE</div>
-            <div class="label-value">{{order_type}}</div>
-          </li>
-          <li>
-            <div class="label">PREFERRED TIME</div>
-            <div class="label-value">{{expected_date}} {{expected_time}}</div>
-          </li>
-          <li>
-            <div class="label">PAYMENT STATUS</div>
-            <div class="payment-status">{{payment_status}} ({{payment_method}})</div>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="order-note">
-      <div>ORDER NOTE</div>
-      <div>{{order_note}}</div>
-    </div>
-
-    <div class="products">
-      <!-- <table class="product-table">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+      <tbody>
         <tr>
-          <td class="td-number">1x </td>
-          <td class="td-name">Trà sữa</td>
-          <td class="td-price">€ 22.000</td>
-        </tr>
-        <tr>
-          <td class="td-option" colspan="3">
-            Kies je saus: Sesamsaus (€ 2,00)
+          <td style="direction: ltr; font-size: 0px; text-align: center;" align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix"
+              style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
+
+                <tr>
+                  <td align="left"
+                    style="font-size: 0px; padding: 8px; word-break: break-word; border-bottom: 1px solid black; ">
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:14px;line-height:16px;text-align:left;color:#000; font-weight: bold;text-align: center;">
+                      {{order_type}} #{{order_num}}
+                    </div>
+
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:10px;line-height:12px;text-align:left;color:#000; text-align: center;">
+                      Placed on {{place_date}} at {{place_time}}
+                    </div>
+
+                  </td>
+                </tr>
+
+              </table>
+
+            </div>
           </td>
         </tr>
+
         <tr>
-          <td class="td-number">1x </td>
-          <td class="td-name">Trà sữa</td>
-          <td class="td-price">€ 10.000</td>
+          <td style="direction: ltr; font-size: 0px; text-align: center;" align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix"
+              style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
+
+                <tr>
+                  <td align="left"
+                    style="font-size: 0px; padding: 8px; word-break: break-word;border-right: 1px solid black; width: 50%;">
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                      CUSTOMER INFORMATION
+                    </div>
+                    {{#if table_name}}
+                    <ul>
+                      <li>{{table_name}}</li>
+                    </ul>
+                    {{else}}
+                    {{#address_customer address}}{{/address_customer}}
+                    {{/if}}
+
+
+
+                  </td>
+
+                  <td align="left" style="font-size: 0px; padding: 8px; word-break: break-word;width: 50%;">
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                      ORDER TYPE
+                    </div>
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;font-weight: bold; margin-bottom: 4px;">
+                      {{order_type}}
+
+                    </div>
+
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                      PREFERRED TIME
+                    </div>
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;font-weight: bold; margin-bottom: 4px;">
+                      {{expected_date}} {{expected_time}}
+                    </div>
+
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:8px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                      PAYMENT STATUS
+                    </div>
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">
+                      {{payment_status}} ({{payment_method}})
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+            </div>
+          </td>
         </tr>
-      </table> -->
-      {{#product_customer items=lines channel=channel channel_symbol=channel_symbol}}{{/product_customer}}
-    </div>
 
-    <div class="products clearfix">
-      <div class="products-left"></div>
-      <div class="products-right">
-        <table class="product-table">
-          <tr class="total-row">
-            <td>Subtotal</td>
-            <td class="total-row-price">{{channel_symbol}} {{sub_total}}</td>
-          </tr>
-          <tr class="total-row">
-            <td class="discout">Discount</td>
-            <td class="discout total-row-price">- {{channel_symbol}} {{discount}}</td>
-          </tr>
-          <!-- {{#if is_delivery}}
-          {{/if}} -->
-          <tr>
-            <td>Delivery cost</td>
-            <td class="total-row-price">{{delivery_fee}}</td>
-          </tr>
-          <tr>
-            <td>Transaction cost</td>
-            <td class="total-row-price">{{transaction_cost}}</td>
-          </tr>
-          <tr class="total-row">
-            <td>Total</td>
-            <td class="total-row-price">{{channel_symbol}} {{total}}</td>
-          </tr>
-        </table>
-      </div>
-    </div>
+        <tr>
+          <td style="direction: ltr; font-size: 0px;" align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix"
+              style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
 
+                <tr>
+                  <td align="left"
+                    style="font-size: 0px; padding: 8px; word-break: break-word; border-top: 1px solid black; ">
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:1;text-align:left;color:#000;">
+                      ORDER NOTE
+                    </div>
+
+                    <div
+                      style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:1;text-align:left;color:#e65050;">
+                      {{order_note}}
+                    </div>
+
+                  </td>
+                </tr>
+
+              </table>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="direction: ltr; font-size: 0px; text-align: center; border-top: 1px solid black; " align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix"
+              style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+              {{#product_customer_admin items=lines channel=channel channel_symbol=channel_symbol}}{{/product_customer_admin}}
+
+              <!-- <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
+
+
+              </table> -->
+
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
   </div>
-
 </body>
 
 </html>

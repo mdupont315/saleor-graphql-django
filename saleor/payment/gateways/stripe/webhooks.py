@@ -48,12 +48,15 @@ def handle_webhook(request: WSGIRequest, gateway_config: "GatewayConfig"):
         )
     except ValueError as e:
         # Invalid payload
+        print("invlaid payload", e)
         logger.warning(
             "Received invalid payload for Stripe webhook", extra={"error": e}
         )
         return HttpResponse(status=400)
     except SignatureVerificationError as e:
         # Invalid signature
+        print("signature",e)
+
         logger.warning("Invalid signature for Stripe webhook", extra={"error": e})
         return HttpResponse(status=400)
 
@@ -305,15 +308,22 @@ def handle_successful_payment_intent(
                 get_plugins_manager(),
             )
         return
-
-    if payment.checkout_id:
-        _process_payment_with_checkout(
+    _process_payment_with_checkout(
             payment,
             payment_intent,
             TransactionKind.CAPTURE,
             amount=payment_intent.amount_received,
             currency=payment_intent.currency,
         )
+
+    # if payment.checkout_id:
+    #     _process_payment_with_checkout(
+    #         payment,
+    #         payment_intent,
+    #         TransactionKind.CAPTURE,
+    #         amount=payment_intent.amount_received,
+    #         currency=payment_intent.currency,
+    #     )
 
 
 def handle_refund(charge: StripeObject, gateway_config: "GatewayConfig"):
