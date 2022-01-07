@@ -42,6 +42,7 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     city = models.CharField(max_length=256, blank=True, null=True)
     address = models.CharField(max_length=256, blank=True, null=True)
     pos_enable = models.BooleanField(blank=True, null=True, default=False)
+    description = models.TextField(blank=True,  null=True)
 
     # Emergency setting feature
     webshop_status = models.DateTimeField(blank=True, null=True)

@@ -583,6 +583,9 @@ class ProductInput(graphene.InputObjectType):
     charge_taxes = graphene.Boolean(
         description="Determine if taxes are being charged for the product."
     )
+    enable = graphene.Boolean(
+        description="Display product or not."
+    )
     collections = graphene.List(
         graphene.NonNull(graphene.ID),
         description="List of IDs of collections that the product belongs to.",
