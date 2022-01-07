@@ -35,6 +35,7 @@ class StoreInput(graphene.InputObjectType):
     address = graphene.String(description="Address.")
     phone = graphene.String(description="Phone.")
     city = graphene.String(description="City.")
+    description = graphene.String(description="Description.")
 
 class TestInput(graphene.InputObjectType):
     text: graphene.String(description="Store name.")
@@ -124,6 +125,7 @@ class StoreCreate(ModelMutation):
             index = index+1
 
         data["input"]["domain"]=domain
+        data["input"]["description"]=data["input"]["name"]
         retval = super().perform_mutation(root, info, **data)
         create_new_record(domain)
         # create user
@@ -204,6 +206,7 @@ class StoreUpdateInput(graphene.InputObjectType):
     name = graphene.String(description="Store name.")
     domain = graphene.String(description="Store domain")
     address = graphene.String(description="Store address.")
+    description = graphene.String(description="Store description.")
     phone = graphene.String(description="Store phone.")
     postal_code = graphene.String(description="postal code.")
     city = graphene.String(description="city of strore.")

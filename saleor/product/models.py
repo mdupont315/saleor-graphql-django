@@ -419,6 +419,7 @@ class Product(SortableModel, MultitenantModelWithMetadata, SeoModel):
     description = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
     description_plaintext = TextField(blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
+    enable = models.BooleanField(default=True)
 
     category = models.ForeignKey(
         Category,
