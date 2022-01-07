@@ -234,7 +234,7 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
         logging.getLogger('django').info('---line----{line}------'.format(line=thing.__dict__) )
 
         result.append(u'<tr>')
-        result.append(u'<td align="left" style="font-size: 0px; padding: 8px; word-break: break-word; width: 50%;">')
+        result.append(u'<td align="left" style="font-size: 0px;padding: 0 8px 4px 8px; word-break: break-word; width: 50%;">')
 # product info
         result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;text-align:left;color:#000; display: flex">')
         result.append(u'<p style="margin: 0; margin-right: 8px; font-size: 12px;line-height: 14px;font-weight: bold;width: 5%;">')
