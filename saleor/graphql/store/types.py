@@ -15,6 +15,10 @@ class Store(CountableDjangoObjectType):
         description="The store description.",
         required=False
     )
+    description = graphene.String(
+        description="The store description.",
+        required=False
+    )
     logo = graphene.Field(Image, size=graphene.Int(
         description="Logo of store."), required=False)
     favicon = graphene.Field(Image, size=graphene.Int(
@@ -75,6 +79,7 @@ class Store(CountableDjangoObjectType):
         only_fields = [
             "name",
             "domain",
+            "description",
             "logo",
             "favicon",
             "cover_photo",

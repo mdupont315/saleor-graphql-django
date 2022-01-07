@@ -526,6 +526,9 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
         address=destination_address_argument,
         description="Whether the product is in stock and visible or not.",
     )
+    enable = graphene.Boolean(
+        description="Whether the product is visible or not.",
+    )
     tax_type = graphene.Field(
         TaxType, description="A type of tax. Assigned by enabled tax gateway"
     )
@@ -595,6 +598,7 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
             "description",
             "id",
             "name",
+            "enable",
             "slug",
             "product_type",
             "seo_description",
