@@ -58,6 +58,9 @@ class CategoryInput(graphene.InputObjectType):
     seo = SeoInput(description="Search engine optimization fields.")
     background_image = Upload(description="Background image file.")
     background_image_alt = graphene.String(description="Alt text for a product media.")
+    enable = graphene.Boolean(
+        description="Display category or not."
+    )
 
 
 class CategoryCreate(ModelMutation):

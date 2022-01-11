@@ -75,6 +75,7 @@ class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel, SortableModel)
         upload_to="category-backgrounds", blank=True, null=True
     )
     background_image_alt = models.CharField(max_length=128, blank=True)
+    enable = models.BooleanField(default=True)
 
     tree = TreeManager()
     translated = TranslationProxy()

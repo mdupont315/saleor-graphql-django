@@ -125,7 +125,7 @@ class StoreCreate(ModelMutation):
             index = index+1
 
         data["input"]["domain"]=domain
-        data["input"]["description"]=data["input"]["name"]
+        data["input"]["description"]='{} is open for online takeaway orders'.format(data["input"]["name"])
         retval = super().perform_mutation(root, info, **data)
         create_new_record(domain)
         # create user
