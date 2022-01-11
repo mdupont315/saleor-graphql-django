@@ -105,7 +105,7 @@ def order_created(
             if order.get_last_payment().gateway == 'mirumee.payments.dummy':
                 return "Cash"
         return "iDeal"
-
+    print(order.lines.all(),"===============line")
     payload = {
         "order_num": order.pk,
         "expected_date": order.expected_date,

@@ -1148,7 +1148,9 @@ class Category(CountableDjangoObjectType):
         Image, size=graphene.Int(description="Size of the image.")
     )
     translation = TranslationField(CategoryTranslation, type_name="category")
-
+    enable = graphene.Boolean(
+        description="Whether the category is visible or not.",
+    )
     class Meta:
         description = (
             "Represents a single category of products. Categories allow to organize "
@@ -1160,6 +1162,7 @@ class Category(CountableDjangoObjectType):
             "id",
             "level",
             "name",
+            "enable",
             "parent",
             "seo_description",
             "seo_title",

@@ -280,19 +280,52 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 def customer_list_address(this, options, items):
     result = [u'']
     dict_items = items.items()
+    full_address = []
+    email = ''
+    phone = ''
+    company = ''
+    for key, value in dict_items:
+        if key == 'street_address_1' or key == 'city' or key == 'postal_code' or key == 'apartment':
+            if value:
+                full_address.append(value)
+        if key == 'email':
+            if value:
+                email = value
+        if key == 'phone':
+            if value:
+                phone = value
+        if key == 'company_name':
+            if value:
+                company = value
     ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
     logging.getLogger('django').info('---ctm_name----{ctm_name}------'.format(ctm_name=ctm_name) )
     print(ctm_name,"=========================ctm_name")
     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
     result.append(str(ctm_name)),
     result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(str(", ".join(full_address))),
+    result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(email),
+    result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(phone),
+    result.append(u'</div>')
+
     for key, value in dict_items:
-        if key == 'id' or key == '_state' or key == 'last_name' or key == 'first_name':
-            continue
-        if value:
-            result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
-            result.append(str(value)),
-            result.append(u'</div>')
+        logging.getLogger('django').info('---keyyyyy----{key}------'.format(key=key) )
+        logging.getLogger('django').info('---valueeee----{value}------'.format(value=value) )
+
+        # if key == 'id' or key == '_state' or key == 'last_name' or key == 'first_name' or key == 'country':
+        #     continue
+        # if value:
+        #     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+        #     result.append(str(value)),
+        #     result.append(u'</div>')
     # result.append(u'</ul>')
     return result
 
