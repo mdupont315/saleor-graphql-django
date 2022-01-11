@@ -277,18 +277,29 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 
     return result
 
-def get_full_address(address, city, postal_code, apartment):
+def get_full_address1(address, city, postal_code, apartment):
     result = ''
     if address:
         result = result + address
-    if city:
-        result = result +","+ city
-    if postal_code:
-        result = result +","+ postal_code
+    # if city:
+    #     result = result +","+ city
+    # if postal_code:
+    #     result = result +","+ postal_code
     if apartment:
-        result = result +","+ apartment
+        result = result +" "+ apartment
     return result
 
+def get_full_address2(address, city, postal_code, apartment):
+    result = ''
+    # if address:
+    #     result = result + address
+    if postal_code:
+        result = result + postal_code
+    if city:
+        result = result +", "+ city
+    # if apartment:
+    #     result = result +","+ apartment
+    return result
 def customer_list_address(this, options, items):
     result = [u'']
     dict_items = items.items()
@@ -329,7 +340,11 @@ def customer_list_address(this, options, items):
     result.append(u'</div>')
 
     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
-    result.append(get_full_address(address,city,postal_code,apartment)),
+    result.append(get_full_address1(address,city,postal_code,apartment)),
+    result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(get_full_address2(address,city,postal_code,apartment)),
     result.append(u'</div>')
 
     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
@@ -360,7 +375,7 @@ def customer_list_address_delivery(this, options, items):
     ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
     result.append(u'<li>')
     result.append(str(ctm_name)),
-    result.append(u'</li>')
+    result.append(u'</li>') 
 
     email = ''
     phone = ''
@@ -393,7 +408,10 @@ def customer_list_address_delivery(this, options, items):
                 postal_code = value
     
     result.append(u'<li>')
-    result.append(get_full_address(address,city,postal_code,apartment)),
+    result.append(get_full_address1(address,city,postal_code,apartment)),
+    result.append(u'</li>')
+    result.append(u'<li>')
+    result.append(get_full_address2(address,city,postal_code,apartment)),
     result.append(u'</li>')
 
     result.append(u'<li>')
