@@ -277,17 +277,32 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 
     return result
 
+def get_full_address(address, city, postal_code, apartment):
+    result = ''
+    if address:
+        result = result + address
+    if city:
+        result = result +","+ city
+    if postal_code:
+        result = result +","+ postal_code
+    if apartment:
+        result = result +","+ apartment
+    return result
+
 def customer_list_address(this, options, items):
     result = [u'']
     dict_items = items.items()
-    full_address = []
     email = ''
     phone = ''
     company = ''
+    city=''
+    apartment=''
+    postal_code=''
+    address=''
     for key, value in dict_items:
-        if key == 'street_address_1' or key == 'city' or key == 'postal_code' or key == 'apartment':
+        if key == 'street_address_1': #or key == 'city' or key == 'postal_code' or key == 'apartment':
             if value:
-                full_address.append(value)
+                address = value
         if key == 'email':
             if value:
                 email = value
@@ -297,6 +312,15 @@ def customer_list_address(this, options, items):
         if key == 'company_name':
             if value:
                 company = value
+        if key == 'city':
+            if value:
+                city = value
+        if key == 'apartment':
+            if value:
+                apartment = value
+        if key == 'postal_code':
+            if value:
+                postal_code = value
     ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
     logging.getLogger('django').info('---ctm_name----{ctm_name}------'.format(ctm_name=ctm_name) )
     print(ctm_name,"=========================ctm_name")
@@ -305,7 +329,7 @@ def customer_list_address(this, options, items):
     result.append(u'</div>')
 
     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
-    result.append(str(", ".join(full_address))),
+    result.append(get_full_address(address,city,postal_code,apartment)),
     result.append(u'</div>')
 
     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
@@ -338,14 +362,17 @@ def customer_list_address_delivery(this, options, items):
     result.append(str(ctm_name)),
     result.append(u'</li>')
 
-    full_address = []
     email = ''
     phone = ''
     company = ''
+    city=''
+    apartment=''
+    postal_code=''
+    address=''
     for key, value in dict_items:
-        if key == 'street_address_1' or key == 'city' or key == 'postal_code':
+        if key == 'street_address_1': #or key == 'city' or key == 'postal_code' or key == 'apartment':
             if value:
-                full_address.append(value)
+                address = value
         if key == 'email':
             if value:
                 email = value
@@ -355,8 +382,18 @@ def customer_list_address_delivery(this, options, items):
         if key == 'company_name':
             if value:
                 company = value
+        if key == 'city':
+            if value:
+                city = value
+        if key == 'apartment':
+            if value:
+                apartment = value
+        if key == 'postal_code':
+            if value:
+                postal_code = value
+    
     result.append(u'<li>')
-    result.append(str(", ".join(full_address))),
+    result.append(get_full_address(address,city,postal_code,apartment)),
     result.append(u'</li>')
 
     result.append(u'<li>')
