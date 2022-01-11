@@ -232,6 +232,7 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 
     for thing in items:
         logging.getLogger('django').info('---line----{line}------'.format(line=thing.__dict__) )
+        option_values = thing.option_values.all()
 
         result.append(u'<tr>')
         result.append(u'<td align="left" style="font-size: 0px;padding: 0 8px 4px 8px; word-break: break-word; width: 50%;">')
@@ -245,7 +246,6 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
         result.append(thing.product_name)
         result.append(u'</p>')
 #  option 
-        option_values = thing.option_values.all()
         if option_values:
             logging.getLogger('django').info('---optionm----{sender_name}------'.format(sender_name="asdasdasd") )
 
@@ -354,6 +354,11 @@ def customer_list_address(this, options, items):
     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
     result.append(phone),
     result.append(u'</div>')
+
+    if company:
+        result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+        result.append(company),
+        result.append(u'</div>')
 
     for key, value in dict_items:
         logging.getLogger('django').info('---keyyyyy----{key}------'.format(key=key) )
