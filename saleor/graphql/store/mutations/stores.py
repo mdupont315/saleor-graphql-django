@@ -1,3 +1,4 @@
+from django_multitenant.utils import unset_current_tenant
 import graphene
 from django.conf import settings
 from django.contrib.auth import password_validation
@@ -115,6 +116,7 @@ class StoreCreate(ModelMutation):
     def perform_mutation(cls, root, info, **data):
         # check if is super user
         # check_super_user(info.context)
+        unset_current_tenant()
         domain="{}.{}".format(data["input"]["domain"],os.environ.get('STATIC_DOMAIN'))
         index = 1;
         while True: 
