@@ -235,17 +235,18 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
         option_values = thing.option_values.all()
 
         result.append(u'<tr>')
-        result.append(u'<td align="left" style="font-size: 0px;padding: 0 8px 4px 8px; word-break: break-word; width: 50%;">')
-# product info
-        result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;text-align:left;color:#000; display: flex">')
-        result.append(u'<p style="margin: 0; margin-right: 8px; font-size: 12px;line-height: 14px;font-weight: bold;width: 5%;">')
+        result.append(u'<td align="left" style="vertical-align: top;word-break: break-word; width: 30px; padding-left:8px;">')
+        result.append(u'<p style="margin: 0; margin-right: 8px; font-size: 12px;line-height: 14px;font-weight: bold;">')
         result.append('{quantity}x'.format(quantity = str(thing.quantity)))
         result.append(u'</p>')
-        result.append(u'<div style="width:70%;">')
+        result.append(u'</td>')
+        
+        result.append(u'<td align="left" style="word-break: break-word; width: auto;">')
         result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
         result.append(thing.product_name)
         result.append(u'</p>')
-#  option 
+
+        #  option 
         if option_values:
             logging.getLogger('django').info('---optionm----{sender_name}------'.format(sender_name="asdasdasd") )
 
@@ -259,20 +260,57 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
                         channel), channel)).quantize(TWOPLACES))
                 ))
                 result.append(u'</p>')
-        result.append(u'</div>')
-# price
-        result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold; text-align: right; flex: 1;width:25%;">')
-        # result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
+
+        result.append(u'</td>')
+
+        result.append(u'<td align="right" style=" vertical-align: top; padding-right:8px;font-size: 12px;line-height: 14px;font-weight: bold;word-break: break-word; width: auto;">')
         result.append("{curency} {price}".format(
             curency=channel_symbol,
             price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
             # quantize_price(thing.total_price_net.amount, channel)
            
         ))
+        result.append(u'</td>')
+        result.append(u'</tr>')
 
-        logging.getLogger('django').info('---price----{sender_name}------'.format(sender_name=thing.total_price_net.amount) )
 
-        result.append(u'</p></div></td></tr>')
+# # product info
+#         result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;text-align:left;color:#000; display: flex">')
+#         result.append(u'<p style="margin: 0; margin-right: 8px; font-size: 12px;line-height: 14px;font-weight: bold;width: 5%;">')
+#         result.append('{quantity}x'.format(quantity = str(thing.quantity)))
+#         result.append(u'</p>')
+#         result.append(u'<div style="width:70%;">')
+#         result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
+#         result.append(thing.product_name)
+#         result.append(u'</p>')
+# #  option 
+#         if option_values:
+#             logging.getLogger('django').info('---optionm----{sender_name}------'.format(sender_name="asdasdasd") )
+
+#             for option_value in option_values:
+#                 result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: 400;">')
+#                 result.append("{option} : {name} ({curency} {price})".format(
+#                     option=option_value.option.name,
+#                     name=option_value.name,
+#                     curency=channel_symbol,
+#                     price=formatComma((quantize_price(option_value.get_price_amount_by_channel(
+#                         channel), channel)).quantize(TWOPLACES))
+#                 ))
+#                 result.append(u'</p>')
+#         result.append(u'</div>')
+# # price
+#         result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold; text-align: right; flex: 1;width:25%;">')
+#         # result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
+#         result.append("{curency} {price}".format(
+#             curency=channel_symbol,
+#             price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
+#             # quantize_price(thing.total_price_net.amount, channel)
+           
+#         ))
+
+#         logging.getLogger('django').info('---price----{sender_name}------'.format(sender_name=thing.total_price_net.amount) )
+
+#         result.append(u'</p></div></td></tr>')
         
 
     return result
