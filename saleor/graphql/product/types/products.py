@@ -526,6 +526,9 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
         address=destination_address_argument,
         description="Whether the product is in stock and visible or not.",
     )
+    enable = graphene.Boolean(
+        description="Whether the product is visible or not.",
+    )
     tax_type = graphene.Field(
         TaxType, description="A type of tax. Assigned by enabled tax gateway"
     )
@@ -595,6 +598,7 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
             "description",
             "id",
             "name",
+            "enable",
             "slug",
             "product_type",
             "seo_description",
@@ -1144,7 +1148,9 @@ class Category(CountableDjangoObjectType):
         Image, size=graphene.Int(description="Size of the image.")
     )
     translation = TranslationField(CategoryTranslation, type_name="category")
-
+    enable = graphene.Boolean(
+        description="Whether the category is visible or not.",
+    )
     class Meta:
         description = (
             "Represents a single category of products. Categories allow to organize "
@@ -1156,6 +1162,7 @@ class Category(CountableDjangoObjectType):
             "id",
             "level",
             "name",
+            "enable",
             "parent",
             "seo_description",
             "seo_title",
