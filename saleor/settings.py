@@ -20,7 +20,8 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from dotenv import load_dotenv
 from . import patched_print_object
-
+# import dnspython as dns
+    
 load_dotenv()
 
 def get_list(text):
