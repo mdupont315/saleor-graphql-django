@@ -174,7 +174,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
                (undiscount_checkout_total < delivery_setting.from_delivery or (undiscount_checkout_total >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
                 delivery_fee = delivery_setting.delivery_fee
-                checkout_total.gross.amount = checkout_total.gross.amount + delivery_setting.delivery_fee
+                checkout_total.gross.amount = checkout_total.gross.amount + Decimal(delivery_setting.delivery_fee)
         
         # implement transaction fee
         transaction_fee = 0
