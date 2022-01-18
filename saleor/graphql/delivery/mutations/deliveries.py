@@ -3,6 +3,8 @@ from ....delivery import models
 from ...core.types.common import DeliveryError
 from ...core.mutations import  ModelMutation
 from ..types import Delivery
+from saleor.graphql.core.scalars import Decimal
+from ...core.scalars import PositiveDecimal
 
 
 class DeliveryInput(graphene.InputObjectType):
@@ -10,18 +12,9 @@ class DeliveryInput(graphene.InputObjectType):
         required=True, 
         description="Delivery area."
     )
-    delivery_fee = graphene.Float(
-        required=True, 
-        description="Delivery fee."
-    )
-    from_delivery = graphene.Float(
-        required=True, 
-        description="Free delivery from."
-    )
-    min_order = graphene.Float(
-        required=True, 
-        description="Min order value."
-    )
+    delivery_fee = PositiveDecimal(description="Cost price of the variant in channel.")
+    from_delivery = PositiveDecimal(description="Cost price of the variant in channel.")
+    min_order = PositiveDecimal(description="Cost price of the variant in channel.")
     enable_for_big_order = graphene.Boolean(
         required=False, 
         description="Enable for big order."
@@ -45,18 +38,9 @@ class DeliveryUpdateInput(graphene.InputObjectType):
         required=False, 
         description="Delivery area."
     )
-    delivery_fee = graphene.Float(
-        required=False, 
-        description="Delivery fee."
-    )
-    from_delivery = graphene.Float(
-        required=False, 
-        description="Free delivery from."
-    )
-    min_order = graphene.Float(
-        required=False, 
-        description="Min order value."
-    )
+    delivery_fee = PositiveDecimal(description="Cost price of the variant in channel.")
+    from_delivery = PositiveDecimal(description="Cost price of the variant in channel.")
+    min_order = PositiveDecimal(description="Cost price of the variant in channel.")
     enable_for_big_order = graphene.Boolean(
         required=False, 
         description="Min order value."
