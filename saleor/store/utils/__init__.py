@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Union
 
 from django.db import transaction
 from ..models import Store
+import dns.resolver
 
 
 if TYPE_CHECKING:
@@ -23,4 +24,27 @@ def delete_stores(stores_ids: List[str]):
     stores = Store.objects.select_for_update().filter(pk__in=stores_ids)
     stores.delete()
 
+def check_dns(domain):
+    try:
+        result = dns.resolver.query(domain, 'A')
+        if result:
+            return True
+        else: 
+            return False
+    except:
+        return False
 
+import requests
+
+def verify_ssl(domain):
+ 
+    # Making a get request
+    # response = requests.get('https://{}'.format(domain), verify = False)
+ # Making a get request
+    response = requests.get('https://expired.badssl.com/')
+ 
+# print request object
+    # print request object
+    print(response)
+
+verify_ssl('orderich.site')
