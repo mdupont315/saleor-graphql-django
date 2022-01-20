@@ -935,10 +935,10 @@ class OptionValueQueryset(QuerySet):
         if channel_slug:
             return self.prefetch_related(Prefetch('option_value_channels',
                                                   queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug)))
-        return self.all()
+        return self.all().order_by("sort_order")
 
 
-class OptionValue(models.Model):
+class OptionValue(SortableModel):
     name = models.CharField(max_length=256)
     option = models.ForeignKey(
         Option, related_name="option_values",
@@ -954,7 +954,7 @@ class OptionValue(models.Model):
     objects = OptionValueQueryset.as_manager()
 
     class Meta:
-        ordering = ("name", "pk")
+        ordering = ("name", "pk", "sort_order")
 
     def get_price_by_channel(self, channel_slug: str):
         if channel_slug:

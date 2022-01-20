@@ -40,6 +40,7 @@ class OptionValue(CountableDjangoObjectType):
             "option",
             "name",
             "id",
+            "sort_order"
         ]
         interfaces = [graphene.relay.Node]
         model = models.OptionValue
