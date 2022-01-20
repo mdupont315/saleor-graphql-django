@@ -236,14 +236,15 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 
         result.append(u'<tr>')
         result.append(u'<td align="left" style="vertical-align: top;word-break: break-word; width: 30px; padding-left:8px;">')
-        result.append(u'<p style="margin: 0; margin-right: 8px; font-size: 12px;line-height: 14px;font-weight: bold;">')
+        result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;white-space:no-wrap;">')
         result.append('{quantity}x'.format(quantity = str(thing.quantity)))
         result.append(u'</p>')
         result.append(u'</td>')
         
         result.append(u'<td align="left" style="word-break: break-word; width: auto;">')
         result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
-        result.append(thing.product_name)
+        product_name = thing.product_name if not thing.product_sku else '{}({})'.format(thing.product_name,thing.product_sku)
+        result.append(product_name)
         result.append(u'</p>')
 
         #  option 
@@ -263,7 +264,7 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 
         result.append(u'</td>')
 
-        result.append(u'<td align="right" style=" vertical-align: top; padding-right:8px;font-size: 12px;line-height: 14px;font-weight: bold;word-break: break-word; width: auto;">')
+        result.append(u'<td align="right" style="white-space:no-wrap; vertical-align: top; padding-right:8px;font-size: 12px;line-height: 14px;font-weight: bold;word-break: break-word; min-width:58px;">')
         result.append("{curency} {price}".format(
             curency=channel_symbol,
             price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
