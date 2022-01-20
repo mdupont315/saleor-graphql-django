@@ -1,3 +1,4 @@
+from optparse import OptionValueError
 import graphene
 from graphql_relay.node.node import from_global_id
 from saleor.core.tracing import traced_atomic_transaction
@@ -12,7 +13,7 @@ from ...product import models
 from ..core.mutations import (BaseMutation, ModelBulkDeleteMutation, ModelDeleteMutation,
                               ModelMutation)
 from ..core.types.common import OptionError
-from .types import Option
+from .types import Option, OptionValue
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 
@@ -256,6 +257,19 @@ class MoveOptionInput(graphene.InputObjectType):
             "backward, 0 leaves the item unchanged."
         )
     )
+
+class MoveOptionValueInput(graphene.InputObjectType):
+    option_value_id = graphene.ID(
+        description="The ID of the option value to move.", required=True
+    )
+    sort_order = graphene.Int(
+        description=(
+            "The relative sorting position of the option value (from -inf to +inf) "
+            "starting from the first given option value's actual position."
+            "1 moves the item one position forward, -1 moves the item one position "
+            "backward, 0 leaves the item unchanged."
+        )
+    )
 class ReorderOptions(BaseMutation):
     # products = graphene.Field(Product, description="Related checkout object.")
     class Meta:
@@ -300,3 +314,50 @@ class ReorderOptions(BaseMutation):
         # print(product, "-----------------move")
 
         return ReorderOptions()
+
+class ReorderOptionValues(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the values of a option."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = OptionError
+        error_type_field = "option_value_errors"
+
+    class Arguments:
+        moves = graphene.List(
+            MoveOptionValueInput,
+            required=True,
+            description="The option value position operations.",
+        )
+        option_id = graphene.String(required=True, description="The option id.",)
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        option_id = data["option_id"]
+        operations = {}
+        products = models.OptionValue.objects.filter(option_id = option_id)
+        print("products", products)
+        for move_info in moves:
+            product_pk = cls.get_global_id_or_error(
+                move_info.option_value_id, only_type=OptionValue, field="moves"
+            )
+            try:
+                m2m_info = products.get(pk=int(product_pk))
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.option_value_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+
+        with traced_atomic_transaction():
+            perform_reordering(products, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderOptionValues()

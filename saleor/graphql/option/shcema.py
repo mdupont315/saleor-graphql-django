@@ -8,6 +8,7 @@ from .mutations import (
     OptionCreate,
     OptionUpdate,
     OptionDelete,
+    ReorderOptionValues,
     ReorderOptions,
     UpdateOptionValue,
     DeleteBulkOptionValue,
@@ -55,3 +56,4 @@ class OptionMutations(graphene.ObjectType):
     option_bulk_delete = OptionBulkDelete.Field()
     bulk_option_value_delete = DeleteBulkOptionValue.Field()
     reorder_options = ReorderOptions.Field()
+    reorder_option_values =  ReorderOptionValues.Field()
