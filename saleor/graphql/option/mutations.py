@@ -1,15 +1,19 @@
 import graphene
 from graphql_relay.node.node import from_global_id
+from saleor.core.tracing import traced_atomic_transaction
+from saleor.graphql.core.enums import CollectionErrorCode
 
 from saleor.graphql.core.scalars import Decimal
+from saleor.graphql.core.utils.reordering import perform_reordering
 
 from ...channel import models as channel_models
 from ...core.permissions import ProductPermissions
 from ...product import models
-from ..core.mutations import (ModelBulkDeleteMutation, ModelDeleteMutation,
+from ..core.mutations import (BaseMutation, ModelBulkDeleteMutation, ModelDeleteMutation,
                               ModelMutation)
 from ..core.types.common import OptionError
 from .types import Option
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 
 class OptionValueChannelInput(graphene.InputObjectType):
@@ -240,3 +244,59 @@ class DeleteBulkOptionValue(ModelBulkDeleteMutation):
         permissions = (ProductPermissions.MANAGE_PRODUCTS,)
         error_type_class = OptionError
         error_type_field = "option_errors"
+class MoveOptionInput(graphene.InputObjectType):
+    option_id = graphene.ID(
+        description="The ID of the option to move.", required=True
+    )
+    sort_order = graphene.Int(
+        description=(
+            "The relative sorting position of the product (from -inf to +inf) "
+            "starting from the first given product's actual position."
+            "1 moves the item one position forward, -1 moves the item one position "
+            "backward, 0 leaves the item unchanged."
+        )
+    )
+class ReorderOptions(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the products of a collection."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = OptionError
+        error_type_field = "option_errors"
+
+    class Arguments:
+        moves = graphene.List(
+            MoveOptionInput,
+            required=True,
+            description="The products position operations.",
+        )
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        operations = {}
+        products = models.Option.objects.all()
+
+        for move_info in moves:
+            product_pk = cls.get_global_id_or_error(
+                move_info.option_id, only_type=Option, field="moves"
+            )
+            try:
+                m2m_info = products.get(pk=int(product_pk))
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.option_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+
+        with traced_atomic_transaction():
+            perform_reordering(products, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderOptions()
