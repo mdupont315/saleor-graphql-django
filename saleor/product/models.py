@@ -164,7 +164,7 @@ class OptionQueryset(CustomQueryset):
     def visible_to_user(self, channel_slug: str):
         if channel_slug:
             return self.prefetch_related(Prefetch('option_values',
-                                                  queryset=OptionValue.objects.visible_to_user(channel_slug)))
+                                                  queryset=OptionValue.objects.visible_to_user(channel_slug))).order_by("sort_order")
         return self.all().order_by("sort_order")
 
 
@@ -185,7 +185,7 @@ class Option(SortableModel,MultitenantModelWithMetadata):
     objects = OptionQueryset.as_manager()
 
     class Meta:
-        ordering = ("name", "pk","sort_order")
+        ordering = ("sort_order","name", "pk")
 
 
 class ProductOption(models.Model):
@@ -934,7 +934,7 @@ class OptionValueQueryset(QuerySet):
     def visible_to_user(self, channel_slug: str):
         if channel_slug:
             return self.prefetch_related(Prefetch('option_value_channels',
-                                                  queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug)))
+                                                  queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug))).order_by("sort_order")
         return self.all().order_by("sort_order")
 
 
@@ -954,7 +954,7 @@ class OptionValue(SortableModel):
     objects = OptionValueQueryset.as_manager()
 
     class Meta:
-        ordering = ("name", "pk", "sort_order")
+        ordering = ("sort_order","name", "pk")
 
     def get_price_by_channel(self, channel_slug: str):
         if channel_slug:

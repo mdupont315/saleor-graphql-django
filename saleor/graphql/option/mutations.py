@@ -338,8 +338,8 @@ class ReorderOptionValues(BaseMutation):
         option_id = data["option_id"]
         _type, _pk = from_global_id(option_id)
         operations = {}
-        print("_pk", _pk)
-        products = models.OptionValue.objects.filter(option_id = id).all()
+        products = models.OptionValue.objects.all().filter(option_id=_pk)
+
         for move_info in moves:
             product_pk = cls.get_global_id_or_error(
                 move_info.option_value_id, only_type=OptionValue, field="moves"
