@@ -165,10 +165,10 @@ class OptionQueryset(CustomQueryset):
         if channel_slug:
             return self.prefetch_related(Prefetch('option_values',
                                                   queryset=OptionValue.objects.visible_to_user(channel_slug)))
-        return self.all()
+        return self.all().order_by("sort_order")
 
 
-class Option(MultitenantModelWithMetadata):
+class Option(SortableModel,MultitenantModelWithMetadata):
     store = models.ForeignKey(
         Store,
         related_name="options",
@@ -185,7 +185,7 @@ class Option(MultitenantModelWithMetadata):
     objects = OptionQueryset.as_manager()
 
     class Meta:
-        ordering = ("name", "pk")
+        ordering = ("name", "pk","sort_order")
 
 
 class ProductOption(models.Model):
