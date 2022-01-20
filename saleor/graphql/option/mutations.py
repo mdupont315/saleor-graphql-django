@@ -5,6 +5,7 @@ from saleor.core.tracing import traced_atomic_transaction
 from saleor.graphql.core.enums import CollectionErrorCode
 
 from saleor.graphql.core.scalars import Decimal
+from saleor.graphql.core.utils import from_global_id_or_error
 from saleor.graphql.core.utils.reordering import perform_reordering
 
 from ...channel import models as channel_models
@@ -324,20 +325,21 @@ class ReorderOptionValues(BaseMutation):
         error_type_field = "option_value_errors"
 
     class Arguments:
+        option_id = graphene.ID(required=True, description="The option id.")
         moves = graphene.List(
             MoveOptionValueInput,
             required=True,
             description="The option value position operations.",
         )
-        option_id = graphene.String(required=True, description="The option id.",)
 
     @classmethod
     def perform_mutation(cls, _root, info, **data):
         moves = data["moves"]
         option_id = data["option_id"]
+        _type, _pk = from_global_id(option_id)
         operations = {}
-        products = models.OptionValue.objects.filter(option_id = option_id)
-        print("products", products)
+        print("_pk", _pk)
+        products = models.OptionValue.objects.filter(option_id = id).all()
         for move_info in moves:
             product_pk = cls.get_global_id_or_error(
                 move_info.option_value_id, only_type=OptionValue, field="moves"
