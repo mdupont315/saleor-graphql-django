@@ -187,6 +187,10 @@ class Option(SortableModel,MultitenantModelWithMetadata):
     class Meta:
         ordering = ("sort_order","name", "pk")
 
+    def get_ordering_queryset(self):
+        store_options = get_current_tenant()
+        return store_options.options.all()
+
 
 class ProductOption(models.Model):
     option = models.ForeignKey(
@@ -955,6 +959,11 @@ class OptionValue(SortableModel):
 
     class Meta:
         ordering = ("sort_order","name", "pk")
+        
+    def get_ordering_queryset(self):
+        store_options = get_current_tenant()
+        return store_options.options.get(id = self.option_id).option_values.all()
+
 
     def get_price_by_channel(self, channel_slug: str):
         if channel_slug:
