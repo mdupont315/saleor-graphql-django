@@ -234,16 +234,16 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
         logging.getLogger('django').info('---line----{line}------'.format(line=thing.__dict__) )
         option_values = thing.option_values.all()
 
-        result.append(u'<tr>')
+        result.append(u'<tr style="font-family:Inter;">')
         result.append(u'<td align="left" style="vertical-align: top;word-break: break-word; width: 30px; padding-left:8px;">')
-        result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;white-space:no-wrap;">')
+        result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;white-space:no-wrap;">')
         result.append('{quantity}x'.format(quantity = str(thing.quantity)))
         result.append(u'</p>')
         result.append(u'</td>')
         
         result.append(u'<td align="left" style="word-break: break-word; width: auto;">')
-        result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
-        product_name = thing.product_name if not thing.product_sku else '{}({})'.format(thing.product_name,thing.product_sku)
+        result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
+        product_name = thing.product_name if not thing.product_sku else '{} ({})'.format(thing.product_name,thing.product_sku)
         result.append(product_name)
         result.append(u'</p>')
 
@@ -252,7 +252,7 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
             logging.getLogger('django').info('---optionm----{sender_name}------'.format(sender_name="asdasdasd") )
 
             for option_value in option_values:
-                result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: 400;">')
+                result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: 400;">')
                 result.append("{option} : {name} ({curency} {price})".format(
                     option=option_value.option.name,
                     name=option_value.name,
@@ -264,7 +264,7 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 
         result.append(u'</td>')
 
-        result.append(u'<td align="right" style="white-space:no-wrap; vertical-align: top; padding-right:8px;font-size: 12px;line-height: 14px;font-weight: bold;word-break: break-word; min-width:58px;">')
+        result.append(u'<td align="right" style="font-family:Inter;white-space:no-wrap; vertical-align: top; padding-right:8px;font-size: 12px;line-height: 14px;font-weight: bold;word-break: break-word; min-width:58px;">')
         result.append("{curency} {price}".format(
             curency=channel_symbol,
             price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
@@ -374,28 +374,28 @@ def customer_list_address(this, options, items):
     ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
     logging.getLogger('django').info('---ctm_name----{ctm_name}------'.format(ctm_name=ctm_name) )
     print(ctm_name,"=========================ctm_name")
-    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
     result.append(str(ctm_name)),
     result.append(u'</div>')
 
-    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
     result.append(get_full_address1(address,city,postal_code,apartment)),
     result.append(u'</div>')
 
-    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
     result.append(get_full_address2(address,city,postal_code,apartment)),
     result.append(u'</div>')
 
-    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
     result.append(email),
     result.append(u'</div>')
 
-    result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
     result.append(phone),
     result.append(u'</div>')
 
     if company:
-        result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+        result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
         result.append(company),
         result.append(u'</div>')
 
