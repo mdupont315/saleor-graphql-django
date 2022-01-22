@@ -178,7 +178,7 @@ class Option(SortableModel,MultitenantModelWithMetadata):
     )
     tenant_id = 'store_id'
     name = models.CharField(max_length=256)
-    type = models.CharField(max_length=128, blank=True, null=True)
+    type = models.CharField(max_length=128)
     required = models.BooleanField(blank=True, null=True, default=False)
     description = models.TextField(blank=True)
 
