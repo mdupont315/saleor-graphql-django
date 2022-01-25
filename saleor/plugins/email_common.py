@@ -25,6 +25,7 @@ from ..product.product_images import get_thumbnail_size
 from .base_plugin import ConfigurationTypeField
 from .error_codes import PluginErrorCode
 from .models import PluginConfiguration
+from ..product import models as product_models
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +186,7 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
 def list_product_customer(this, options, items, channel, channel_symbol):
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     result = [u'<table class="product-table">']
+    temp=[]
     for thing in items:
         # logging.getLogger('django').info('---line----{line}------'.format(line=thing.__dict__) )
         result.append(u'<tr>')
@@ -209,19 +211,21 @@ def list_product_customer(this, options, items, channel, channel_symbol):
         result.append(u'</td>')
         result.append(u'</tr>')
         option_values = thing.option_values.all()
+
         if option_values:
             for option_value in option_values:
-                result.append(u'<tr>')
-                result.append(u'<td class="td-option" colspan="3">')
-                result.append("{option} : {name} ({curency} {price})".format(
-                    option=option_value.option.name,
-                    name=option_value.name,
-                    curency=channel_symbol,
-                    price=formatComma((quantize_price(option_value.get_price_amount_by_channel(
-                        channel), channel)).quantize(TWOPLACES))
-                ))
-                result.append(u'</td>')
-                result.append(u'</tr>')
+                option_id = product_models.OptionValue.objects.filter(id = option_value.id).first().option_id
+                if not option_id in temp:
+                    temp.append(option_id)
+                    result.append(u'<tr>')
+                    result.append(u'<td class="td-option" colspan="3">')
+                    result.append("{option}".format(option=option_value.option.name))
+                    result.append(u'</td>')
+                    result.append(u'</tr>')
+                    logging.getLogger('django').info('---option value----{ovl}------'.format(ovl=option_id) )
+
+            
+                
     result.append(u'</table>')
     return result
 
