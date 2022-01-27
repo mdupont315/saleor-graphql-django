@@ -10,6 +10,7 @@ from ..email_common import (
 )
 from ..models import PluginConfiguration
 from . import constants
+import logging
 
 
 def get_plugin_configuration() -> Optional[PluginConfiguration]:
@@ -173,7 +174,9 @@ def send_order_admin_infomation_email_task(recipient_email, payload, config):
         constants.ORDER_CREATED_ADMIN_DEFAULT_TEMPLATE,
         constants.DEFAULT_EMAIL_TEMPLATES_PATH,
     )
-    subject = constants.ORDER_CREATED_ADMIN_DEFAULT_SUBJECT
+    logging.getLogger('django').info('---logggggg----{log}------'.format(log=payload.get("order_type")) )
+
+    subject = "New order #{} {}".format(payload.get("order_num"),payload.get("order_type"))
     send_email(
         config=email_config,
         recipient_list=[recipient_email],
