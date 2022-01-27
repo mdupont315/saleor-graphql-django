@@ -186,7 +186,6 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
 def list_product_customer(this, options, items, channel, channel_symbol):
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     result = [u'<table class="product-table">']
-    temp=[]
     for thing in items:
         # logging.getLogger('django').info('---line----{line}------'.format(line=thing.__dict__) )
         result.append(u'<tr>')
@@ -214,15 +213,13 @@ def list_product_customer(this, options, items, channel, channel_symbol):
 
         if option_values:
             for option_value in option_values:
-                option_id = product_models.OptionValue.objects.filter(id = option_value.id).first().option_id
-                if not option_id in temp:
-                    temp.append(option_id)
-                    result.append(u'<tr>')
-                    result.append(u'<td class="td-option" colspan="3">')
-                    result.append("{option}".format(option=option_value.option.name))
-                    result.append(u'</td>')
-                    result.append(u'</tr>')
-                    logging.getLogger('django').info('---option value----{ovl}------'.format(ovl=option_id) )
+                result.append(u'<tr>')
+                result.append(u'<td class="td-option" colspan="3">')
+                result.append("{name}".format(
+                    name=option_value.name,
+                ))
+                result.append(u'</td>')
+                result.append(u'</tr>')
 
             
                 
