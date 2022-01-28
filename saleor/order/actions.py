@@ -83,12 +83,12 @@ def order_created(
     if site_settings.automatically_confirm_all_new_orders:
         order_confirmed(order, user, manager)
     # sending email
-    current_strore = Store.objects.filter(pk=order.store_id).first()
+    current_store = Store.objects.filter(pk=order.store_id).first()
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     protocol = "https" if settings.ENABLE_SSL else "http"
-    # order_url = protocol + "://" + current_strore.domain + "order-history"
+    # order_url = protocol + "://" + current_store.domain + "order-history"
     order_url = "{protocol}://{domain}/order-history/{token}".format(
-        protocol=protocol, domain=current_strore.domain, token=order.token)
+        protocol=protocol, domain=current_store.domain, token=order.token)
     discounts = order.discounts.all()
     total_discount = 0
     for item in discounts:
@@ -99,7 +99,7 @@ def order_created(
     is_payment_with_stripe = order.get_last_payment(
     ).gateway != 'mirumee.payments.dummy' if order.get_last_payment() else False
     full_store_address = "{}, {}, {}".format(
-        current_strore.address, current_strore.postal_code, current_strore.city)
+        current_store.address, current_store.postal_code, current_store.city)
     def get_payment_method():
         if order.get_last_payment():
             if order.get_last_payment().gateway == 'mirumee.payments.dummy':
@@ -113,11 +113,11 @@ def order_created(
         "recipient_email": order.user_email,
         "lines": order.lines.all(),
         "full_store_address": full_store_address,
-        "logo": current_strore.logo.url if current_strore.logo else '',
+        "logo": current_store.logo.url if current_store.logo else '',
         'orderich_logo': static("static/images/orderich-logo.png"),
-        "store_phone": current_strore.phone,
-        "store_name": current_strore.name,
-        "store_address": current_strore.address,
+        "store_phone": current_store.phone,
+        "store_name": current_store.name,
+        "store_address": current_store.address,
         "order_type": order.get_order_type_display(),
         "is_check_pickup": is_check_pickup,
         "is_check_delivery": is_check_delivery,
@@ -142,9 +142,9 @@ def order_created(
     if order.user_email:
         event = (NotifyEventType.ORDER_CREATED)
         manager.notify(event, payload=payload, channel_slug=order.channel.slug)
-    if current_strore.email_notifications and current_strore.email_address:
+    if current_store.email_notifications and current_store.email_address:
         event = (NotifyEventType.ORDER_ADMIN_CREATED)
-        payload["recipient_email"] = current_strore.email_address
+        payload["recipient_email"] = current_store.email_address
         manager.notify(event, payload=payload, channel_slug=order.channel.slug)
 
 
