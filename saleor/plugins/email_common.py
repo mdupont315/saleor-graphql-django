@@ -254,12 +254,8 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
 
             for option_value in option_values:
                 result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: 400;">')
-                result.append("{option} : {name} ({curency} {price})".format(
-                    option=option_value.option.name,
+                result.append("{name}".format(
                     name=option_value.name,
-                    curency=channel_symbol,
-                    price=formatComma((quantize_price(option_value.get_price_amount_by_channel(
-                        channel), channel)).quantize(TWOPLACES))
                 ))
                 result.append(u'</p>')
 
