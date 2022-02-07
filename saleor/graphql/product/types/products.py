@@ -1121,7 +1121,23 @@ class Collection(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
         description = root.node.description
         return description if description is not None else {}
 
+class ProductOption(CountableDjangoObjectType):
+    product_id = graphene.String(description="product_id")
+    option_id = graphene.String(description="option_id")
 
+    class Meta:
+        description = (
+            "ProductOption"
+        )
+        only_fields = [
+            "option_id",
+            "product_id",
+            "id",
+            "sort_order"
+        ]
+        interfaces = [graphene.relay.Node]
+        model = models.ProductOption
+    
 @key(fields="id")
 class Category(CountableDjangoObjectType):
     description_json = graphene.JSONString(
