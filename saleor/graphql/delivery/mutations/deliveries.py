@@ -45,6 +45,10 @@ class DeliveryUpdateInput(graphene.InputObjectType):
         required=False, 
         description="Min order value."
     )
+    enable_custom_delivery_fee = graphene.Boolean(
+        required=False, 
+        description="Custom delivery fee."
+    )
 
 class DeliveryUpdate(ModelMutation):
     class Arguments:
