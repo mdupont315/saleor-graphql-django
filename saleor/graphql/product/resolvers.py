@@ -19,6 +19,8 @@ def resolve_category_by_id(id):
 def resolve_category_by_slug(slug):
     return models.Category.objects.filter(slug=slug).first()
 
+def resolve_product_option(product_id):
+    return models.ProductOption.objects.all().filter(product_id=product_id)
 
 @traced_resolver
 def resolve_categories(_info, level=None, **_kwargs):
@@ -26,7 +28,6 @@ def resolve_categories(_info, level=None, **_kwargs):
     if level is not None:
         qs = qs.filter(level=level)
     return qs.distinct()
-
 
 @traced_resolver
 def resolve_collection_by_id(info, id, channel_slug, requestor):
@@ -65,6 +66,18 @@ def resolve_digital_contents(_info):
 
 @traced_resolver
 def resolve_product_by_id(info, id, channel_slug, requestor):
+    product = models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug).filter(id=id).first()
+    product.options.all().order_by("pk")
+    # temp = options[0]
+    # options[0]= options[1]
+    # options[1] = temp
+    
+    # print(models.ProductOption.objects.all(),"====")
+    for i in models.ProductOption.objects.all():
+        print(i.sort_order,"======option")
+    # product.set(options = options) 
+    # print(product,"======option_asdasd")
+
     return (
         models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug)
         .filter(id=id)

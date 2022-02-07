@@ -165,6 +165,7 @@ class OptionQueryset(CustomQueryset):
         if channel_slug:
             return self.prefetch_related(Prefetch('option_values',
                                                   queryset=OptionValue.objects.visible_to_user(channel_slug))).order_by("sort_order")
+
         return self.all().order_by("sort_order")
 
 
@@ -184,15 +185,13 @@ class Option(SortableModel,MultitenantModelWithMetadata):
 
     objects = OptionQueryset.as_manager()
 
-    class Meta:
-        ordering = ("sort_order","name", "pk")
+    # class Meta:
+    #     ordering = ("sort_order","name", "pk")
 
     def get_ordering_queryset(self):
         store_options = get_current_tenant()
         return store_options.options.all()
-
-
-class ProductOption(models.Model):
+class ProductOption(SortableModel,models.Model):
     option = models.ForeignKey(
         Option,
         related_name="product_options",
@@ -209,8 +208,15 @@ class ProductOption(models.Model):
         blank=True,
     )
 
+
+    def get_ordering_queryset(self):
+        print(self.__dict__,"==================self")
+        store_product = get_current_tenant()
+        return store_product.ProductOption.all().filter(product_id = self.product_id)
+
     class Meta:
         unique_together = [["option", "product"]]
+        ordering = ("sort_order","pk")
 
 
 class ProductsQueryset(CustomQueryset):
