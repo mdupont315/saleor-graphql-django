@@ -34,4 +34,7 @@ class Delivery(MultitenantModelWithMetadata):
     enable_for_big_order = models.BooleanField(
         default=False
     )
+    enable_custom_delivery_fee = models.BooleanField(
+        default=False
+    )
     
