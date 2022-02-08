@@ -1,4 +1,5 @@
 from django.db.models import Exists, OuterRef, Sum
+from graphql_relay.node.node import from_global_id
 
 from ...account.utils import requestor_is_staff_member_or_app
 from ...channel.models import Channel
@@ -19,8 +20,12 @@ def resolve_category_by_id(id):
 def resolve_category_by_slug(slug):
     return models.Category.objects.filter(slug=slug).first()
 
-def resolve_product_option(product_id):
-    return models.ProductOption.objects.all().filter(product_id=product_id)
+def resolve_product_option(self, info, product_id, **kwargs):
+    print("PRODUCT ID" , product_id)
+    _, id = from_global_id(product_id)
+    print("PRODUCT ID" , id)
+
+    return models.ProductOption.objects.all().filter(product_id=id)
 
 @traced_resolver
 def resolve_categories(_info, level=None, **_kwargs):
@@ -67,17 +72,7 @@ def resolve_digital_contents(_info):
 @traced_resolver
 def resolve_product_by_id(info, id, channel_slug, requestor):
     product = models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug).filter(id=id).first()
-    product.options.all().order_by("pk")
-    # temp = options[0]
-    # options[0]= options[1]
-    # options[1] = temp
-    
-    # print(models.ProductOption.objects.all(),"====")
-    for i in models.ProductOption.objects.all():
-        print(i.sort_order,"======option")
-    # product.set(options = options) 
-    # print(product,"======option_asdasd")
-
+    product.options.all()
     return (
         models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug)
         .filter(id=id)
