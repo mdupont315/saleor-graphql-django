@@ -103,6 +103,7 @@ from .resolvers import (
     resolve_digital_contents,
     resolve_product_by_id,
     resolve_product_by_slug,
+    resolve_product_option,
     resolve_product_type_by_id,
     resolve_product_types,
     resolve_product_variant_by_sku,
@@ -149,7 +150,7 @@ class ProductQueries(graphene.ObjectType):
         ),
         description="List of the shop's categories.",
     )
-    product_option = graphene.Field(
+    product_option = FilterInputConnectionField(
         ProductOption,
         product_id=graphene.Argument(graphene.ID, description="ID of the category."),
         description="Look up a category by ID or slug.",
@@ -258,10 +259,9 @@ class ProductQueries(graphene.ObjectType):
 
     def resolve_categories(self, info, level=None, **kwargs):
         return resolve_categories(info, level=level, **kwargs)
-    
-    def resolve_product_option(self, info, level=None, **kwargs):
-        return resolve_product_option(info, level=level, **kwargs)
-
+  
+    def resolve_product_option(self, info, product_id=None,  **kwargs):
+        return resolve_product_option(self, info, product_id, **kwargs)
 
     @traced_resolver
     def resolve_category(self, info, id=None, slug=None, **kwargs):
