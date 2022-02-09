@@ -73,7 +73,10 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
     @classmethod
     def clean_payment_amount(cls, info, checkout_total, amount):
         log_info('Payment', '-------Payment Price Error--------')
-        if amount != checkout_total.gross.amount:
+        # print("amount", amount)
+        # print("check_total", round(checkout_total.gross.amount, 2))
+
+        if amount != round(checkout_total.gross.amount, 2):
             raise ValidationError(
                 {
                     "amount": ValidationError(
@@ -200,6 +203,9 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             "total_from_caculated": checkout_total.gross.amount,
             "total_from_fe": amount,
         })
+        
+
+
         cls.clean_payment_amount(info, checkout_total, amount)
         extra_data = {
             "customer_user_agent": info.context.META.get("HTTP_USER_AGENT"),
