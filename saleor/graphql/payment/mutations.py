@@ -165,9 +165,29 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         undiscount_checkout_total = checkout_total.gross.amount + checkout_info.checkout.discount.amount
         delivery_setting = Delivery.objects.all().first()
         current_strore = Store.objects.all().first()
+        
+
+        
         # implement delivery fee
         delivery_fee = 0
         if delivery_setting:
+            current_postal_code = checkout_info.billing_address.postal_code
+            delivery_fee = delivery_setting.delivery_fee
+
+            # implement delivery fee when enable custom delivery fee
+            if delivery_setting.enable_custom_delivery_fee and current_postal_code: 
+                global delivery_fee_by_postal_code
+                delivery_areas = [] 
+                delivery_areas.extend(delivery_setting.delivery_area['areas'])
+                delivery_areas.sort(key=lambda area: area['from'] + area['to'])
+                
+                for x in delivery_areas:
+                    if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
+                        delivery_fee_by_postal_code = x["customDeliveryFee"]
+                        break
+                delivery_fee = delivery_fee_by_postal_code
+                
+
             if delivery_setting.min_order > undiscount_checkout_total and checkout.order_type == settings.ORDER_TYPES[0][0]:
                 raise ValidationError(
                 {
@@ -176,8 +196,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             )
             if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
                (undiscount_checkout_total < delivery_setting.from_delivery or (undiscount_checkout_total >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
-                delivery_fee = delivery_setting.delivery_fee
-                checkout_total.gross.amount = checkout_total.gross.amount + Decimal(delivery_setting.delivery_fee)
+                checkout_total.gross.amount = checkout_total.gross.amount + Decimal(delivery_fee)
         
         # implement transaction fee
         transaction_fee = 0
