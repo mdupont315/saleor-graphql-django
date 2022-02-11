@@ -303,11 +303,27 @@ def _prepare_order_data(
 
     taxed_total = max(taxed_total, zero_taxed_money(checkout.currency))
     undiscounted_total = taxed_total + checkout.discount
+
     # implement delivery fee
     delivery_setting = Delivery.objects.all().first()
     current_strore = Store.objects.all().first()
     undiscount_checkout_total_amount = taxed_total.gross.amount + checkout.discount.amount
     if delivery_setting:
+        delivery_fee_by_postal_code = delivery_setting.delivery_fee
+        current_postal_code = checkout_info.billing_address.postal_code
+        
+        # implement delivery fee when enable custom delivery fee
+        if delivery_setting.enable_custom_delivery_fee and current_postal_code: 
+            delivery_areas = [] 
+            delivery_areas.extend(delivery_setting.delivery_area['areas'])
+            delivery_areas.sort(key=lambda area: area['from'] + area['to'])
+                
+            for x in delivery_areas:
+                if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
+                    delivery_fee_by_postal_code = x["customDeliveryFee"]
+                    break
+            # delivery_fee = delivery_fee_by_postal_code   
+
         if delivery_setting.min_order > undiscount_checkout_total_amount and checkout.order_type == settings.ORDER_TYPES[0][0]:
             raise ValidationError(
                 {
@@ -316,10 +332,11 @@ def _prepare_order_data(
             )
         if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
            (undiscount_checkout_total_amount < delivery_setting.from_delivery or (undiscount_checkout_total_amount >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
-            delivery_fee = Money(amount=delivery_setting.delivery_fee,
+            delivery_fee = Money(amount=delivery_fee_by_postal_code,
                                  currency=checkout.currency)
+            # print("dlf", delivery_fee)
             taxed_total = taxed_total + TaxedMoney(net=delivery_fee, gross=delivery_fee)
-            order_data["delivery_fee"] = delivery_setting.delivery_fee
+            order_data["delivery_fee"] = delivery_fee_by_postal_code
 
     # implement transaction fee
     payment_gateway = checkout.get_last_active_payment().gateway
