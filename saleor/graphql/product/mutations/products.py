@@ -8,6 +8,8 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils.text import slugify
 from django_multitenant.utils import get_current_tenant
+from graphql_relay import from_global_id
+from saleor.graphql.product.types.products import ProductOption
 
 from ....attribute import AttributeInputType, AttributeType
 from ....attribute import models as attribute_models
@@ -345,6 +347,69 @@ class ReorderProducts(BaseMutation):
         # print(product, "-----------------move")
 
         return ReorderProducts()
+
+class MoveProductOptionInput(graphene.InputObjectType):
+    option_id = graphene.ID(
+        description="The ID of the product to move.", required=True
+    )
+    sort_order = graphene.Int(
+        description=(
+            "The relative sorting position of the product (from -inf to +inf) "
+            "starting from the first given product's actual position."
+            "1 moves the item one position forward, -1 moves the item one position "
+            "backward, 0 leaves the item unchanged."
+        )
+    )
+class ReorderProductOption(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the products of a collection."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = ProductError
+        error_type_field = "product_errors"
+
+    class Arguments:
+        product_id = graphene.ID(required=True, description="The option id.")
+        moves = graphene.List(
+            MoveProductOptionInput,
+            required=True,
+            description="The products position operations.",
+        )
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        product_id = data["product_id"]
+        # print('ID', product_id)
+        _type, _pk = from_global_id(product_id)
+        operations = {}
+        product_option = models.ProductOption.objects.all().filter(product_id=_pk)
+        for move_info in moves:
+            _type, _pk = from_global_id(
+                move_info.option_id,
+            )
+            # print("op id", move_info.option_id)
+            try:
+                m2m_info = product_option.all().filter(option_id=_pk).first()
+                # print(m2m_info.__dict__,"=============asdasdasd")
+
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.option_value_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+        # print (operations,"=======================")
+        with traced_atomic_transaction():
+            perform_reordering(product_option, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderProductOption()
 class MoveCategoryInput(graphene.InputObjectType):
     category_id = graphene.ID(
         description="The ID of the category to move.", required=True
@@ -357,6 +422,8 @@ class MoveCategoryInput(graphene.InputObjectType):
             "backward, 0 leaves the item unchanged."
         )
     )
+
+
 class ReorderCategories(BaseMutation):
     # products = graphene.Field(Product, description="Related checkout object.")
     class Meta:
