@@ -242,7 +242,7 @@ def list_product_customer_admin(this, options, items, channel, channel_symbol):
         result.append(u'</p>')
         result.append(u'</td>')
         
-        result.append(u'<td align="left" style="word-break: break-word; width: auto;">')
+        result.append(u'<td align="left" style="word-break: break-word; min-width: 200px;">')
         result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
         product_name = thing.product_name if not thing.product_sku else '{} ({})'.format(thing.product_name,thing.product_sku)
         result.append(product_name)

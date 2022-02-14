@@ -7,6 +7,7 @@ from django.conf import settings
 from django_countries.fields import Country
 from graphene import relay
 from graphene_federation import key
+from saleor.graphql.product.resolvers import resolve_product_option
 
 from ....account.utils import requestor_is_staff_member_or_app
 from ....attribute import models as attribute_models
@@ -1121,7 +1122,31 @@ class Collection(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
         description = root.node.description
         return description if description is not None else {}
 
+class ProductOption(CountableDjangoObjectType):
+    product_id = graphene.String(description="product_id")
+    option_id = graphene.String(description="option_id")
+    sort_order = graphene.Int(description="sort_order")
+    
+    class Meta:
+        description = (
+            "ProductOption"
+        )
+        only_fields = [
+            "option",
+            "id",
+            "sort_order"
+        ]
+        interfaces = [graphene.relay.Node]
+        model = models.ProductOption
 
+    # @traced_resolver
+    # def resolve_product_option(self, info,product_id=None, level=None, **kwargs):
+    #     print("SELF", self)
+    #     print("INFO", info)
+    #     print("product_id", product_id)
+    #     if product_id:
+    #         _, id = from_global_id_or_error(product_id, ProductOption)
+    #         return resolve_product_option(id)
 @key(fields="id")
 class Category(CountableDjangoObjectType):
     description_json = graphene.JSONString(
