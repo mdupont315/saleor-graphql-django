@@ -310,7 +310,7 @@ def _prepare_order_data(
     undiscount_checkout_total_amount = taxed_total.gross.amount + checkout.discount.amount
     if delivery_setting:
         delivery_fee_by_postal_code = delivery_setting.delivery_fee
-        current_postal_code = checkout_info.billing_address.postal_code
+        current_postal_code = (checkout_info.billing_address.postal_code)[0:4]
         
         # implement delivery fee when enable custom delivery fee
         if delivery_setting.enable_custom_delivery_fee and current_postal_code: 

@@ -171,7 +171,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         # implement delivery fee
         delivery_fee = 0
         if delivery_setting:
-            current_postal_code = checkout_info.billing_address.postal_code
+            current_postal_code = (checkout_info.billing_address.postal_code)[0:4]
             delivery_fee = delivery_setting.delivery_fee
 
             # implement delivery fee when enable custom delivery fee
