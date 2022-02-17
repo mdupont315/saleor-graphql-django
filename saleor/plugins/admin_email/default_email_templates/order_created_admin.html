@@ -158,59 +158,58 @@
           <td style="direction: ltr; font-size: 0px; text-align: center; " align="center">
             <div class="mj-column-per-100 mj-outlook-group-fix" style="text-align:left;direction:ltr;width:100%;">
 
-              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
-                width="100%">
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
 
                 <td align="left" style="font-size: 0px; word-break: break-word; width: 40%;">
                 </td>
 
                 <td align="left" style="font-size: 0px; padding:0 8px 8px 8px; word-break: break-word;width: 60%;">
-                  <div
-                    style="font-family:Inter ;font-size:12px;line-height:1;text-align:left;color:#000; display: flex;justify-content: space-between;">
-                    <p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px; width: 60%">DISCOUNT</p>
-
-                    <p
-                      style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;width: 40%;text-align: right;">
+                  
+				        <table style="width: 100%">
+                	<tr>
+                    <td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">DISCOUNT</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">
                       -
                       {{channel_symbol}} {{discount}}</p>
-
-                  </div>
-
-                  <div
-                    style="font-family:Inter ;font-size:12px;line-height:1;text-align:left;color:#000; display: flex;justify-content: space-between;">
-                    <p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px; width: 60%">DELIVERY FEE
-                    </p>
-
-                    <p
-                      style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;width: 40%;text-align: right;">
-                      {{delivery_fee}}</p>
-
-                  </div>
-
-                  <div
-                    style="font-family:Inter ;font-size:12px;line-height:1;text-align:left;color:#000; display: flex;justify-content: space-between;">
-                    <p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px; width: 60%">TRANSACTION
-                      COST</p>
-
-                    <p
-                      style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;width: 40%;text-align: right;">
-                      {{transaction_cost}}</p>
-
-                  </div>
-
-                  <div
-                    style="font-family:Inter ;font-size:12px;line-height:1;text-align:left;color:#000; display: flex;justify-content: space-between;">
-                    <p
-                      style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px; font-weight: bold; width: 60%">
-                      TOTAL</p>
-
-                    <p
-                      style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px; font-weight: bold;width: 40%;text-align: right;">
-                      {{channel_symbol}}
-                      {{total}}</p>
-
-                  </div>
-
+                    </td>
+                  </tr>
+             
+                    
+                    <tr>
+                    	<td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">DELIVERY FEE</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">
+                            {{delivery_fee}}</p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                    	<td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">TRANSACTION COST</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">
+                            {{transaction_cost}}
+                          </p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                    	<td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">TOTAL</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px; font-weight: bold">
+                            {{channel_symbol}}
+                            {{total}}</p>
+                        </td>
+                    </tr>
+                </table>
                 </td>
 
               </table>
