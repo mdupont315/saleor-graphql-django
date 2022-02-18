@@ -308,6 +308,7 @@ def _prepare_order_data(
     current_strore = Store.objects.all().first()
     undiscount_checkout_total_amount = taxed_total.gross.amount + checkout.discount.amount
     if delivery_setting:
+        print("settings ssl", settings.VERIFY_SSL_API)
         if delivery_setting.min_order > undiscount_checkout_total_amount and checkout.order_type == settings.ORDER_TYPES[0][0]:
             raise ValidationError(
                 {

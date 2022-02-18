@@ -1,3 +1,4 @@
+# from typing_extensions import Required
 from django_multitenant.utils import unset_current_tenant
 import graphene
 from django.conf import settings
@@ -22,8 +23,8 @@ from ....core.exceptions import DomainIsExist, PermissionDenied
 from ....core.permissions import StorePermissions, get_permissions_default
 from ....core.utils.url import validate_storefront_url
 from ....store import models
-from ....store.utils import delete_stores
-from ...core.mutations import BaseMutation, ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
+from ....store.utils import delete_stores, verify_ssl
+from ...core.mutations import BaseBulkMutation, BaseMutation, ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
 from ...core.types import Upload
 from ...core.types.common import StoreError
 from ..types import Store
@@ -246,6 +247,9 @@ class StoreUpdateInput(graphene.InputObjectType):
     index_cash = graphene.Int(description="Index cash")
     index_stripe = graphene.Int(description="Index stripe")
 
+    # Custom domain
+    custom_domain_enable = graphene.Boolean(description="Enable custom domain")
+
 
 class StoreUpdate(ModelMutation):
     class Arguments:
@@ -360,6 +364,10 @@ class DomainCustomInput(graphene.InputObjectType):
         description="status of domain",
     )
 
+class MultipleDomainCustomInput(graphene.InputObjectType):
+    domains = graphene.List(DomainCustomInput,
+    required=True,)
+
 
 class CustomDomainCreate(ModelMutation):
     class Arguments:
@@ -370,6 +378,7 @@ class CustomDomainCreate(ModelMutation):
     @classmethod
     def clean_input(cls, info, instance, data):
         cleaned_input = super().clean_input(info, instance, data)
+        print("cleaned_input", cleaned_input)
         # validate table name
         domain_custom = cleaned_input["domain_custom"]
         check_domain = models.CustomDomain.objects.filter(domain_custom=domain_custom).first()
@@ -447,6 +456,45 @@ class CustomDomainBulkDelete(ModelBulkDeleteMutation):
 
     class Meta:
         description = "bulk delete store."
+        model = models.CustomDomain
+        permissions = (StorePermissions.MANAGE_STORES,)
+        error_type_class = StoreError
+        error_type_field = "store_errors"
+
+class CustomDomainsVerifySSL(ModelMutation):
+    class Arguments:
+        # id = graphene.ID(required=True, description="ID of a table service to verify.")
+        # input = DomainCustomInput(
+        #     required=True, description="Fields required to table service time."
+        # )
+        input = MultipleDomainCustomInput(required=True, description="Fields required to table service time.")
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        # validate table name
+        list_domain = data['input']['domains']
+        for i in range(len(list_domain)):
+            if(verify_ssl(list_domain[i].domain_custom)):
+                data['input']['domains'][i]['status'] = False
+                models.CustomDomain.objects.filter(domain_custom=data['input']['domains'][i]['domain_custom']).update(status=data['input']['domains'][i]['status'])
+            else:
+                data['input']['domains'][i]['status'] = True
+                models.CustomDomain.objects.filter(domain_custom=data['input']['domains'][i]['domain_custom']).update(status=data['input']['domains'][i]['status'])
+            
+        # _type , current_domain_pk = from_global_id(data["id"])
+        # domain = models.CustomDomain.objects.get(id=current_domain_pk)
+        # print("domain", domain.__dict__)
+        # is_error = verify_ssl(domain.domain_custom)
+        # print("Respone: ", is_error)
+        # if is_error:
+        #     data['input']['status'] = False
+        # else:
+        #     data['input']['status'] = True
+        print('data after',data['input']['domains'])
+        return super().perform_mutation(_root, info, **data)
+
+    class Meta:
+        description = "verify domains."
         model = models.CustomDomain
         permissions = (StorePermissions.MANAGE_STORES,)
         error_type_class = StoreError
