@@ -5,7 +5,7 @@ from saleor.views import sio
 from ..account.types import User
 from ..core.fields import FilterInputConnectionField
 from .filters import CustomDomainFilterInput, StoreFilterInput
-from .mutations.stores import (CustomDomainBulkDelete, CustomDomainCreate, CustomDomainDelete, CustomDomainUpdate, MyStoreUpdate, StoreCreate, StoreDelete,
+from .mutations.stores import (CustomDomainBulkDelete, CustomDomainCreate, CustomDomainDelete, CustomDomainUpdate, CustomDomainsVerifySSL, MyStoreUpdate, StoreCreate, StoreDelete,
                                StoreUpdate,TestSubscription)
 from .resolvers import (resolve_custom_domain, resolve_custom_domains, resolve_my_store, resolve_store, resolve_stores,
                         resolve_user_store)
@@ -90,3 +90,4 @@ class StoreMutations(graphene.ObjectType):
     custom_domain_update = CustomDomainUpdate.Field()
     custom_domain_delete = CustomDomainDelete.Field()
     custom_domain_bulk_delete = CustomDomainBulkDelete.Field()
+    custom_domain_verify = CustomDomainsVerifySSL.Field()
