@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.functional import SimpleLazyObject
 from django.utils.translation import get_language
 
-from saleor.store.models import Store
+from saleor.store import models
 from django_multitenant.utils import set_current_tenant, unset_current_tenant
 
 from ..discount.utils import fetch_discounts
@@ -58,10 +58,18 @@ def request_set_tenant(get_response):
             if ":" in domain:
                 domain = domain.split(":")[1][2:]
             unset_current_tenant()
-            s_store = Store.objects.filter(domain=domain).first()
-            if s_store:
-                set_current_tenant(s_store)
+            # check if this domain is custom domain? 
+            custom_domain = models.CustomDomain.objects.filter(domain_custom = domain, status = True).first()
+            s_domain = models.Store.objects.filter(domain=domain).first()
 
+            # if enable_custom_domain:
+            if s_domain:
+                set_current_tenant(s_domain)
+            elif custom_domain:
+                 # find store by custom domain ----------------
+                s_custom_domain = models.Store.objects.filter(id=custom_domain.store_id,custom_domain_enable=True).first()
+                if s_custom_domain:
+                    set_current_tenant(s_custom_domain)
         return get_response(request)
 
     return _request_set_tenant

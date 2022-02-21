@@ -1,7 +1,11 @@
 from typing import TYPE_CHECKING, Dict, Iterable, List, Union
 
+from django.conf import settings
 from django.db import transaction
 from ..models import Store
+import dns.resolver
+import requests
+import json
 
 
 if TYPE_CHECKING:
@@ -24,3 +28,13 @@ def delete_stores(stores_ids: List[str]):
     stores.delete()
 
 
+def verify_ssl(domain):
+ 
+    # Making a get request
+    # response = requests.get('https://{}'.format(domain), verify = False)
+
+    api_url = settings.VERIFY_SSL_API
+    pay_load = {"domain": domain}
+    response = requests.post(api_url, pay_load)
+    response = json.loads(response._content.decode("utf-8"))['error']
+    return response

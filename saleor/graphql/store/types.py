@@ -70,6 +70,8 @@ class Store(CountableDjangoObjectType):
     #Index payment methods
     index_cash = graphene.Int(description="Index cash", required=False)
     index_stripe = graphene.Int(description="Index stripe", required=False)
+    custom_domain_enable = graphene.Boolean(
+        description="Enable use custom domain", required=False)
 
     class Meta:
         description = (
@@ -101,6 +103,7 @@ class Store(CountableDjangoObjectType):
             "index_cash",
             "index_stripe",
             "enable_transaction_fee",
+            "custom_domain_enable",
             "id",
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
@@ -138,3 +141,16 @@ class Store(CountableDjangoObjectType):
                 rendition_key_set="store_cover_photo",
                 info=info,
             )
+
+class CustomDomain(CountableDjangoObjectType):
+    class Meta:
+        description = (
+            "domain custom"
+        )
+        only_fields = [
+            "domain_custom",
+            "status",
+            "id",
+        ]
+        interfaces = [graphene.relay.Node, ObjectWithMetadata]
+        model = models.CustomDomain 

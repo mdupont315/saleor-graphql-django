@@ -20,7 +20,8 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from dotenv import load_dotenv
 from . import patched_print_object
-
+# import dnspython as dns
+    
 load_dotenv()
 
 def get_list(text):
@@ -638,6 +639,10 @@ JWT_TTL_REFRESH = timedelta(seconds=parse(os.environ.get("JWT_TTL_REFRESH", "30 
 JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
     seconds=parse(os.environ.get("JWT_TTL_REQUEST_EMAIL_CHANGE", "1 hour")),
 )
+
+
+# Verify SSL API_URL
+VERIFY_SSL_API = os.environ.get("VERIFY_SSL_API")
 
 # Support multiple interface notation in schema for Apollo tooling.
 
