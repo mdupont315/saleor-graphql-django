@@ -1,3 +1,4 @@
+# from typing_extensions import Required
 from django_multitenant.utils import unset_current_tenant
 import graphene
 from django.conf import settings
@@ -6,6 +7,8 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from collections import defaultdict
 import os
+
+from graphql_relay.node.node import from_global_id
 
 from saleor.account.models import User
 from saleor.delivery.models import Delivery
@@ -20,8 +23,8 @@ from ....core.exceptions import DomainIsExist, PermissionDenied
 from ....core.permissions import StorePermissions, get_permissions_default
 from ....core.utils.url import validate_storefront_url
 from ....store import models
-from ....store.utils import delete_stores
-from ...core.mutations import BaseMutation, ModelDeleteMutation, ModelMutation
+from ....store.utils import delete_stores, verify_ssl
+from ...core.mutations import BaseBulkMutation, BaseMutation, ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
 from ...core.types import Upload
 from ...core.types.common import StoreError
 from ..types import Store
@@ -244,6 +247,9 @@ class StoreUpdateInput(graphene.InputObjectType):
     index_cash = graphene.Int(description="Index cash")
     index_stripe = graphene.Int(description="Index stripe")
 
+    # Custom domain
+    custom_domain_enable = graphene.Boolean(description="Enable custom domain")
+
 
 class StoreUpdate(ModelMutation):
     class Arguments:
@@ -305,7 +311,7 @@ class MyStoreUpdate(ModelMutation):
             for field_name, field_item in input._meta.fields.items():
                 if field_name in input:
                     value = input[field_name]
-                    print(field_name,"============",value)
+                    # print(field_name,"============",value)
 
                     setattr(my_store, field_name, value)
             my_store.save()
@@ -346,3 +352,130 @@ class StoreDelete(ModelDeleteMutation):
             delete_record(instance.domain)
         instance.id = db_id
         return cls.success_response(instance)
+
+
+        
+# api domain ==============================================================
+class DomainCustomInput(graphene.InputObjectType):
+    domain_custom = graphene.String(
+        description="domain",
+    )
+    status = graphene.Boolean(
+        description="status of domain",
+    )
+
+class MultipleDomainCustomInput(graphene.InputObjectType):
+    domains = graphene.List(DomainCustomInput,
+    required=True,)
+
+
+class CustomDomainCreate(ModelMutation):
+    class Arguments:
+        input = DomainCustomInput(
+            required=True, description="Fields required to create table service."
+        )
+
+    @classmethod
+    def clean_input(cls, info, instance, data):
+        cleaned_input = super().clean_input(info, instance, data)
+        # validate table name
+        domain_custom = cleaned_input["domain_custom"]
+        check_domain = models.CustomDomain.objects.filter(domain_custom=domain_custom).first()
+        if check_domain:
+            raise ValidationError(
+                {
+                    "domain_custom": ValidationError(
+                        "domain already exists.",
+                        code=StoreErrorCode.ALREADY_EXISTS,
+                    )
+                }
+            )
+        return cleaned_input
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        # verify ssl here
+        return super().perform_mutation(_root, info, **data)
+
+    class Meta:
+        description = "Creates domain."
+        model = models.CustomDomain
+        permissions = (StorePermissions.MANAGE_STORES,)
+        error_type_class = StoreError
+        error_type_field = "store_errors"
+
+class CustomDomainUpdate(ModelMutation):
+    class Arguments:
+        id = graphene.ID(required=True, description="ID of a table service to update.")
+        input = DomainCustomInput(
+            required=True, description="Fields required to table service time."
+        )
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        # validate table name
+        input = data.get("input")
+        domain_custom = input.get("domain_custom", None)
+        if domain_custom:
+            _type , current_domain_pk = from_global_id(data["id"])
+            domain = models.CustomDomain.objects.filter(domain_custom=domain_custom).first()
+            if domain and domain.id != int(current_domain_pk):
+                raise ValidationError(
+                    {
+                        "domain_custom": ValidationError(
+                            "domain already exists.",
+                            code=StoreErrorCode.ALREADY_EXISTS,
+                        )
+                    }
+                )
+        return super().perform_mutation(_root, info, **data)
+    
+    class Meta:
+        description = "Update domain."
+        model = models.CustomDomain
+        permissions = (StorePermissions.MANAGE_STORES,)
+        error_type_class = StoreError
+        error_type_field = "store_errors"
+
+class CustomDomainDelete(ModelDeleteMutation):
+    class Arguments:
+        id = graphene.ID(required=True, description="ID of an attribute to delete.")
+
+    class Meta:
+        description = "delete domain."
+        model = models.CustomDomain
+        permissions = (StorePermissions.MANAGE_STORES,)
+        error_type_class = StoreError
+        error_type_field = "store_errors"
+
+class CustomDomainBulkDelete(ModelBulkDeleteMutation):
+    class Arguments:
+        ids = graphene.List(
+            graphene.ID, required=True, description="List of attribute IDs to delete."
+        )
+
+    class Meta:
+        description = "bulk delete store."
+        model = models.CustomDomain
+        permissions = (StorePermissions.MANAGE_STORES,)
+        error_type_class = StoreError
+        error_type_field = "store_errors"
+
+class CustomDomainsVerifySSL(ModelMutation):
+    class Arguments:
+        input = MultipleDomainCustomInput(required=True, description="Fields required to table service time.")
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        # validate table name
+        list_domain = data['input']['domains']
+        for i in range(len(list_domain)):
+            models.CustomDomain.objects.filter(domain_custom=data['input']['domains'][i]['domain_custom']).update(status=not verify_ssl(list_domain[i].domain_custom))
+            
+        return super().perform_mutation(_root, info, **data)
+
+    class Meta:
+        description = "verify domains."
+        model = models.CustomDomain
+        permissions = (StorePermissions.MANAGE_STORES,)
+        error_type_class = StoreError
+        error_type_field = "store_errors"
