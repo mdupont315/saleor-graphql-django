@@ -27,15 +27,15 @@ def delete_stores(stores_ids: List[str]):
     stores = Store.objects.select_for_update().filter(pk__in=stores_ids)
     stores.delete()
 
-def check_dns(domain):
-    try:
-        result = dns.resolver.query(domain, 'A')
-        if result:
-            return True
-        else: 
-            return False
-    except:
-        return False
+# def check_dns(domain):
+#     try:
+#         result = dns.resolver.query(domain, 'A')
+#         if result:
+#             return True
+#         else: 
+#             return False
+#     except:
+#         return False
 
 # import requests
 

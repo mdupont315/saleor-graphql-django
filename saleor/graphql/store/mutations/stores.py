@@ -311,7 +311,7 @@ class MyStoreUpdate(ModelMutation):
             for field_name, field_item in input._meta.fields.items():
                 if field_name in input:
                     value = input[field_name]
-                    print(field_name,"============",value)
+                    # print(field_name,"============",value)
 
                     setattr(my_store, field_name, value)
             my_store.save()
@@ -378,7 +378,6 @@ class CustomDomainCreate(ModelMutation):
     @classmethod
     def clean_input(cls, info, instance, data):
         cleaned_input = super().clean_input(info, instance, data)
-        print("cleaned_input", cleaned_input)
         # validate table name
         domain_custom = cleaned_input["domain_custom"]
         check_domain = models.CustomDomain.objects.filter(domain_custom=domain_custom).first()
@@ -463,10 +462,6 @@ class CustomDomainBulkDelete(ModelBulkDeleteMutation):
 
 class CustomDomainsVerifySSL(ModelMutation):
     class Arguments:
-        # id = graphene.ID(required=True, description="ID of a table service to verify.")
-        # input = DomainCustomInput(
-        #     required=True, description="Fields required to table service time."
-        # )
         input = MultipleDomainCustomInput(required=True, description="Fields required to table service time.")
 
     @classmethod
@@ -474,23 +469,8 @@ class CustomDomainsVerifySSL(ModelMutation):
         # validate table name
         list_domain = data['input']['domains']
         for i in range(len(list_domain)):
-            if(verify_ssl(list_domain[i].domain_custom)):
-                data['input']['domains'][i]['status'] = False
-                models.CustomDomain.objects.filter(domain_custom=data['input']['domains'][i]['domain_custom']).update(status=data['input']['domains'][i]['status'])
-            else:
-                data['input']['domains'][i]['status'] = True
-                models.CustomDomain.objects.filter(domain_custom=data['input']['domains'][i]['domain_custom']).update(status=data['input']['domains'][i]['status'])
+            models.CustomDomain.objects.filter(domain_custom=data['input']['domains'][i]['domain_custom']).update(status=not verify_ssl(list_domain[i].domain_custom))
             
-        # _type , current_domain_pk = from_global_id(data["id"])
-        # domain = models.CustomDomain.objects.get(id=current_domain_pk)
-        # print("domain", domain.__dict__)
-        # is_error = verify_ssl(domain.domain_custom)
-        # print("Respone: ", is_error)
-        # if is_error:
-        #     data['input']['status'] = False
-        # else:
-        #     data['input']['status'] = True
-        print('data after',data['input']['domains'])
         return super().perform_mutation(_root, info, **data)
 
     class Meta:
