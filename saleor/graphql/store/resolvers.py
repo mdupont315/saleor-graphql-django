@@ -38,13 +38,5 @@ def resolve_custom_domain(info, id, **_kwargs):
     _type , _pk = from_global_id(id)
     domain = models.CustomDomain.objects.filter(id=_pk).first()
     if not domain:
-        # raise ValidationError(
-        #         {
-        #             "table_name": ValidationError(
-        #                 "QR Code doesn't exists",
-        #                 code=error_codes.TableServiceErrorCode.NOT_EXISTS,
-        #             )
-        #         }
-        #     )
         raise BadRequest("domain doesn't exists")
     return domain
