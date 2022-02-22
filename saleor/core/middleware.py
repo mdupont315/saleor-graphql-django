@@ -14,7 +14,7 @@ from django_multitenant.utils import set_current_tenant, unset_current_tenant
 from ..discount.utils import fetch_discounts
 from ..plugins.manager import get_plugins_manager
 from . import analytics
-from .jwt import JWT_REFRESH_TOKEN_COOKIE_NAME, jwt_decode_with_exception_handler
+from .jwt import JWT_REFRESH_TOKEN_COOKIE_NAME, get_domain_from_request, jwt_decode_with_exception_handler
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +50,8 @@ def request_time(get_response):
 
 def request_set_tenant(get_response):
     def _request_set_tenant(request):
-        domain = request.META.get('HTTP_ORIGIN')
-        if domain is None:
-            domain = request.META.get('HTTP_HOST')
-
+        domain = get_domain_from_request(request)
         if domain:
-            if ":" in domain:
-                domain = domain.split(":")[1][2:]
             unset_current_tenant()
             # check if this domain is custom domain? 
             custom_domain = models.CustomDomain.objects.filter(domain_custom = domain, status = True).first()

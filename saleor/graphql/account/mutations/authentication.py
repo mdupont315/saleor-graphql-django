@@ -2,12 +2,16 @@ from typing import Optional
 
 import graphene
 import jwt
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.middleware.csrf import _compare_masked_tokens  # type: ignore
 from django.middleware.csrf import _get_new_csrf_token
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from graphene.types.generic import GenericScalar
+from saleor.core.exceptions import PermissionDenied
+
+
 
 from ....account import models
 from ....account.error_codes import AccountErrorCode
@@ -17,6 +21,7 @@ from ....core.jwt import (
     PERMISSIONS_FIELD,
     create_access_token,
     create_refresh_token,
+    get_domain_from_request,
     get_user_from_payload,
     jwt_decode,
 )
@@ -88,18 +93,36 @@ class CreateToken(BaseMutation):
         return None
 
     @classmethod
+    def _check_main_site(cls, domain) -> Optional[models.Store]:
+        main_site = settings.MAIN_SITE
+        if(domain == main_site):
+            return True
+        return False
+
+
+    @classmethod
     def get_user(cls, _info, data):
+        request = _info.context
+        domain = get_domain_from_request(request)
+        is_main_site = cls._check_main_site(domain)
         user = cls._retrieve_user_from_credentials(data["email"], data["password"])
-        if not user:
-            raise ValidationError(
+
+        if is_main_site:
+            
+            if user: 
+                if user.is_superuser: 
+                    return user
+                else :
+                    raise PermissionDenied()
+            else :
+                raise ValidationError(
                 {
                     "email": ValidationError(
                         "Please, enter valid credentials",
                         code=AccountErrorCode.INVALID_CREDENTIALS.value,
                     )
                 }
-            )
-        return user
+                )
 
     @classmethod
     def perform_mutation(cls, root, info, **data):
