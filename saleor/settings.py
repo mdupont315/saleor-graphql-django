@@ -644,6 +644,9 @@ JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
 # Verify SSL API_URL
 VERIFY_SSL_API = os.environ.get("VERIFY_SSL_API")
 
+# Main site
+MAIN_SITE = os.environ.get("MAIN_SITE")
+
 # Support multiple interface notation in schema for Apollo tooling.
 
 # In `graphql-core` V2 separator for interaces is `,`.

@@ -125,6 +125,15 @@ def get_token_from_request(request: WSGIRequest) -> Optional[str]:
             auth_token = auth[1]
     return auth_token
 
+def get_domain_from_request(request: WSGIRequest) -> Optional[str]:
+    domain = request.META.get('HTTP_ORIGIN')
+    if domain is None:
+        domain = request.META.get('HTTP_HOST')
+    else :
+        if ":" in domain:
+                domain = domain.split(":")[1][2:]
+    return domain
+
 
 def get_user_from_payload(payload: Dict[str, Any]) -> Optional[User]:
     user = User.objects.filter(email=payload["email"], is_active=True).first()
