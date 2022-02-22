@@ -104,25 +104,29 @@ class CreateToken(BaseMutation):
     def get_user(cls, _info, data):
         request = _info.context
         domain = get_domain_from_request(request)
-        is_main_site = cls._check_main_site(domain)
         user = cls._retrieve_user_from_credentials(data["email"], data["password"])
 
-        if is_main_site:
-            
-            if user: 
-                if user.is_superuser: 
-                    return user
+        if settings.MAIN_SITE: 
+            is_main_site = cls._check_main_site(domain)
+            if is_main_site:
+                if user: 
+                    if user.is_superuser: 
+                        return user
+                    else :
+                        raise PermissionDenied()
                 else :
-                    raise PermissionDenied()
-            else :
-                raise ValidationError(
-                {
-                    "email": ValidationError(
-                        "Please, enter valid credentials",
-                        code=AccountErrorCode.INVALID_CREDENTIALS.value,
+                    raise ValidationError(
+                    {
+                        "email": ValidationError(
+                            "Please, enter valid credentials",
+                            code=AccountErrorCode.INVALID_CREDENTIALS.value,
+                        )
+                    }
                     )
-                }
-                )
+        else :
+            return user
+            
+        
 
     @classmethod
     def perform_mutation(cls, root, info, **data):
