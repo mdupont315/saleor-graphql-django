@@ -1,0 +1,10 @@
+{
+    "name": "Orderich",
+    "short_name": "Orderich",
+    "icons": [],
+    "background_color": "#ddd",
+    "description": "Storefront for the Saleor e-commerce platform",
+    "display": "standalone",
+    "start_url": "/",
+    "theme_color": "#333"
+  }
