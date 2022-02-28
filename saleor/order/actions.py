@@ -138,6 +138,7 @@ def order_created(
         "order_note": order.customer_note,
         "order_url": order_url,
         "is_payment_with_stripe": is_payment_with_stripe,
+        "store_slug": current_store.domain.split(".")[0]
     }
     if order.user_email:
         event = (NotifyEventType.ORDER_CREATED)
