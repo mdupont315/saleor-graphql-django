@@ -37,11 +37,12 @@ def handle_manifest(request: WSGIRequest) -> HttpResponse:
             store = Store.objects.filter(domain=domain).first()
             if store:
                 manifest["name"] = store.name
+                manifest["short_name"] = store.name
                 if store.favicon:
                     icon = {
-                    "src": str(store.favicon),
-                    "type": "image/png",
-                    "sizes": "512x512"
+                    "src": settings.STATIC_URL + str(store.favicon),
+                    "type": "image/jpg",
+                    "sizes": "192x192"
                     }
                     manifest["icons"].append(icon)
     return HttpResponse(json.dumps(manifest), content_type="application/json")

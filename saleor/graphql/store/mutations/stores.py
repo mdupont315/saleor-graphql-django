@@ -7,6 +7,9 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from collections import defaultdict
 import os
+import io
+from PIL import Image as Img
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from graphql_relay.node.node import from_global_id
 
@@ -14,6 +17,7 @@ from saleor.account.models import User
 from saleor.delivery.models import Delivery
 from saleor.graphql.notifications.schema import LiveNotification
 from saleor.graphql.utils.validators import check_super_user
+from saleor.product.product_images import get_thumbnail
 from saleor.route53 import check_exist_record,create_new_record, delete_record, update_record
 from saleor.servicetime.models import ServiceTime
 from saleor.store.error_codes import StoreErrorCode
@@ -26,7 +30,7 @@ from ....store import models
 from ....store.utils import delete_stores, verify_ssl
 from ...core.mutations import BaseBulkMutation, BaseMutation, ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
 from ...core.types import Upload
-from ...core.types.common import StoreError
+from ...core.types.common import Image, StoreError
 from ..types import Store
 
 
@@ -289,6 +293,32 @@ class StoreUpdate(ModelMutation):
     #             )
     #         }
     #     )
+
+    @classmethod
+    def clean_input(cls, info, instance, data):
+        cleaned_input = super().clean_input(info, instance, data)
+        list_size = [192, 256, 512]
+        # Get image
+        image_data = info.context.FILES.get(data.favicon)
+
+        # Read file
+        img = Img.open(image_data.file)
+
+        # Crop size
+        img_192 = img.resize([list_size[0],list_size[0]])
+        img_byte_arr = io.BytesIO()
+        img_192.save(img_byte_arr, img.format)
+
+        # Convert to InMemoryUploadedFile
+        crop_img = InMemoryUploadedFile(img_byte_arr, image_data.field_name, image_data._name, image_data.content_type, list_size[0], None)
+
+        # Assign to favicon
+        cleaned_input['favicon'] = crop_img
+        return cleaned_input
+
+    @classmethod
+    def perform_mutation(cls, root, info, **data):
+        return super().perform_mutation(root, info, **data)
 
 class MyStoreUpdate(ModelMutation):
     class Arguments:
