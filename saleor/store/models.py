@@ -3,6 +3,8 @@ from typing import Union
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from saleor.core.db.fields import SanitizedJSONField
+from saleor.core.utils.editorjs import clean_editor_js
 from versatileimagefield.fields import VersatileImageField
 
 from ..core.models import CustomQueryset, MultitenantModelWithMetadata
@@ -80,6 +82,12 @@ class Store(MultitenantModelWithMetadata, SeoModel):
 
     objects = StoresQueryset.as_manager()
     translated = TranslationProxy()
+
+    # # PWA
+    # favicon_pwa = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
+    # favicon_pwa = VersatileImageField(
+    #     upload_to="store-media", blank=True, null=True
+    # )
 
     def __str__(self) -> str:
         return self.name
