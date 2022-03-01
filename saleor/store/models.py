@@ -83,12 +83,6 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     objects = StoresQueryset.as_manager()
     translated = TranslationProxy()
 
-    # # PWA
-    # favicon_pwa = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
-    # favicon_pwa = VersatileImageField(
-    #     upload_to="store-media", blank=True, null=True
-    # )
-
     def __str__(self) -> str:
         return self.name
 
