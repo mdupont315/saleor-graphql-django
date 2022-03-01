@@ -7,13 +7,18 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from collections import defaultdict
 import os
+import io
+from PIL import Image as Img
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from graphql_relay.node.node import from_global_id
 
 from saleor.account.models import User
+from saleor.core.utils.crop_pwa_size import crop_pwa_favicon
 from saleor.delivery.models import Delivery
 from saleor.graphql.notifications.schema import LiveNotification
 from saleor.graphql.utils.validators import check_super_user
+from saleor.product.product_images import get_thumbnail
 from saleor.route53 import check_exist_record,create_new_record, delete_record, update_record
 from saleor.servicetime.models import ServiceTime
 from saleor.store.error_codes import StoreErrorCode
@@ -26,7 +31,7 @@ from ....store import models
 from ....store.utils import delete_stores, verify_ssl
 from ...core.mutations import BaseBulkMutation, BaseMutation, ModelBulkDeleteMutation, ModelDeleteMutation, ModelMutation
 from ...core.types import Upload
-from ...core.types.common import StoreError
+from ...core.types.common import Image, StoreError
 from ..types import Store
 
 
@@ -265,30 +270,31 @@ class StoreUpdate(ModelMutation):
         error_type_class = StoreError
         error_type_field = "store_errors"
 
-    # @classmethod
-    # def perform_mutation(cls, _root, info, **data):
-    #     input = data.get("input")
-    #     my_store = models.Store.objects.first()
-    #     print(my_store.domain)
-    #     if my_store:
-    #         for field_name, field_item in input._meta.fields.items():
-    #             if field_name in input:
-    #                 value = input[field_name]
-    #                 if field_name=="domain" and value != my_store.domain:
-    #                     domain = '{}.{}'.format(value,os.environ.get('STATIC_DOMAIN'))
-    #                     update_record(domain, my_store.domain)
-    #                     setattr(my_store, "domain", domain)
-    #                 setattr(my_store, field_name, value)   
-    #         my_store.save()
-    #         return cls.success_response(my_store)
-    #     raise ValidationError(
-    #         {
-    #             "store": ValidationError(
-    #                 "Store does not exists.",
-    #                 code=StoreErrorCode.NOT_EXISTS,
-    #             )
-    #         }
-    #     )
+    @classmethod
+    def perform_mutation(cls, root, info, **data):
+        _type , current_domain_pk = from_global_id(data["id"])
+        list_size = [192, 256, 512]
+        input = data.get("input")
+        if input.favicon:
+            image_data = info.context.FILES.get(input.favicon)
+            list_crop_imgs = crop_pwa_favicon(image_data, list_size)
+            current_favicon_pwa = models.FaviconPwa.objects.filter(store_id=current_domain_pk)
+
+            if(len(current_favicon_pwa) > 0):
+                # Update favicon pwa
+                for j in range(len(list_crop_imgs)):
+                    my_store_pwa = models.FaviconPwa.objects.get(store_id=current_domain_pk,size=list_size[j])
+                    my_store_pwa.image = list_crop_imgs[j]
+                    my_store_pwa.type = list_crop_imgs[j].content_type
+                    my_store_pwa.size = list_crop_imgs[j].size
+                    my_store_pwa.save()
+            else:
+                # Create favicon pwa
+                for i in range(len(list_crop_imgs)):
+                    my_store_pwa = models.FaviconPwa(image=list_crop_imgs[i], type=list_crop_imgs[i].content_type, size=list_crop_imgs[i].size)
+                    my_store_pwa.save()
+                    
+        return super().perform_mutation(root, info, **data)
 
 class MyStoreUpdate(ModelMutation):
     class Arguments:
@@ -353,8 +359,6 @@ class StoreDelete(ModelDeleteMutation):
         instance.id = db_id
         return cls.success_response(instance)
 
-
-        
 # api domain ==============================================================
 class DomainCustomInput(graphene.InputObjectType):
     domain_custom = graphene.String(
