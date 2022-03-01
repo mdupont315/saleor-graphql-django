@@ -44,3 +44,17 @@ class CustomDomainFilter(MetadataFilterBase):
 class CustomDomainFilterInput(FilterInputObjectType):
     class Meta:
         filterset_class = CustomDomainFilter
+
+class FaviconPwaFilter(MetadataFilterBase):
+    search = django_filters.CharFilter(
+        method=filter_fields_containing_value("table_name")
+    )
+
+    class Meta:
+        model = models.FaviconPwa
+        fields = ["size"]
+
+
+class FaviconPwaFilterInput(FilterInputObjectType):
+    class Meta:
+        filterset_class = FaviconPwaFilter

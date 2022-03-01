@@ -40,3 +40,6 @@ def resolve_custom_domain(info, id, **_kwargs):
     if not domain:
         raise BadRequest("domain doesn't exists")
     return domain
+
+def resolve_favicon_pwa(info, **_kwargs):
+    return models.FaviconPwa.objects.all()

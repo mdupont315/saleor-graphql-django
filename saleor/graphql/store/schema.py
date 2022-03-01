@@ -4,13 +4,13 @@ from saleor.views import sio
 
 from ..account.types import User
 from ..core.fields import FilterInputConnectionField
-from .filters import CustomDomainFilterInput, StoreFilterInput
+from .filters import CustomDomainFilterInput, FaviconPwaFilterInput, StoreFilterInput
 from .mutations.stores import (CustomDomainBulkDelete, CustomDomainCreate, CustomDomainDelete, CustomDomainUpdate, CustomDomainsVerifySSL, MyStoreUpdate, StoreCreate, StoreDelete,
                                StoreUpdate,TestSubscription)
 from .resolvers import (resolve_custom_domain, resolve_custom_domains, resolve_my_store, resolve_store, resolve_stores,
-                        resolve_user_store)
-from .sorters import StoreSortingInput,CustomDomainSortInput
-from .types import CustomDomain, Store
+                        resolve_user_store, resolve_favicon_pwa)
+from .sorters import FaviconPwaSortInput, StoreSortingInput,CustomDomainSortInput
+from .types import CustomDomain, FaviconPwa, Store
 
 # from ..decorators import permission_required
 
@@ -59,6 +59,13 @@ class StoreQueries(graphene.ObjectType):
         description="Get table service.",
     )
 
+    favicon_pwa = FilterInputConnectionField(
+        FaviconPwa,
+        filter=FaviconPwaFilterInput(description="Filtering table services."),
+        sort_by=FaviconPwaSortInput(description="Sort table services."),
+        description="List of the table service.",
+    )
+
     def resolve_store(self, info, id=None, slug=None):
         return resolve_store(info, id, slug)
 
@@ -77,6 +84,9 @@ class StoreQueries(graphene.ObjectType):
     def resolve_custom_domain(self, info, id=None, **kwargs):
         return resolve_custom_domain(info, id, **kwargs)
 
+    def resolve_favicon_pwa(self, info, **kwargs):
+        return resolve_favicon_pwa(info, **kwargs)
+
 class StoreMutations(graphene.ObjectType):
     # store mutations
     store_create = StoreCreate.Field()
@@ -91,3 +101,6 @@ class StoreMutations(graphene.ObjectType):
     custom_domain_delete = CustomDomainDelete.Field()
     custom_domain_bulk_delete = CustomDomainBulkDelete.Field()
     custom_domain_verify = CustomDomainsVerifySSL.Field()
+
+    # favicon_pwa_create = FaviconPwaCreate.Field()
+    # favicon_pwa_update = FaviconPwaUpdate.Field()
