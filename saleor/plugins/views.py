@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
 from django_multitenant.utils import get_current_tenant
+from saleor.core.utils.logging import log_info
 import json
 import os
 from saleor.core.jwt import get_domain_from_request
@@ -28,20 +29,17 @@ def handle_plugin_per_channel_webhook(
     return manager.webhook(request, plugin_id, channel_slug=channel_slug)
 
 def handle_manifest(request: WSGIRequest) -> HttpResponse:
-    domain = get_domain_from_request(request)
+    # domain = get_domain_from_request(request)
     path = os.path.join(
         settings.PROJECT_ROOT, "saleor", "static", "manifest.json"
     )
     with open(path) as f:
         manifest = json.load(f)
-        global store
         if manifest:
-            current_tenant = get_current_tenant()
-            if current_tenant:
-                store = current_tenant
-            else: store = Store.objects.filter(domain=domain).first()
-            
-            
+            store = get_current_tenant()
+            log_info('Store', 'Store', content={
+                "store": store.__dict__,
+            })
             if store:
                 store_favicon_pwa = FaviconPwa.objects.filter(store_id=store.id)
                 manifest["name"] = store.name
