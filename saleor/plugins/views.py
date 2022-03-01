@@ -37,6 +37,7 @@ def handle_manifest(request: WSGIRequest) -> HttpResponse:
         manifest = json.load(f)
         if manifest:
             store = get_current_tenant()
+            print("VO DAY")
             log_info('Store', 'Store', content={
                 "store": store,
             })
