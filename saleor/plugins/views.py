@@ -38,8 +38,9 @@ def handle_manifest(request: WSGIRequest) -> HttpResponse:
         if manifest:
             store = get_current_tenant()
             log_info('Store', 'Store', content={
-                "store": store.__dict__,
+                "store": store,
             })
+            print("Store", store)
             if store:
                 store_favicon_pwa = FaviconPwa.objects.filter(store_id=store.id)
                 manifest["name"] = store.name
