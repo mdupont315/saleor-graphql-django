@@ -38,7 +38,7 @@ urlpatterns = [
         name="plugins",
     ),
     url(
-        r"^manifest.json$",
+        r"^orderich/manifest.json$",
         handle_manifest,
     ),
 ]

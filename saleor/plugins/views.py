@@ -36,9 +36,11 @@ def handle_manifest(request: WSGIRequest) -> HttpResponse:
         if manifest:
             store = Store.objects.filter(domain=domain).first()
             store_favicon_pwa = FaviconPwa.objects.filter(store_id=store.id)
+            
             if store:
                 manifest["name"] = store.name
                 manifest["short_name"] = store.name
+                manifest["start_url"] = "https://" + store.domain 
                 if store_favicon_pwa:
                     for favicon in store_favicon_pwa:
                         icon = {

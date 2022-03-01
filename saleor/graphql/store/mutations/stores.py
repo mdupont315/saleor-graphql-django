@@ -293,11 +293,7 @@ class StoreUpdate(ModelMutation):
                 for i in range(len(list_crop_imgs)):
                     my_store_pwa = models.FaviconPwa(image=list_crop_imgs[i], type=list_crop_imgs[i].content_type, size=list_crop_imgs[i].size)
                     my_store_pwa.save()
-
-            
-
-            
-            
+                    
         return super().perform_mutation(root, info, **data)
 
 class MyStoreUpdate(ModelMutation):
@@ -363,8 +359,6 @@ class StoreDelete(ModelDeleteMutation):
         instance.id = db_id
         return cls.success_response(instance)
 
-
-        
 # api domain ==============================================================
 class DomainCustomInput(graphene.InputObjectType):
     domain_custom = graphene.String(
