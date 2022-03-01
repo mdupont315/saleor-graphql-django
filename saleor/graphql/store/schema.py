@@ -102,5 +102,3 @@ class StoreMutations(graphene.ObjectType):
     custom_domain_bulk_delete = CustomDomainBulkDelete.Field()
     custom_domain_verify = CustomDomainsVerifySSL.Field()
 
-    # favicon_pwa_create = FaviconPwaCreate.Field()
-    # favicon_pwa_update = FaviconPwaUpdate.Field()
