@@ -3,7 +3,7 @@
     "short_name": "Orderich",
     "icons": [],
     "background_color": "#ddd",
-    "description": "Storefront for the Saleor e-commerce platform",
+    "description": "Orderich",
     "display": "standalone",
     "start_url": "http://localhost:3000/",
     "theme_color": "#333"
