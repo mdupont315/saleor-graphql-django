@@ -154,3 +154,17 @@ class CustomDomain(CountableDjangoObjectType):
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
         model = models.CustomDomain 
+
+class FaviconPwa(CountableDjangoObjectType):
+    class Meta:
+        description = (
+            "favicon pwa"
+        )
+        only_fields = [
+            "image",
+            "type",
+            "size",
+            "id",
+        ]
+        interfaces = [graphene.relay.Node, ObjectWithMetadata]
+        model = models.FaviconPwa 

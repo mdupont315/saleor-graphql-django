@@ -295,29 +295,35 @@ class StoreUpdate(ModelMutation):
     #     )
 
     @classmethod
-    def clean_input(cls, info, instance, data):
-        cleaned_input = super().clean_input(info, instance, data)
+    def perform_mutation(cls, root, info, **data):
+        _type , current_domain_pk = from_global_id(data["id"])
         list_size = [192, 256, 512]
-        # Get image
-        image_data = info.context.FILES.get(data.favicon)
+
+        # Get favicon img
+        image_data = info.context.FILES.get(data["input"]["favicon"])
 
         # Read file
         img = Img.open(image_data.file)
+        list_crop_imgs = []
 
-        # Crop size
-        img_192 = img.resize([list_size[0],list_size[0]])
-        img_byte_arr = io.BytesIO()
-        img_192.save(img_byte_arr, img.format)
+        # Crop size by list size
+        for i in range(len(list_size)):
+            img_crop = img.resize([list_size[i],list_size[i]])
+            img_byte_arr = io.BytesIO()
+            img_crop.save(img_byte_arr, img.format)
 
-        # Convert to InMemoryUploadedFile
-        crop_img = InMemoryUploadedFile(img_byte_arr, image_data.field_name, image_data._name, image_data.content_type, list_size[0], None)
+            # Convert to InMemoryUploadedFile
+            # Add to list crop size
+            list_crop_imgs.append(InMemoryUploadedFile(img_byte_arr, image_data.field_name, str(list_size[i]) + "_" + image_data._name, image_data.content_type, list_size[i], None))
 
-        # Assign to favicon
-        cleaned_input['favicon'] = crop_img
-        return cleaned_input
-
-    @classmethod
-    def perform_mutation(cls, root, info, **data):
+        # Update favicon pwa
+        for j in range(len(list_crop_imgs)):
+            my_store_pwa = models.FaviconPwa.objects.get(store_id=current_domain_pk,size=list_size[j])
+            my_store_pwa.image = list_crop_imgs[j]
+            my_store_pwa.type = list_crop_imgs[j].content_type
+            my_store_pwa.size = list_crop_imgs[j].size
+            my_store_pwa.save()
+    
         return super().perform_mutation(root, info, **data)
 
 class MyStoreUpdate(ModelMutation):
@@ -509,3 +515,46 @@ class CustomDomainsVerifySSL(ModelMutation):
         permissions = (StorePermissions.MANAGE_STORES,)
         error_type_class = StoreError
         error_type_field = "store_errors"
+
+# Api favicon pwa ----------------
+
+# class FaviconPwaInput(graphene.InputObjectType):
+#     domain_custom = graphene.String(
+#         description="domain",
+#     )
+#     status = graphene.Boolean(
+#         description="status of domain",
+#     )
+# class FaviconPwaCreate(ModelMutation):
+#     class Arguments:
+#         input = FaviconPwaInput(
+#             required=True, description="Fields required to create table service."
+#         )
+
+#     @classmethod
+#     def clean_input(cls, info, instance, data):
+#         cleaned_input = super().clean_input(info, instance, data)
+#         # validate table name
+#         domain_custom = cleaned_input["domain_custom"]
+#         check_domain = models.CustomDomain.objects.filter(domain_custom=domain_custom).first()
+#         if check_domain:
+#             raise ValidationError(
+#                 {
+#                     "domain_custom": ValidationError(
+#                         "domain already exists.",
+#                         code=StoreErrorCode.ALREADY_EXISTS,
+#                     )
+#                 }
+#             )
+#         return cleaned_input
+#     @classmethod
+#     def perform_mutation(cls, _root, info, **data):
+#         # verify ssl here
+#         return super().perform_mutation(_root, info, **data)
+
+#     class Meta:
+#         description = "Creates domain."
+#         model = models.CustomDomain
+#         permissions = (StorePermissions.MANAGE_STORES,)
+#         error_type_class = StoreError
+#         error_type_field = "store_errors"

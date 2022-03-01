@@ -124,3 +124,30 @@ class CustomDomain(MultitenantModelWithMetadata):
                 "Manage store.",
             ),
         )
+
+class FaviconPwa(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="faviconpwa",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id ='store_id'
+    image = VersatileImageField(
+        upload_to="store-media", blank=True, null=True
+    )
+    type = models.CharField(max_length=256)
+    size = models.IntegerField(
+        default=256,
+    )
+
+    class Meta:
+        ordering = ("size", "pk")
+        app_label = "store"
+        permissions = (
+            (
+                StorePermissions.MANAGE_STORES.codename,
+                "Manage store.",
+            ),
+        )

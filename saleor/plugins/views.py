@@ -5,7 +5,7 @@ import json
 import os
 from saleor.core.jwt import get_domain_from_request
 
-from saleor.store.models import Store
+from saleor.store.models import Store,FaviconPwa
 
 from .manager import get_plugins_manager
 
@@ -35,16 +35,18 @@ def handle_manifest(request: WSGIRequest) -> HttpResponse:
         manifest = json.load(f)
         if manifest:
             store = Store.objects.filter(domain=domain).first()
+            store_favicon_pwa = FaviconPwa.objects.filter(store_id=store.id)
             if store:
                 manifest["name"] = store.name
                 manifest["short_name"] = store.name
-                if store.favicon:
-                    icon = {
-                    "src": settings.STATIC_URL + str(store.favicon),
-                    "type": "image/jpg",
-                    "sizes": "192x192"
-                    }
-                    manifest["icons"].append(icon)
+                if store_favicon_pwa:
+                    for favicon in store_favicon_pwa:
+                        icon = {
+                        "src": settings.STATIC_URL + str(favicon.image),
+                        "type": favicon.type,
+                        "sizes": str(favicon.size) + "x" + str(favicon.size)
+                        }
+                        manifest["icons"].append(icon)
     return HttpResponse(json.dumps(manifest), content_type="application/json")
 
 

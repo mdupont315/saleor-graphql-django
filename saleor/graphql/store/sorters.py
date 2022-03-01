@@ -42,3 +42,22 @@ class CustomDomainSortInput(SortInputObjectType):
     class Meta:
         sort_enum = CustomDomainSortField
         type_name = "custom domain types"
+
+class FaviconPwaSortField(graphene.Enum):
+    NAME = ["size", "id"]
+
+    @property
+    def description(self):
+        # pylint: disable=no-member
+        descriptions = {
+            FaviconPwaSortInput.NAME.name: "size",
+        }
+        if self.name in descriptions:
+            return f"Sort table services by {descriptions[self.name]}."
+        raise ValueError("Unsupported enum value: %s" % self.value)
+
+
+class FaviconPwaSortInput(SortInputObjectType):
+    class Meta:
+        sort_enum = FaviconPwaSortField
+        type_name = "custom domain types"
