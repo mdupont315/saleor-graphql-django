@@ -118,10 +118,10 @@ class CreateToken(BaseMutation):
         else:
             if settings.MAIN_SITE: 
                 is_main_site = cls._check_main_site(domain)
-                if is_main_site and user.is_superuser: 
-                    return user
-                else :
+                if is_main_site and not user.is_superuser: 
                     raise PermissionDenied()
+                else :
+                    return user
                     
         return user
             
