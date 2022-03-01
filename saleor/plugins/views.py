@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
+from django_multitenant.utils import get_current_tenant
 import json
 import os
 from saleor.core.jwt import get_domain_from_request
@@ -33,8 +34,13 @@ def handle_manifest(request: WSGIRequest) -> HttpResponse:
     )
     with open(path) as f:
         manifest = json.load(f)
+        global store
         if manifest:
-            store = Store.objects.filter(domain=domain).first()
+            current_tenant = get_current_tenant()
+            if current_tenant:
+                store = current_tenant
+            else: store = Store.objects.filter(domain=domain).first()
+            
             
             if store:
                 store_favicon_pwa = FaviconPwa.objects.filter(store_id=store.id)
