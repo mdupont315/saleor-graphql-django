@@ -51,8 +51,6 @@ def request_time(get_response):
 def request_set_tenant(get_response):
     def _request_set_tenant(request):
         domain = get_domain_from_request(request)
-        print("Domainnnnnnnnnn")
-        print("Domain", domain)
         if domain:
             unset_current_tenant()
             # check if this domain is custom domain? 
