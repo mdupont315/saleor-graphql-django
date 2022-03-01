@@ -3,6 +3,8 @@ from typing import Union
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from saleor.core.db.fields import SanitizedJSONField
+from saleor.core.utils.editorjs import clean_editor_js
 from versatileimagefield.fields import VersatileImageField
 
 from ..core.models import CustomQueryset, MultitenantModelWithMetadata
@@ -109,6 +111,33 @@ class CustomDomain(MultitenantModelWithMetadata):
 
     class Meta:
         ordering = ("domain_custom", "pk")
+        app_label = "store"
+        permissions = (
+            (
+                StorePermissions.MANAGE_STORES.codename,
+                "Manage store.",
+            ),
+        )
+
+class FaviconPwa(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="faviconpwa",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id ='store_id'
+    image = VersatileImageField(
+        upload_to="store-media", blank=True, null=True
+    )
+    type = models.CharField(max_length=256)
+    size = models.IntegerField(
+        default=256,
+    )
+
+    class Meta:
+        ordering = ("size", "pk")
         app_label = "store"
         permissions = (
             (

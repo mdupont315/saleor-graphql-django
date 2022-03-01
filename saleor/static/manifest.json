@@ -1,0 +1,10 @@
+{
+    "name": "Orderich",
+    "short_name": "Orderich",
+    "icons": [],
+    "background_color": "#ddd",
+    "description": "Orderich",
+    "display": "standalone",
+    "start_url": "http://localhost:3000/",
+    "theme_color": "#333"
+  }

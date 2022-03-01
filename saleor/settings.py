@@ -190,6 +190,7 @@ MIDDLEWARE = [
     "saleor.core.middleware.site",
     "saleor.core.middleware.plugins",
     "saleor.core.middleware.jwt_refresh_token_middleware",
+    # "corsheaders.middleware.CorsMiddleware"
     # "saleor.core.middleware.multitenant_middleware",
 ]
 
@@ -242,7 +243,8 @@ INSTALLED_APPS = [
     "mptt",
     "django_countries",
     "django_filters",
-    "phonenumber_field"
+    "phonenumber_field",
+    # "corsheaders"
 ]
 
 ENABLE_DJANGO_EXTENSIONS = get_bool_from_env("ENABLE_DJANGO_EXTENSIONS", False)
@@ -646,6 +648,15 @@ VERIFY_SSL_API = os.environ.get("VERIFY_SSL_API")
 
 # Main site
 MAIN_SITE = os.environ.get("MAIN_SITE")
+
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:3000',
+#     'https://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'https://127.0.0.1:3000',
+# ]
+
+# CORS_ALLOW_CREDENTIALS = True
 
 # Support multiple interface notation in schema for Apollo tooling.
 
