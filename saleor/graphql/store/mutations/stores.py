@@ -279,7 +279,6 @@ class StoreUpdate(ModelMutation):
             image_data = info.context.FILES.get(input.favicon)
             list_crop_imgs = crop_pwa_favicon(image_data, list_size)
             current_favicon_pwa = models.FaviconPwa.objects.filter(store_id=current_domain_pk)
-            print("current_favicon_pwa", current_favicon_pwa)
 
             if(len(current_favicon_pwa) > 0):
                 # Update favicon pwa
