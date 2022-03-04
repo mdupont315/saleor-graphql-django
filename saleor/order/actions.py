@@ -105,7 +105,9 @@ def order_created(
             if order.get_last_payment().gateway == 'mirumee.payments.dummy':
                 return "Cash"
         return "iDeal"
-    print(order.lines.all(),"===============line")
+    # print(order.lines.all(),"===============line")
+
+    
     payload = {
         "order_num": order.pk,
         "expected_date": order.expected_date,
@@ -118,7 +120,7 @@ def order_created(
         "store_phone": current_store.phone,
         "store_name": current_store.name,
         "store_address": current_store.address,
-        "order_type": order.get_order_type_display(),
+        "order_type": order.get_order_type_display() if order.get_order_type_display() != 'Dine-in' else "QR-order",
         "is_check_pickup": is_check_pickup,
         "is_check_delivery": is_check_delivery,
         "table_name": order.table_name,
@@ -138,8 +140,10 @@ def order_created(
         "order_note": order.customer_note,
         "order_url": order_url,
         "is_payment_with_stripe": is_payment_with_stripe,
-        "store_slug": current_store.domain.split(".")[0]
+        "store_slug": current_store.domain.split(".")[0],
+        "not_qr_order": True if order.get_order_type_display() != 'Dine-in' else False,
     }
+
     if order.user_email:
         event = (NotifyEventType.ORDER_CREATED)
         manager.notify(event, payload=payload, channel_slug=order.channel.slug)
