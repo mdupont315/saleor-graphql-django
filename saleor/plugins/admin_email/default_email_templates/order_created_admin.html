@@ -30,10 +30,17 @@
                 <tr>
                   <td align="left"
                     style="font-size: 0px; padding: 8px; word-break: break-word; border-bottom: 1px solid black; ">
+                    {{#if table_name}}
+                      <div
+                      style="font-family:Inter ;font-size:14px;line-height:16px;text-align:left;color:#000; font-weight: bold;text-align: center;">
+                        {{table_name}}
+                    </div>
+                    {{else}}
                     <div
                       style="font-family:Inter ;font-size:14px;line-height:16px;text-align:left;color:#000; font-weight: bold;text-align: center;">
                       {{order_type}} #{{order_num}}
                     </div>
+                    {{/if}}
 
                     <div
                       style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-align: center;">
@@ -58,21 +65,14 @@
 
                 <tr>
                   <td align="left"
-                    style="font-size: 0px; padding: 8px; word-break: break-word;border-right: 1px solid black; width: 50%; vertical-align: top;">
+                  style="font-size: 0px; padding: 8px; word-break: break-word;border-right: 1px solid black; width: 50%; vertical-align: top;">
+                  {{#if not_qr_order }}
                     <div
                       style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
                       CUSTOMER INFORMATION
                     </div>
-                    {{#if table_name}}
-                    <ul>
-                      <li>{{table_name}}</li>
-                    </ul>
-                    {{else}}
-                    {{#address_customer address}}{{/address_customer}}
-                    {{/if}}
-
-
-
+                      {{#address_customer address}}{{/address_customer}}
+                  {{/if}}
                   </td>
 
                   <td align="left"
@@ -87,14 +87,16 @@
 
                     </div>
 
-                    <div
-                      style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
-                      PREFERRED TIME
-                    </div>
-                    <div
-                      style="font-family:Inter ;font-size:12px;line-height:14px;text-align:left;color:#000;font-weight: bold; margin-bottom: 4px;">
-                      {{expected_date}} {{expected_time}}
-                    </div>
+                    {{#if not_qr_order }}
+                      <div
+                        style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                        PREFERRED TIME
+                      </div>
+                      <div
+                        style="font-family:Inter ;font-size:12px;line-height:14px;text-align:left;color:#000;font-weight: bold; margin-bottom: 4px;">
+                        {{expected_date}} {{expected_time}}
+                      </div>
+                    {{/if}}
 
                     <div
                       style="font-family:Inter ;font-size:8px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
