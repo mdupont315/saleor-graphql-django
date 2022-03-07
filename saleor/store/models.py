@@ -56,6 +56,7 @@ class Store(MultitenantModelWithMetadata, SeoModel):
     # New order notifications
     email_notifications = models.BooleanField(blank=True, null=True, default=False)
     email_address = models.EmailField(blank=True, null=True)
+    sound_notifications = models.BooleanField(blank=True, null=True, default=False)
 
     # Transaction cost
     enable_transaction_fee = models.BooleanField(blank=True, null=True, default=False)

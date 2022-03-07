@@ -126,7 +126,7 @@ class StoreCreate(ModelMutation):
         # check_super_user(info.context)
         unset_current_tenant()
         domain="{}.{}".format(data["input"]["domain"],os.environ.get('STATIC_DOMAIN'))
-        index = 1;
+        index = 1
         while True: 
             if not check_exist_record(domain):
                 break
@@ -242,6 +242,8 @@ class StoreUpdateInput(graphene.InputObjectType):
     email_notifications = graphene.Boolean(description="Enable notification")
     email_address = graphene.String(description="Email for notification")
     pos_enable = graphene.Boolean(description="Enable POS")
+    sound_notifications = graphene.Boolean(description="Enable sound notification")
+    
 
     # Transaction cost
     enable_transaction_fee = graphene.Boolean(description="Enable transaction all fee")
