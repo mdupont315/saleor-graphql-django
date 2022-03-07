@@ -95,6 +95,7 @@ class Store(CountableDjangoObjectType):
             "pickup_status",
             "table_service_status",
             "email_notifications",
+            "sound_notifications",
             "email_address",
             "contant_enable",
             "contant_cost",
