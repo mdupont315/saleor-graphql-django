@@ -38,6 +38,8 @@ class OptionCreateInput(graphene.InputObjectType):
     )
     required = graphene.Boolean(description="Required")
     type = graphene.String(required=True, description="Type")
+    max_options = graphene.Int(description="Max multiple options")
+    enable = graphene.Boolean(description="Enable")
 
 
 class OptionCreate(ModelMutation):
@@ -100,6 +102,8 @@ class OptionUpdateInput(graphene.InputObjectType):
     )
     required = graphene.Boolean(description="Required")
     type = graphene.String(required=False, description="Type")
+    max_options = graphene.Int(description="Max multiple options")
+    enable = graphene.Boolean(description="Enable")
 
 
 class OptionUpdate(ModelMutation):

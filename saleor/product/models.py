@@ -182,6 +182,8 @@ class Option(SortableModel,MultitenantModelWithMetadata):
     type = models.CharField(max_length=128)
     required = models.BooleanField(blank=True, null=True, default=False)
     description = models.TextField(blank=True)
+    max_options = models.IntegerField(blank=True, null=True)
+    enable = models.BooleanField(blank=True, null=True, default=False)
 
     objects = OptionQueryset.as_manager()
 
