@@ -71,8 +71,9 @@ class Option(CountableDjangoObjectType):
             "required",
             "description",
             "id",
-            "sort_order"
-
+            "sort_order",
+            "max_options",
+            "enable",
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
         model = models.Option
