@@ -19,6 +19,10 @@ class DeliveryInput(graphene.InputObjectType):
         required=False, 
         description="Enable for big order."
     )
+    enable_minimum_delivery_order_value  = graphene.Boolean(
+        required=False, 
+        description="Custom min order."
+    )
 
 class DeliveryCreate(ModelMutation):
     class Arguments:
@@ -48,6 +52,10 @@ class DeliveryUpdateInput(graphene.InputObjectType):
     enable_custom_delivery_fee = graphene.Boolean(
         required=False, 
         description="Custom delivery fee."
+    )
+    enable_minimum_delivery_order_value  = graphene.Boolean(
+        required=False, 
+        description="Custom min order."
     )
 
 class DeliveryUpdate(ModelMutation):

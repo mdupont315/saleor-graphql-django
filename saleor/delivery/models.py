@@ -37,4 +37,8 @@ class Delivery(MultitenantModelWithMetadata):
     enable_custom_delivery_fee = models.BooleanField(
         default=False
     )
+
+    enable_minimum_delivery_order_value = models.BooleanField(
+        default=False
+    )
     
