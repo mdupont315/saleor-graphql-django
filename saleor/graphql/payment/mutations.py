@@ -170,8 +170,10 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         
         # implement delivery fee
         delivery_fee = 0
+        min_order=0
         if delivery_setting:
             delivery_fee = delivery_setting.delivery_fee
+            min_order = delivery_setting.min_order
 
             # implement delivery fee when enable custom delivery fee
             if delivery_setting.enable_custom_delivery_fee and (checkout_info.billing_address.postal_code is not None):
@@ -186,12 +188,26 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                         delivery_fee_by_postal_code = x["customDeliveryFee"]
                         break
                 delivery_fee = delivery_fee_by_postal_code
+
+            # implement min order when enable custom delivery fee
+            if delivery_setting.enable_minimum_delivery_order_value and (checkout_info.billing_address.postal_code is not None):
+                global min_order_by_postal_code
+                current_postal_code = (checkout_info.billing_address.postal_code)[0:4]
+                delivery_areas = [] 
+                delivery_areas.extend(delivery_setting.delivery_area['areas'])
+                delivery_areas.sort(key=lambda area: area['from'] + area['to'])
+                
+                for x in delivery_areas:
+                    if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
+                        min_order_by_postal_code = x["customMinOrder"]
+                        break
+                min_order = min_order_by_postal_code
                 
 
-            if delivery_setting.min_order > undiscount_checkout_total and checkout.order_type == settings.ORDER_TYPES[0][0]:
+            if min_order > undiscount_checkout_total and checkout.order_type == settings.ORDER_TYPES[0][0]:
                 raise ValidationError(
                 {
-                    "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=delivery_setting.min_order)
+                    "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=min_order)
                 }
             )
             if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \

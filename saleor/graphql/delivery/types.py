@@ -23,6 +23,9 @@ class Delivery(CountableDjangoObjectType):
     enable_custom_delivery_fee = graphene.Boolean(
         description="Custom delivery fee setting."
     )
+    enable_minimum_delivery_order_value = graphene.Boolean(
+        description="Enable minium delivery order value."
+    )
 
     
     class Meta:
@@ -36,6 +39,7 @@ class Delivery(CountableDjangoObjectType):
             "min_order",
             "enable_for_big_order",
             "enable_custom_delivery_fee",
+            "enable_minimum_delivery_order_value",
             "id"
         ]
         interfaces = [graphene.relay.Node, ObjectWithMetadata]
