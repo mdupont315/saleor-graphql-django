@@ -73,8 +73,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
     @classmethod
     def clean_payment_amount(cls, info, checkout_total, amount):
         log_info('Payment', '-------Payment Price Error--------')
-        # print("amount", amount)
-        # print("check_total", round(checkout_total.gross.amount, 2))
+
 
         if amount != round(checkout_total.gross.amount, 2):
             raise ValidationError(
@@ -185,7 +184,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                 
                 for x in delivery_areas:
                     if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
-                        delivery_fee_by_postal_code = x["customDeliveryFee"]
+                        delivery_fee_by_postal_code = round(x["customDeliveryFee"], 2)
                         break
                 delivery_fee = delivery_fee_by_postal_code
 
@@ -201,8 +200,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                     if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
                         min_order_by_postal_code = x["customMinOrder"]
                         break
-                min_order = min_order_by_postal_code
-                
+                min_order = min_order_by_postal_code if min_order_by_postal_code != "" else delivery_setting.min_order
 
             if min_order > undiscount_checkout_total and checkout.order_type == settings.ORDER_TYPES[0][0]:
                 raise ValidationError(
@@ -212,7 +210,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             )
             if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
                (undiscount_checkout_total < delivery_setting.from_delivery or (undiscount_checkout_total >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
-                checkout_total.gross.amount = checkout_total.gross.amount + Decimal(delivery_fee)
+                checkout_total.gross.amount = checkout_total.gross.amount + round(Decimal(delivery_fee), 2)
         
         # implement transaction fee
         transaction_fee = 0
@@ -221,7 +219,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                 transaction_fee = current_strore.contant_cost
             if data["gateway"] == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
                 transaction_fee = current_strore.stripe_cost
-            checkout_total.gross.amount = checkout_total.gross.amount + transaction_fee
+            checkout_total.gross.amount = checkout_total.gross.amount + round(transaction_fee, 2)
 
         amount = data.get("amount", checkout_total.gross.amount)
         clean_checkout_shipping(checkout_info, lines, PaymentErrorCode)
@@ -238,8 +236,6 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             "total_from_caculated": checkout_total.gross.amount,
             "total_from_fe": amount,
         })
-        
-
 
         cls.clean_payment_amount(info, checkout_total, amount)
         extra_data = {
