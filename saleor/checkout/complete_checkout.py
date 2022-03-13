@@ -321,7 +321,7 @@ def _prepare_order_data(
                 
             for x in delivery_areas:
                 if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
-                    delivery_fee_by_postal_code = x["customDeliveryFee"]
+                    delivery_fee_by_postal_code = round(x["customDeliveryFee"], 2)
                     break
             # delivery_fee = delivery_fee_by_postal_code   
         # implement min order when enable custom delivery fee
@@ -333,7 +333,7 @@ def _prepare_order_data(
                 
             for x in delivery_areas:
                 if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
-                    min_order_by_postal_code = x["customMinOrder"]
+                    min_order_by_postal_code = x["customMinOrder"] if x["customMinOrder"] != "" else delivery_setting.min_order
                     break
                 
 
