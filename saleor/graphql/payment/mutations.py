@@ -208,7 +208,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                     "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=min_order)
                 }
             )
-            if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
+            if checkout.order_type == settings.ORDER_TYPES[0][0] and \
                (undiscount_checkout_total < delivery_setting.from_delivery or (undiscount_checkout_total >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
                 checkout_total.gross.amount = checkout_total.gross.amount + round(Decimal(delivery_fee), 2)
         
@@ -225,17 +225,16 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         clean_checkout_shipping(checkout_info, lines, PaymentErrorCode)
         clean_billing_address(checkout_info, PaymentErrorCode)
 
-        # write log
-        log_info('Payment', 'Payment Info', content= {
-            "checkout_token": checkout.pk,
-            "sub_total": undiscount_checkout_total,
-            "discount": checkout_info.checkout.discount.amount,
-            "gateway": data["gateway"],
-            "transaction_fee": transaction_fee,
-            "delivery_fee": delivery_fee,
-            "total_from_caculated": checkout_total.gross.amount,
-            "total_from_fe": amount,
-        })
+        if amount != round(checkout_total.gross.amount, 2):
+            print("======================ERROR============================")
+            print("checkout_token", checkout.pk)
+            print("sub_total", undiscount_checkout_total)
+            print("discount", checkout_info.checkout.discount.amount)
+            print("gateway", data["gateway"])
+            print("transaction_fee", transaction_fee)
+            print("delivery_fee", delivery_fee)
+            print("total_from_caculated", checkout_total.gross.amount)
+            print("total_from_fe", amount)
 
         cls.clean_payment_amount(info, checkout_total, amount)
         extra_data = {

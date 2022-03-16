@@ -343,7 +343,7 @@ def _prepare_order_data(
                     "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=min_order_by_postal_code)
                 }
             )
-        if checkout.order_type == settings.ORDER_TYPES[0][0] and delivery_setting.delivery_fee and \
+        if checkout.order_type == settings.ORDER_TYPES[0][0] and \
            (undiscount_checkout_total_amount < delivery_setting.from_delivery or (undiscount_checkout_total_amount >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
             delivery_fee = Money(amount=delivery_fee_by_postal_code,
                                  currency=checkout.currency)
