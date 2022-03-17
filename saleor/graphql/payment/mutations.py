@@ -235,6 +235,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             print("delivery_fee", delivery_fee)
             print("total_from_caculated", checkout_total.gross.amount)
             print("total_from_fe", amount)
+            print("lines", lines)
 
         cls.clean_payment_amount(info, checkout_total, amount)
         extra_data = {

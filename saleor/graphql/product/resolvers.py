@@ -21,9 +21,7 @@ def resolve_category_by_slug(slug):
     return models.Category.objects.filter(slug=slug).first()
 
 def resolve_product_option(self, info, product_id, **kwargs):
-    print("PRODUCT ID" , product_id)
     _, id = from_global_id(product_id)
-    print("PRODUCT ID" , id)
 
     return models.ProductOption.objects.all().filter(product_id=id)
 
