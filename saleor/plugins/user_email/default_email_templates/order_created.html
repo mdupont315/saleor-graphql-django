@@ -378,7 +378,7 @@
             {{#if is_payment_with_stripe}}
             <div class="payment-method">Paid {{payment_method}} on {{order_type}}</div>
             {{else}}
-            <div class="payment-method">Unpaid {{payment_method}} on {{order_type}}</div>
+            <div class="payment-method">{{payment_method}} upon receipt</div>
             {{/if}}
             <!-- <a href="{{order_url}}" target="_blank" class="checkout-button">Track your order</a> -->
           </div>

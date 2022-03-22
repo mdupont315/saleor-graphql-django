@@ -116,7 +116,7 @@ def order_created(
         "lines": order.lines.all(),
         "full_store_address": full_store_address,
         "logo": current_store.logo.url if current_store.logo else '',
-        'orderich_logo': static("static/images/orderich-logo.png"),
+        'orderich_logo': static("images/orderich-logo.png"),
         "store_phone": current_store.phone,
         "store_name": current_store.name,
         "store_address": current_store.address,
