@@ -308,7 +308,7 @@ def _prepare_order_data(
     delivery_setting = Delivery.objects.all().first()
     current_strore = Store.objects.all().first()
     undiscount_checkout_total_amount = taxed_total.gross.amount + checkout.discount.amount
-    if delivery_setting:
+    if delivery_setting and checkout.order_type == "delivery":
         delivery_fee_by_postal_code = delivery_setting.delivery_fee
         min_order_by_postal_code = delivery_setting.min_order
         

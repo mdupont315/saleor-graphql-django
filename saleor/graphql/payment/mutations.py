@@ -170,10 +170,9 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         # implement delivery fee
         delivery_fee = 0
         min_order=0
-        if delivery_setting:
+        
+        if delivery_setting and checkout.order_type == "delivery":
             delivery_fee = delivery_setting.delivery_fee
-            min_order = delivery_setting.min_order
-
             # implement delivery fee when enable custom delivery fee
             if delivery_setting.enable_custom_delivery_fee and (checkout_info.billing_address.postal_code is not None):
                 global delivery_fee_by_postal_code
@@ -183,6 +182,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                 delivery_areas.sort(key=lambda area: area['from'] + area['to'])
                 
                 for x in delivery_areas:
+
                     if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
                         delivery_fee_by_postal_code = round(x["customDeliveryFee"], 2)
                         break
