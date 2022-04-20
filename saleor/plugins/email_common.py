@@ -187,7 +187,6 @@ def list_product_customer(this, options, items, channel, channel_symbol):
     TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
     result = [u'<table class="product-table">']
     for thing in items:
-        # logging.getLogger('django').info('---line----{line}------'.format(line=thing.__dict__) )
         result.append(u'<tr>')
         result.append(u'<td class="td-number">')
         result.append(str(thing.quantity))
@@ -209,15 +208,12 @@ def list_product_customer(this, options, items, channel, channel_symbol):
 
         result.append(u'</td>')
         result.append(u'</tr>')
-        option_values = thing.option_values.all()
-
+        option_values = thing.option_items
         if option_values:
             for option_value in option_values:
                 result.append(u'<tr>')
                 result.append(u'<td class="td-option" colspan="3">')
-                result.append("{name}".format(
-                    name=option_value.name,
-                ))
+                result.append(option_value["name"])
                 result.append(u'</td>')
                 result.append(u'</tr>')
 
