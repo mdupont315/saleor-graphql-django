@@ -1,3 +1,5 @@
+import ast
+import json
 import logging
 from collections import defaultdict
 from copy import deepcopy
@@ -10,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from saleor.core.notify_events import NotifyEventType
+from saleor.product.models import ProductOption
 
 from ..account.models import User
 from ..core import analytics
@@ -100,20 +103,42 @@ def order_created(
     ).gateway != 'mirumee.payments.dummy' if order.get_last_payment() else False
     full_store_address = "{}, {}, {}".format(
         current_store.address, current_store.postal_code, current_store.city)
+
     def get_payment_method():
         if order.get_last_payment():
             if order.get_last_payment().gateway == 'mirumee.payments.dummy':
                 return "Cash"
         return "iDeal"
-    # print(order.lines.all(),"===============line")
 
-    
+    # Create lines order
+    lines = []
+    for item in order.lines.all():
+        list_option_item = ast.literal_eval(item.option_items)
+
+        # Find the options item match product options
+        list_option_item_final = []
+        def check_exist_option_id (opt_id):
+            new_list_option = []
+            for option in list_option_item:
+                if option['option_id'] == opt_id:
+                    new_list_option.append(option)
+            return new_list_option
+        # Add the options item into list_option_item_final
+        for option_item in ProductOption.objects.all():
+            checked =check_exist_option_id(option_item.option_id)
+            if checked:
+                for check_item in checked:
+                    list_option_item_final.append(check_item)
+
+        item.option_items = list_option_item_final
+        lines.append(item)
+
     payload = {
         "order_num": order.pk,
         "expected_date": order.expected_date,
         "expected_time": order.expected_time,
         "recipient_email": order.user_email,
-        "lines": order.lines.all(),
+        "lines": lines,
         "full_store_address": full_store_address,
         "logo": current_store.logo.url if current_store.logo else '',
         'orderich_logo': static("images/orderich-logo.png"),

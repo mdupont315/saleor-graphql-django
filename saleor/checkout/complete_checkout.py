@@ -436,6 +436,7 @@ def _create_order(
 
     total_price_left = order_data.pop("total_price_left")
     order_lines_info = order_data.pop("lines")
+    
 
     if site_settings is None:
         site_settings = Site.objects.get_current().settings
@@ -497,6 +498,7 @@ def _create_order(
                 option_values_dict["name"] = option_values_in_line.name
                 option_values_dict["currency"] = order.channel.currency_code
                 option_values_dict["type"] = option_values_in_line.option.type
+                option_values_dict["option_id"] = option_values_in_line.option_id
                 option_values_dict_list.append(option_values_dict)
             order_line_instance.option_items = json.dumps(
                 option_values_dict_list, cls=DecimalEncoder)

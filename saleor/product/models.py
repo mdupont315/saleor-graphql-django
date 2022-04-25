@@ -187,8 +187,8 @@ class Option(SortableModel,MultitenantModelWithMetadata):
 
     objects = OptionQueryset.as_manager()
 
-    # class Meta:
-    #     ordering = ("sort_order","name", "pk")
+    class Meta:
+        ordering = ("sort_order","name", "pk")
 
     def get_ordering_queryset(self):
         store_options = get_current_tenant()
