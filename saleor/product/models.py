@@ -1,6 +1,8 @@
 import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING, Iterable, Optional, Union
 from uuid import uuid4
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.postgres.aggregates import StringAgg
@@ -8,37 +10,31 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.db.models import JSONField  # type: ignore
-from django.db.models import (
-    BooleanField,
-    Case,
-    Count,
-    DateField,
-    Exists,
-    ExpressionWrapper,
-    F,
-    FilteredRelation,
-    OuterRef,
-    Q,
-    Subquery,
-    Sum,
-    TextField,
-    Value,
-    When,
-)
+from django.db.models import (BooleanField, Case, Count, DateField, Exists,
+                              ExpressionWrapper, F, FilteredRelation, OuterRef,
+                              Q, Subquery, Sum, TextField, Value, When)
 from django.db.models.functions import Coalesce
+from django.db.models.query import Prefetch, QuerySet
 from django.urls import reverse
 from django.utils.encoding import smart_text
 from django_measurement.models import MeasurementField
+from django_multitenant.utils import get_current_tenant
 from django_prices.models import MoneyField
 from measurement.measures import Weight
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 from versatileimagefield.fields import PPOIField, VersatileImageField
 
+from saleor.checkout.models import CheckoutLine
+from saleor.order.models import OrderLine
+from saleor.store.models import Store
+
 from ..account.utils import requestor_is_staff_member_or_app
 from ..channel.models import Channel
 from ..core.db.fields import SanitizedJSONField
-from ..core.models import ModelWithMetadata, PublishableModel, SortableModel
+from ..core.models import (CustomQueryset, ModelWithMetadata,
+                           MultitenantModelWithMetadata, PublishableModel,
+                           SortableModel)
 from ..core.permissions import ProductPermissions, ProductTypePermissions
 from ..core.units import WeightUnits
 from ..core.utils import build_absolute_uri
@@ -60,7 +56,15 @@ if TYPE_CHECKING:
     from ..app.models import App
 
 
-class Category(ModelWithMetadata, MPTTModel, SeoModel):
+class Category(MultitenantModelWithMetadata, MPTTModel, SeoModel, SortableModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="categories",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     description = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
@@ -71,13 +75,22 @@ class Category(ModelWithMetadata, MPTTModel, SeoModel):
         upload_to="category-backgrounds", blank=True, null=True
     )
     background_image_alt = models.CharField(max_length=128, blank=True)
+    enable = models.BooleanField(default=True)
 
-    objects = models.Manager()
     tree = TreeManager()
     translated = TranslationProxy()
+    class Meta:
+        ordering = ("sort_order", "pk")
+        permissions = (
+            (ProductPermissions.MANAGE_PRODUCTS.codename, "Manage products."),
+        )
 
     def __str__(self) -> str:
         return self.name
+
+    def get_ordering_queryset(self):
+        store_category = get_current_tenant()
+        return store_category.categories.all()
 
 
 class CategoryTranslation(SeoModelTranslation):
@@ -105,6 +118,14 @@ class CategoryTranslation(SeoModelTranslation):
 
 
 class ProductType(ModelWithMetadata):
+    # store = models.ForeignKey(
+    #     Store,
+    #     related_name="product_types",
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    # )
+    # tenant_id='store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     has_variants = models.BooleanField(default=True)
@@ -116,7 +137,7 @@ class ProductType(ModelWithMetadata):
         default=zero_weight,
     )
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("slug",)
         app_label = "product"
         permissions = (
@@ -139,7 +160,68 @@ class ProductType(ModelWithMetadata):
         )
 
 
-class ProductsQueryset(models.QuerySet):
+class OptionQueryset(CustomQueryset):
+    def visible_to_user(self, channel_slug: str):
+        if channel_slug:
+            return self.prefetch_related(Prefetch('option_values',
+                                                  queryset=OptionValue.objects.visible_to_user(channel_slug))).order_by("sort_order")
+
+        return self.all().order_by("sort_order")
+
+
+class Option(SortableModel,MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="options",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
+    name = models.CharField(max_length=256)
+    type = models.CharField(max_length=128)
+    required = models.BooleanField(blank=True, null=True, default=False)
+    description = models.TextField(blank=True)
+    max_options = models.IntegerField(blank=True, null=True)
+    enable = models.BooleanField(blank=True, null=True, default=False)
+
+    objects = OptionQueryset.as_manager()
+
+    class Meta:
+        ordering = ("sort_order","name", "pk")
+
+    def get_ordering_queryset(self):
+        store_options = get_current_tenant()
+        return store_options.options.all()
+class ProductOption(SortableModel,models.Model):
+    option = models.ForeignKey(
+        Option,
+        related_name="product_options",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    product = models.ForeignKey(
+        "Product",
+        related_name="product_options",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+
+    def get_ordering_queryset(self):
+        print(self.__dict__,"==================self")
+        store_product = get_current_tenant()
+        return store_product.ProductOption.all().filter(product_id = self.product_id)
+
+    class Meta:
+        unique_together = [["option", "product"]]
+        ordering = ("sort_order","pk")
+
+
+class ProductsQueryset(CustomQueryset):
     def published(self, channel_slug: str):
         today = datetime.date.today()
         channels = Channel.objects.filter(
@@ -183,8 +265,8 @@ class ProductsQueryset(models.QuerySet):
                 ).values("id")
                 return self.filter(
                     Exists(channel_listings.filter(product_id=OuterRef("pk")))
-                )
-            return self.all()
+                ).order_by("sort_order")
+            return self.all().order_by("sort_order")
         return self.published_with_variants(channel_slug)
 
     def annotate_publication_info(self, channel_slug: str):
@@ -333,7 +415,15 @@ class ProductsQueryset(models.QuerySet):
         return self.prefetch_related("collections", "category", *common_fields)
 
 
-class Product(SeoModel, ModelWithMetadata):
+class Product(SortableModel, MultitenantModelWithMetadata, SeoModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="products",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     product_type = models.ForeignKey(
         ProductType, related_name="products", on_delete=models.CASCADE
     )
@@ -342,6 +432,7 @@ class Product(SeoModel, ModelWithMetadata):
     description = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
     description_plaintext = TextField(blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
+    enable = models.BooleanField(default=True)
 
     category = models.ForeignKey(
         Category,
@@ -367,17 +458,30 @@ class Product(SeoModel, ModelWithMetadata):
     )
     rating = models.FloatField(null=True, blank=True)
 
+    options = models.ManyToManyField(
+        Option,
+        blank=True,
+        related_name="products",
+        through=ProductOption,
+        through_fields=("product", "option"),
+    )
+
     objects = ProductsQueryset.as_manager()
     translated = TranslationProxy()
 
+    def get_ordering_queryset(self):
+        store_product = get_current_tenant()
+        return store_product.products.all()
     class Meta:
         app_label = "product"
-        ordering = ("slug",)
+        ordering = ("sort_order", "pk")
         permissions = (
             (ProductPermissions.MANAGE_PRODUCTS.codename, "Manage products."),
         )
         indexes = [GinIndex(fields=["search_vector"])]
         indexes.extend(ModelWithMetadata.Meta.indexes)
+    
+
 
     def __iter__(self):
         if not hasattr(self, "__variants"):
@@ -434,7 +538,7 @@ class ProductTranslation(SeoModelTranslation):
         )
 
 
-class ProductVariantQueryset(models.QuerySet):
+class ProductVariantQueryset(CustomQueryset):
     def annotate_quantities(self):
         return self.annotate(
             quantity=Coalesce(Sum("stocks__quantity"), 0),
@@ -499,8 +603,16 @@ class ProductChannelListing(PublishableModel):
         )
 
 
-class ProductVariant(SortableModel, ModelWithMetadata):
-    sku = models.CharField(max_length=255, unique=True)
+class ProductVariant(SortableModel, MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="variants",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
+    sku = models.CharField(max_length=255, unique=False,blank=True)
     name = models.CharField(max_length=255, blank=True)
     product = models.ForeignKey(
         Product, related_name="variants", on_delete=models.CASCADE
@@ -518,7 +630,7 @@ class ProductVariant(SortableModel, ModelWithMetadata):
     objects = ProductVariantQueryset.as_manager()
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("sort_order", "sku")
         app_label = "product"
 
@@ -629,7 +741,15 @@ class ProductVariantChannelListing(models.Model):
         ordering = ("pk",)
 
 
-class DigitalContent(ModelWithMetadata):
+class DigitalContent(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="digital_contents",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     FILE = "file"
     TYPE_CHOICES = ((FILE, "digital_product"),)
     use_default_settings = models.BooleanField(default=True)
@@ -723,7 +843,7 @@ class CollectionProduct(SortableModel):
         return self.product.collectionproduct.all()
 
 
-class CollectionsQueryset(models.QuerySet):
+class CollectionsQueryset(CustomQueryset):
     def published(self, channel_slug: str):
         today = datetime.date.today()
         return self.filter(
@@ -742,7 +862,15 @@ class CollectionsQueryset(models.QuerySet):
         return self.published(channel_slug)
 
 
-class Collection(SeoModel, ModelWithMetadata):
+class Collection(SeoModel, MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="collections",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     name = models.CharField(max_length=250, unique=True)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
     products = models.ManyToManyField(
@@ -762,7 +890,7 @@ class Collection(SeoModel, ModelWithMetadata):
 
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("slug",)
 
     def __str__(self) -> str:
@@ -812,3 +940,81 @@ class CollectionTranslation(SeoModelTranslation):
 
     def __str__(self) -> str:
         return self.name if self.name else str(self.pk)
+
+
+class OptionValueQueryset(QuerySet):
+    def visible_to_user(self, channel_slug: str):
+        if channel_slug:
+            return self.prefetch_related(Prefetch('option_value_channels',
+                                                  queryset=OptionValueChannelListing.objects.filter(channel__slug=channel_slug))).order_by("sort_order")
+        return self.all().order_by("sort_order")
+
+
+class OptionValue(SortableModel):
+    name = models.CharField(max_length=256)
+    option = models.ForeignKey(
+        Option, related_name="option_values",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    checkout_lines = models.ManyToManyField(CheckoutLine, related_name="option_values")
+
+    order_lines = models.ManyToManyField(OrderLine, related_name="option_values")
+
+    objects = OptionValueQueryset.as_manager()
+
+    class Meta:
+        ordering = ("sort_order","name", "pk")
+        
+    def get_ordering_queryset(self):
+        store_options = get_current_tenant()
+        return store_options.options.get(id = self.option_id).option_values.all()
+
+
+    def get_price_by_channel(self, channel_slug: str):
+        if channel_slug:
+            option_value_channel = self.option_value_channels.get(
+                channel__slug=channel_slug)
+            option_value_price = option_value_channel.price
+            return option_value_price or 0
+        return 0
+
+    def get_price_amount_by_channel(self, channel_slug: str):
+        if channel_slug:
+            option_value_channel = self.option_value_channels.get(
+                channel__slug=channel_slug)
+            option_value_price = option_value_channel.price_amount
+            return option_value_price or Decimal(0)
+        return Decimal(0)
+
+
+class OptionValueChannelListing(models.Model):
+    option_value = models.ForeignKey(
+        OptionValue,
+        related_name="option_value_channels",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    channel = models.ForeignKey(
+        Channel, related_name="option_value_channels",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    currency = models.CharField(
+        max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH, blank=True, null=True)
+    price_amount = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
+        blank=True,
+        null=True,
+    )
+    price = MoneyField(amount_field="price_amount", currency_field="currency")
+
+    class Meta:
+        ordering = ("price_amount", "pk")
+        unique_together = [["option_value", "channel"]]

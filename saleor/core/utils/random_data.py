@@ -759,18 +759,18 @@ def create_permission_groups():
     group = create_group("Full Access", get_permissions(), super_users)
     yield f"Group: {group}"
 
-    staff_users = create_staff_users()
-    customer_support_codenames = [
-        perm.codename
-        for enum in [CheckoutPermissions, OrderPermissions, GiftcardPermissions]
-        for perm in enum
-    ]
-    customer_support_codenames.append(AccountPermissions.MANAGE_USERS.codename)
-    customer_support_permissions = Permission.objects.filter(
-        codename__in=customer_support_codenames
-    )
-    group = create_group("Customer Support", customer_support_permissions, staff_users)
-    yield f"Group: {group}"
+    # staff_users = create_staff_users()
+    # customer_support_codenames = [
+    #     perm.codename
+    #     for enum in [CheckoutPermissions, OrderPermissions, GiftcardPermissions]
+    #     for perm in enum
+    # ]
+    # customer_support_codenames.append(AccountPermissions.MANAGE_USERS.codename)
+    # customer_support_permissions = Permission.objects.filter(
+    #     codename__in=customer_support_codenames
+    # )
+    # group = create_group("Customer Support", customer_support_permissions, staff_users)
+    # yield f"Group: {group}"
 
 
 def create_staffs():
@@ -859,15 +859,46 @@ def create_channel(channel_name, currency_code, slug=None):
     return f"Channel: {channel}"
 
 
+def create_product_type(name, has_variants, is_shipping_required, tax_code, weight, slug=None):
+# name
+# slug
+# has_variants
+# is_shipping_required
+# is_digital
+# weight
+    if not slug:
+        slug = slugify(name)
+    product_type, _ = ProductType.objects.get_or_create(
+        slug=slug,
+        # tax_code=tax_code,
+        name= name,
+        has_variants= has_variants,
+        is_shipping_required= is_shipping_required,
+        weight= weight
+        # defaults={
+
+        # },
+    )
+    return f"product_type: {product_type}"
+
+
 def create_channels():
+    # yield create_channel(
+    #     channel_name="Channel-USD",
+    #     currency_code="USD",
+    #     slug=settings.DEFAULT_CHANNEL_SLUG,
+    # )
     yield create_channel(
-        channel_name="Channel-USD",
-        currency_code="USD",
+        channel_name="Channel-EUR",
+        currency_code="EUR",
         slug=settings.DEFAULT_CHANNEL_SLUG,
     )
-    yield create_channel(
-        channel_name="Channel-PLN",
-        currency_code="PLN",
+    yield create_product_type(
+        name="Simple",
+        has_variants=False,
+        is_shipping_required=False,
+        tax_code="",
+        weight=0
     )
 
 

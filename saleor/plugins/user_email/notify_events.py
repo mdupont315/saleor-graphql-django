@@ -13,6 +13,7 @@ from .tasks import (
     send_request_email_change_email_task,
     send_set_user_password_email_task,
     send_user_change_email_notification_task,
+    send_order_infomation_email_task,
 )
 
 
@@ -96,3 +97,8 @@ def send_order_refund(payload: dict, config: dict):
 def send_order_confirmed(payload: dict, config: dict):
     recipient_email = payload["recipient_email"]
     send_order_confirmed_email_task.delay(recipient_email, payload, config)
+
+def send_order_infomation(payload: dict, config: dict):
+    recipient_email = payload.get("recipient_email")
+    if recipient_email:
+        send_order_infomation_email_task.delay(recipient_email, payload, config)

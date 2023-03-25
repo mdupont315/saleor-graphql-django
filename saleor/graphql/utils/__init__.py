@@ -153,8 +153,8 @@ def get_user_country_context(
     """
     if destination_address and destination_address.country:
         if isinstance(destination_address, account_models.Address):
-            return destination_address.country.code
+            return destination_address.country
         return destination_address.country
     elif company_address and company_address.country:
-        return company_address.country.code
+        return company_address.country
     return settings.DEFAULT_COUNTRY

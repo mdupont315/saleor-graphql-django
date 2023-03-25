@@ -303,18 +303,19 @@ class AccountAddressCreate(ModelMutation, I18nMixin):
     def perform_mutation(cls, root, info, **data):
         address_type = data.get("type", None)
         user = info.context.user
-        cleaned_input = cls.clean_input(
-            info=info, instance=Address(), data=data.get("input")
-        )
-        address = cls.validate_address(cleaned_input, address_type=address_type)
-        cls.clean_instance(info, address)
-        cls.save(info, address, cleaned_input)
-        cls._save_m2m(info, address, cleaned_input)
-        if address_type:
-            utils.change_user_default_address(
-                user, address, address_type, info.context.plugins
-            )
-        return AccountAddressCreate(user=user, address=address)
+        # cleaned_input = cls.clean_input(
+        #     info=info, instance=Address(), data=data.get("input")
+        # )
+        # address = cls.validate_address(cleaned_input, address_type=address_type)
+        # cls.clean_instance(info, address)
+        # cls.save(info, address, cleaned_input)
+        # cls._save_m2m(info, address, cleaned_input)
+        address = super().perform_mutation(root, info, **data)
+        # if address_type:
+        #     utils.change_user_default_address(
+        #         user, address.address, address_type, info.context.plugins
+        #     )
+        return AccountAddressCreate(user=user, address=address.address)
 
     @classmethod
     def save(cls, info, instance, cleaned_input):

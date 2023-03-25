@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from ..product.models import ProductVariant
+    from ..product.models import ProductVariant, OptionValue
     from .models import FulfillmentLine, OrderLine
 
 
@@ -203,6 +203,7 @@ class OrderEventsEmails:
 class OrderLineData:
     line: "OrderLine"
     quantity: int
+    option_values: "OptionValue" = None
     variant: Optional["ProductVariant"] = None
     replace: bool = False
     warehouse_pk: Optional[str] = None

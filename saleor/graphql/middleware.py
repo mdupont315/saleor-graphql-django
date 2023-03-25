@@ -5,9 +5,14 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser
 from django.utils.functional import SimpleLazyObject
 
+from saleor.account.models import User
+from saleor.core.utils.logging import log_info
+
 from ..app.models import App
-from ..core.exceptions import ReadOnlyException
+from ..core.exceptions import ReadOnlyException, PermissionDenied
 from .views import API_PATH, GraphQLView
+from django_multitenant.utils import set_current_tenant, unset_current_tenant, get_current_tenant
+from ..store.models import Store
 
 
 def get_user(request):
@@ -24,6 +29,7 @@ class JWTMiddleware:
             return get_user(request) or AnonymousUser()
 
         request.user = SimpleLazyObject(lambda: user())
+        
         return next(root, info, **kwargs)
 
 

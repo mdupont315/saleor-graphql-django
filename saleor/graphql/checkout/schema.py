@@ -22,6 +22,7 @@ from .mutations import (
     CheckoutRemovePromoCode,
     CheckoutShippingAddressUpdate,
     CheckoutShippingMethodUpdate,
+    CheckoutInfoUpdate,
 )
 from .resolvers import (
     resolve_checkout,
@@ -78,6 +79,7 @@ class CheckoutMutations(graphene.ObjectType):
     checkout_billing_address_update = CheckoutBillingAddressUpdate.Field()
     checkout_complete = CheckoutComplete.Field()
     checkout_create = CheckoutCreate.Field()
+    checkout_info_update = CheckoutInfoUpdate.Field()
     checkout_customer_attach = CheckoutCustomerAttach.Field()
     checkout_customer_detach = CheckoutCustomerDetach.Field()
     checkout_email_update = CheckoutEmailUpdate.Field()

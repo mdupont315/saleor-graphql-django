@@ -23,7 +23,15 @@ from .shop.schema import ShopMutations, ShopQueries
 from .translations.schema import TranslationQueries
 from .warehouse.schema import StockQueries, WarehouseMutations, WarehouseQueries
 from .webhook.schema import WebhookMutations, WebhookQueries
+from .servicetime.schema import ServiceTimeQueries, ServiceTimeMutations
+from .store.schema import StoreMutations, StoreQueries
+from .option.shcema import OptionMutations, OptionQueries
+from .table_service.schema import TableServiceMutations, TableServiceQueries
 
+from .delivery.schema import DeliveryQueries, DeliveryMutations
+from .notifications.schema import AppNotification
+
+import channels_graphql_ws
 
 class Query(
     AccountQueries,
@@ -47,9 +55,18 @@ class Query(
     TranslationQueries,
     WarehouseQueries,
     WebhookQueries,
+    DeliveryQueries,
+    StoreQueries,
+    ServiceTimeQueries,
+    OptionQueries,
+    TableServiceQueries,
 ):
     pass
 
+class Subscription(
+    AppNotification
+):
+    pass
 
 class Mutation(
     AccountMutations,
@@ -73,8 +90,29 @@ class Mutation(
     ShopMutations,
     WarehouseMutations,
     WebhookMutations,
+    DeliveryMutations,
+    StoreMutations,
+    ServiceTimeMutations,
+    OptionMutations,
+    TableServiceMutations,
 ):
     pass
 
 
-schema = build_schema(Query, mutation=Mutation, types=unit_enums)
+schema = build_schema(Query, mutation=Mutation,subscription=Subscription ,types=unit_enums)
+class MyGraphqlWsConsumer(channels_graphql_ws.GraphqlWsConsumer):
+    schema = schema
+
+    # Uncomment to send keepalive message every 42 seconds.
+    # send_keepalive_every = 42
+
+    # Uncomment to process requests sequentially (useful for tests).
+    # strict_ordering = True
+
+    async def on_connect(self, payload):
+        self.scope['domain'] = payload.get('domain')
+        print(f"Connected to {self.channel_name}")
+        print("New client connected!")
+
+    async def disconnect(self, code):
+        print("Client Disconnected!")

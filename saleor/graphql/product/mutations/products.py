@@ -7,6 +7,9 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.utils.text import slugify
+from django_multitenant.utils import get_current_tenant
+from graphql_relay import from_global_id
+from saleor.graphql.product.types.products import ProductOption
 
 from ....attribute import AttributeInputType, AttributeType
 from ....attribute import models as attribute_models
@@ -24,14 +27,12 @@ from ....product.error_codes import CollectionErrorCode, ProductErrorCode
 from ....product.tasks import (
     update_product_discounted_price_task,
     update_products_discounted_prices_of_catalogues_task,
-    update_variants_names,
-)
+    update_variants_names)
 from ....product.thumbnails import (
     create_category_background_image_thumbnails,
-    create_collection_background_image_thumbnails,
-    create_product_thumbnails,
-)
-from ....product.utils import delete_categories, get_products_ids_without_variants
+    create_collection_background_image_thumbnails, create_product_thumbnails)
+from ....product.utils import (delete_categories,
+                               get_products_ids_without_variants)
 from ....product.utils.variants import generate_and_set_variant_name
 from ...attribute.types import AttributeValueInput
 from ...attribute.utils import AttributeAssignmentMixin, AttrValuesInput
@@ -41,32 +42,17 @@ from ...core.mutations import BaseMutation, ModelDeleteMutation, ModelMutation
 from ...core.scalars import WeightScalar
 from ...core.types import SeoInput, Upload
 from ...core.types.common import CollectionError, ProductError
-from ...core.utils import (
-    add_hash_to_file_name,
-    clean_seo_fields,
-    get_duplicated_values,
-    validate_image_file,
-    validate_slug_and_generate_if_needed,
-)
+from ...core.utils import (add_hash_to_file_name, clean_seo_fields,
+                           get_duplicated_values, validate_image_file,
+                           validate_slug_and_generate_if_needed)
 from ...core.utils.reordering import perform_reordering
 from ...utils import get_user_or_app_from_context
 from ...warehouse.types import Warehouse
-from ..types import (
-    Category,
-    Collection,
-    Product,
-    ProductMedia,
-    ProductType,
-    ProductVariant,
-)
-from ..utils import (
-    create_stocks,
-    get_draft_order_lines_data_for_variants,
-    get_used_attribute_values_for_variant,
-    get_used_variants_attribute_values,
-)
-
-
+from ..types import (Category, Collection, Product, ProductMedia, ProductType,
+                     ProductVariant)
+from ..utils import (create_stocks, get_draft_order_lines_data_for_variants,
+                     get_used_attribute_values_for_variant,
+                     get_used_variants_attribute_values)
 class CategoryInput(graphene.InputObjectType):
     description = graphene.JSONString(description="Category description (JSON).")
     name = graphene.String(description="Category name.")
@@ -74,6 +60,9 @@ class CategoryInput(graphene.InputObjectType):
     seo = SeoInput(description="Search engine optimization fields.")
     background_image = Upload(description="Background image file.")
     background_image_alt = graphene.String(description="Alt text for a product media.")
+    enable = graphene.Boolean(
+        description="Display category or not."
+    )
 
 
 class CategoryCreate(ModelMutation):
@@ -314,7 +303,171 @@ class MoveProductInput(graphene.InputObjectType):
             "backward, 0 leaves the item unchanged."
         )
     )
+class ReorderProducts(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the products of a collection."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = ProductError
+        error_type_field = "product_errors"
 
+    class Arguments:
+        moves = graphene.List(
+            MoveProductInput,
+            required=True,
+            description="The products position operations.",
+        )
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        operations = {}
+        products = models.Product.objects.all()
+
+        for move_info in moves:
+            product_pk = cls.get_global_id_or_error(
+                move_info.product_id, only_type=Product, field="moves"
+            )
+            try:
+                m2m_info = products.get(pk=int(product_pk))
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.product_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+
+        with traced_atomic_transaction():
+            perform_reordering(products, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderProducts()
+
+class MoveProductOptionInput(graphene.InputObjectType):
+    option_id = graphene.ID(
+        description="The ID of the product to move.", required=True
+    )
+    sort_order = graphene.Int(
+        description=(
+            "The relative sorting position of the product (from -inf to +inf) "
+            "starting from the first given product's actual position."
+            "1 moves the item one position forward, -1 moves the item one position "
+            "backward, 0 leaves the item unchanged."
+        )
+    )
+class ReorderProductOption(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the products of a collection."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = ProductError
+        error_type_field = "product_errors"
+
+    class Arguments:
+        product_id = graphene.ID(required=True, description="The option id.")
+        moves = graphene.List(
+            MoveProductOptionInput,
+            required=True,
+            description="The products position operations.",
+        )
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        product_id = data["product_id"]
+        # print('ID', product_id)
+        _type, _pk = from_global_id(product_id)
+        operations = {}
+        product_option = models.ProductOption.objects.all().filter(product_id=_pk)
+        for move_info in moves:
+            _type, _pk = from_global_id(
+                move_info.option_id,
+            )
+            # print("op id", move_info.option_id)
+            try:
+                m2m_info = product_option.all().filter(option_id=_pk).first()
+                # print(m2m_info.__dict__,"=============asdasdasd")
+
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.option_value_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+        # print (operations,"=======================")
+        with traced_atomic_transaction():
+            perform_reordering(product_option, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderProductOption()
+class MoveCategoryInput(graphene.InputObjectType):
+    category_id = graphene.ID(
+        description="The ID of the category to move.", required=True
+    )
+    sort_order = graphene.Int(
+        description=(
+            "The relative sorting position of the product (from -inf to +inf) "
+            "starting from the first given product's actual position."
+            "1 moves the item one position forward, -1 moves the item one position "
+            "backward, 0 leaves the item unchanged."
+        )
+    )
+
+
+class ReorderCategories(BaseMutation):
+    # products = graphene.Field(Product, description="Related checkout object.")
+    class Meta:
+        description = "Reorder the categories of a collection."
+        permissions = (ProductPermissions.MANAGE_PRODUCTS,)
+        error_type_class = ProductError
+        error_type_field = "product_errors"
+
+    class Arguments:
+        moves = graphene.List(
+            MoveCategoryInput,
+            required=True,
+            description="The products position operations.",
+        )
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        moves = data["moves"]
+        operations = {}
+        catgories = models.Category.objects.all()
+
+        for move_info in moves:
+            category_pk = cls.get_global_id_or_error(
+                move_info.category_id, only_type=Category, field="moves"
+            )
+            try:
+                m2m_info = catgories.get(pk=int(category_pk))
+            except ObjectDoesNotExist:
+                raise ValidationError(
+                    {
+                        "moves": ValidationError(
+                            f"Couldn't resolve to a product: {move_info.product_id}",
+                            code=CollectionErrorCode.NOT_FOUND.value,
+                        )
+                    }
+                )
+            operations[m2m_info.pk] = move_info.sort_order
+
+        with traced_atomic_transaction():
+            perform_reordering(catgories, operations)
+        # product=ChannelContext(node=product, channel_slug=None)
+        # print(product, "-----------------move")
+
+        return ReorderCategories()
 
 class CollectionReorderProducts(BaseMutation):
     collection = graphene.Field(
@@ -500,10 +653,18 @@ class ProductInput(graphene.InputObjectType):
     charge_taxes = graphene.Boolean(
         description="Determine if taxes are being charged for the product."
     )
+    enable = graphene.Boolean(
+        description="Display product or not."
+    )
     collections = graphene.List(
         graphene.NonNull(graphene.ID),
         description="List of IDs of collections that the product belongs to.",
         name="collections",
+    )
+    options = graphene.List(
+        graphene.ID,
+        description="List of options to be added to the product.",
+        name="options",
     )
     description = graphene.JSONString(description="Product description (JSON).")
     name = graphene.String(description="Product name.")
@@ -643,6 +804,10 @@ class ProductCreate(ModelMutation):
         if collections is not None:
             instance.collections.set(collections)
 
+        options = cleaned_data.get("options", None)
+        if options is not None:
+            instance.options.set(options)
+
     @classmethod
     def post_save_action(cls, info, instance, cleaned_input):
         info.context.plugins.product_created(instance)
@@ -651,7 +816,6 @@ class ProductCreate(ModelMutation):
     def perform_mutation(cls, _root, info, **data):
         response = super().perform_mutation(_root, info, **data)
         product = getattr(response, cls._meta.return_field_name)
-
         # Wrap product instance with ChannelContext in response
         setattr(
             response,
@@ -750,7 +914,7 @@ class ProductVariantInput(graphene.InputObjectType):
         required=False,
         description="List of attributes specific to this variant.",
     )
-    sku = graphene.String(description="Stock keeping unit.")
+    sku = graphene.String(description="Stock keeping unit.",required=False)
     track_inventory = graphene.Boolean(
         description=(
             "Determines if the inventory of this variant should be tracked. If false, "
@@ -1079,7 +1243,7 @@ class ProductVariantDelete(ModelDeleteMutation):
 
 class ProductTypeInput(graphene.InputObjectType):
     name = graphene.String(description="Name of the product type.")
-    slug = graphene.String(description="Product type slug.")
+    slug = graphene.String(description="Product type slug.",)
     has_variants = graphene.Boolean(
         description=(
             "Determines if product of this type has multiple variants. This option "

@@ -31,6 +31,7 @@ dist/
 /media/
 /node_modules/
 /static/
+/logs/
 
 # Environments
 .env
@@ -40,6 +41,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+deploy.env
 # Exported results file
 django-queries-results.html

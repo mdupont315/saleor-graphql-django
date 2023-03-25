@@ -43,6 +43,9 @@ def is_available_promo_code(code):
 def promo_code_is_voucher(code):
     return Voucher.objects.filter(code=code).exists()
 
+def promo_code_is_active_voucher(code):
+    return Voucher.objects.filter(code=code, active=True).exists()
+
 
 def promo_code_is_gift_card(code):
     return GiftCard.objects.filter(code=code).exists()

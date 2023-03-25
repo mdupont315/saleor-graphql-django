@@ -70,7 +70,18 @@ def base_checkout_line_total(
         checkout_line_info.channel_listing,
         discounts or [],
     )
-    amount = checkout_line_info.line.quantity * variant_price
+    line = checkout_line_info.line
+    amount = line.quantity * variant_price
+
+    # caculate the product option price
+    option_values = line.option_values.all()
+    if option_values:
+        for option_value in option_values:
+            option_amount = option_value.get_price_by_channel(channel.slug) * line.quantity
+            if option_amount != 0:
+                amount = amount + quantize_price(option_amount, channel.currency_code)
+   
+
     price = quantize_price(amount, amount.currency)
     return TaxedMoney(net=price, gross=price)
 

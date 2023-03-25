@@ -56,6 +56,8 @@ class AddressData:
     country: str
     country_area: str
     phone: str
+    email: str
+    apartment: str
 
 
 @dataclass
@@ -80,6 +82,7 @@ class PaymentData:
     customer_id: Optional[str] = None
     reuse_source: bool = False
     data: Optional[dict] = None
+    return_url: str = None
 
 
 @dataclass

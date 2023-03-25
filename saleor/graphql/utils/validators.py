@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 
 from ..core.utils import get_duplicates_ids
 
@@ -23,3 +23,9 @@ def check_for_duplicates(
         error = ValidationError(message=error_msg, params=params)
 
     return error
+
+def check_super_user(context):
+    """Check if current use is super user"""
+    sp_user = context.user
+    if not sp_user.is_superuser:
+        raise PermissionDenied()

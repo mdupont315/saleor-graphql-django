@@ -32,6 +32,7 @@ RUN apt-get update \
   libpq5 \
   shared-mime-info \
   mime-support \
+  curl \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -47,12 +48,13 @@ ARG STATIC_URL
 ENV STATIC_URL ${STATIC_URL:-/static/}
 RUN SECRET_KEY=dummy STATIC_URL=${STATIC_URL} python3 manage.py collectstatic --no-input
 
-EXPOSE 8000
+EXPOSE 80
 ENV PYTHONUNBUFFERED 1
 
 ARG COMMIT_ID
 ARG PROJECT_VERSION
 ENV PROJECT_VERSION="${PROJECT_VERSION}"
+RUN mkdir -p /app/logs && touch /app/logs/debug.log
 
 LABEL org.opencontainers.image.title="mirumee/saleor"                                  \
       org.opencontainers.image.description="\
@@ -65,4 +67,5 @@ GraphQL, Django, and ReactJS."                                                  
       org.opencontainers.image.authors="Mirumee Software (https://mirumee.com)"        \
       org.opencontainers.image.licenses="BSD 3"
 
-CMD ["gunicorn", "--bind", ":8000", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "saleor.asgi:application"]
+# CMD ["celery", "-A", "saleor", "--app=saleor.celeryconf:app", "worker", "--loglevel=info", "-E"]
+CMD ["gunicorn", "--bind", ":80", "--preload", "--workers", "4", "--worker-class", "saleor.uvicorn.UvicornWorker", "saleor.asgi:application"]

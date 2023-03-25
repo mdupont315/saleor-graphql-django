@@ -30,3 +30,7 @@ def resolve_sales(info, channel_slug, **_kwargs) -> ChannelQsContext:
     if channel_slug:
         qs = qs.filter(channel_listings__channel__slug=channel_slug)
     return ChannelQsContext(qs=qs, channel_slug=channel_slug)
+
+def resolve_voucher_will_applied(channel):
+    sale = models.Voucher.objects.order_by("-created").filter(active=True).first()
+    return ChannelContext(node=sale, channel_slug=channel) if sale else None

@@ -217,12 +217,11 @@ def get_group_permission_codes(group: Group) -> "QuerySet":
 
 def get_groups_which_user_can_manage(user: "User") -> List[Optional[Group]]:
     """Return groups which user can manage."""
-    if not user.is_staff:
+    if not user.is_staff and not user.is_supplier:
         return []
 
     user_permissions = get_user_permissions(user)
     user_permission_pks = set(user_permissions.values_list("pk", flat=True))
-
     groups = Group.objects.all().annotate(group_perms=ArrayAgg("permissions"))
 
     editable_groups = []

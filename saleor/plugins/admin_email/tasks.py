@@ -10,6 +10,7 @@ from ..email_common import (
 )
 from ..models import PluginConfiguration
 from . import constants
+import logging
 
 
 def get_plugin_configuration() -> Optional[PluginConfiguration]:
@@ -138,6 +139,43 @@ def send_staff_password_reset_email_task(recipient_email, payload, config):
         constants.STAFF_PASSWORD_RESET_SUBJECT_FIELD,
         constants.STAFF_PASSWORD_RESET_DEFAULT_SUBJECT,
     )
+    send_email(
+        config=email_config,
+        recipient_list=[recipient_email],
+        context=payload,
+        subject=subject,
+        template_str=email_template_str,
+    )
+
+@app.task(compression="zlib")
+def send_user_password_reset_email_task(recipient_email, payload, config):
+    email_config = EmailConfig(**config)
+    email_template_str = get_email_template_or_default(
+        None,
+        None,
+        constants.USER_PASSWORD_RESET_DEFAULT_TEMPLATE,
+        constants.DEFAULT_EMAIL_TEMPLATES_PATH,
+    )
+    subject = constants.USER_PASSWORD_RESET_DEFAULT_SUBJECT
+    send_email(
+        config=email_config,
+        recipient_list=[recipient_email],
+        context=payload,
+        subject=subject,
+        template_str=email_template_str,
+    )
+
+@app.task(compression="zlib", serializer='pickle', ignore_result=True)
+def send_order_admin_infomation_email_task(recipient_email, payload, config):
+    email_config = EmailConfig(**config)
+    email_template_str = get_email_template_or_default(
+        None,
+        None,
+        constants.ORDER_CREATED_ADMIN_DEFAULT_TEMPLATE,
+        constants.DEFAULT_EMAIL_TEMPLATES_PATH,
+    )
+
+    subject = "New order #{} {}".format(payload.get("order_num"),payload.get("order_type"))
     send_email(
         config=email_config,
         recipient_list=[recipient_email],

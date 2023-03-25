@@ -1,3 +1,4 @@
+from saleor.checkout.models import Checkout
 from typing import TYPE_CHECKING
 
 from saleor.plugins.base_plugin import BasePlugin, ConfigurationTypeField
@@ -27,7 +28,7 @@ class DummyGatewayPlugin(BasePlugin):
     DEFAULT_CONFIGURATION = [
         {"name": "Store customers card", "value": False},
         {"name": "Automatic payment capture", "value": True},
-        {"name": "Supported currencies", "value": "USD, PLN"},
+        {"name": "Supported currencies", "value": "EUR"},
     ]
     CONFIG_STRUCTURE = {
         "Store customers card": {
@@ -94,7 +95,7 @@ class DummyGatewayPlugin(BasePlugin):
 
     @require_active_plugin
     def process_payment(
-        self, payment_information: "PaymentData", previous_value
+        self, payment_information: "PaymentData", checkout: Checkout, previous_value
     ) -> "GatewayResponse":
         return process_payment(payment_information, self._get_gateway_config())
 

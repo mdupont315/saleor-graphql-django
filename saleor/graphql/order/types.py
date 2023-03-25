@@ -1,5 +1,6 @@
 from decimal import Decimal
 from operator import attrgetter
+from saleor.graphql.option.types import OptionValue
 from typing import Optional
 
 import graphene
@@ -173,6 +174,9 @@ class OrderEvent(CountableDjangoObjectType):
     related_order = graphene.Field(
         lambda: Order, description="The order which is related to this order."
     )
+    order = graphene.Field(
+        lambda: Order, description="The order which is related to this order."
+    )
     discount = graphene.Field(
         OrderEventDiscountObject, description="The discount applied to the order."
     )
@@ -318,6 +322,10 @@ class OrderEvent(CountableDjangoObjectType):
         return OrderByIdLoader(info.context).load(order_pk)
 
     @staticmethod
+    def resolve_order(root: models.OrderEvent, info):
+        return root.order
+
+    @staticmethod
     @traced_resolver
     def resolve_discount(root: models.OrderEvent, info):
         discount_obj = root.parameters.get("discount")
@@ -451,6 +459,7 @@ class OrderLine(CountableDjangoObjectType):
             "quantity_fulfilled",
             "tax_rate",
             "unit_discount_reason",
+            "option_items"
         ]
 
     @staticmethod
@@ -528,6 +537,7 @@ class OrderLine(CountableDjangoObjectType):
     @staticmethod
     def resolve_translated_variant_name(root: models.OrderLine, _info):
         return root.translated_variant_name
+
 
     @staticmethod
     @traced_resolver
@@ -718,6 +728,12 @@ class Order(CountableDjangoObjectType):
             "voucher",
             "weight",
             "redirect_url",
+            "order_type",
+            "expected_date",
+            "expected_time",
+            "delivery_fee",
+            "transaction_cost",
+            "table_name",
         ]
 
     @staticmethod
@@ -789,8 +805,8 @@ class Order(CountableDjangoObjectType):
             requester = get_user_or_app_from_context(info.context)
             if requestor_has_access(requester, user, OrderPermissions.MANAGE_ORDERS):
                 return address
-            return obfuscate_address(address)
-
+            return address
+        
         if not root.billing_address_id:
             return
 
@@ -988,7 +1004,7 @@ class Order(CountableDjangoObjectType):
             requester = get_user_or_app_from_context(info.context)
             if requestor_has_access(requester, user, OrderPermissions.MANAGE_ORDERS):
                 return user.email if user else root.user_email
-            return obfuscate_email(user.email if user else root.user_email)
+            return user.email if user else root.user_email
 
         if not root.user_id:
             return _resolve_user_email(None)

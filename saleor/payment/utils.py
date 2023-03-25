@@ -2,10 +2,10 @@ import json
 import logging
 from decimal import Decimal
 from typing import TYPE_CHECKING, Dict, Optional
-
+from babel.numbers import get_currency_precision
 import graphene
 from django.core.serializers.json import DjangoJSONEncoder
-
+from ..core.prices import quantize_price
 from ..account.models import User
 from ..checkout.models import Checkout
 from ..core.tracing import traced_atomic_transaction
@@ -118,16 +118,16 @@ def create_payment(
         )
 
     defaults = {
-        "billing_email": email,
+        "billing_email": email if email else '',
         "billing_first_name": billing_address.first_name,
         "billing_last_name": billing_address.last_name,
-        "billing_company_name": billing_address.company_name,
-        "billing_address_1": billing_address.street_address_1,
-        "billing_address_2": billing_address.street_address_2,
-        "billing_city": billing_address.city,
-        "billing_postal_code": billing_address.postal_code,
-        "billing_country_code": billing_address.country.code,
-        "billing_country_area": billing_address.country_area,
+        "billing_company_name": billing_address.company_name if billing_address.company_name else '',
+        "billing_address_1": billing_address.street_address_1 if billing_address.street_address_1 else '',
+        "billing_address_2": billing_address.street_address_2 if billing_address.street_address_2 else '',
+        "billing_city": billing_address.city if billing_address.city else '',
+        "billing_postal_code": billing_address.postal_code if billing_address.postal_code else '',
+        "billing_country_code": billing_address.country if billing_address.country else '',
+        "billing_country_area": billing_address.country_area if billing_address.country_area else '',
         "currency": currency,
         "gateway": gateway,
         "total": total,
@@ -176,7 +176,6 @@ def create_transaction(
             error=error_msg,
             raw_response={},
         )
-
     txn = Transaction.objects.create(
         payment=payment,
         action_required=action_required,
@@ -380,3 +379,28 @@ def is_currency_supported(currency: str, gateway_id: str, manager: "PluginsManag
     """Return true if the given gateway supports given currency."""
     available_gateways = manager.list_payment_gateways(currency=currency)
     return any([gateway.id == gateway_id for gateway in available_gateways])
+
+def price_from_minor_unit(value: str, currency: str):
+    """Convert minor unit (smallest unit of currency) to decimal value.
+
+    (value: 1000, currency: USD) will be converted to 10.00
+    """
+
+    value = Decimal(value)
+    precision = get_currency_precision(currency)
+    number_places = Decimal(10) ** -precision
+    return value * number_places
+
+
+def price_to_minor_unit(value: Decimal, currency: str):
+    """Convert decimal value to the smallest unit of currency.
+
+    Take the value, discover the precision of currency and multiply value by
+    Decimal('10.0'), then change quantization to remove the comma.
+    Decimal(10.0) -> str(1000)
+    """
+    value = quantize_price(value, currency=currency)
+    precision = get_currency_precision(currency)
+    number_places = Decimal("10.0") ** precision
+    value_without_comma = value * number_places
+    return str(value_without_comma.quantize(Decimal("1")))

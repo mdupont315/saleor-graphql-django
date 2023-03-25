@@ -15,6 +15,7 @@ from ..core.utils.promo_code import (
     InvalidPromoCode,
     promo_code_is_gift_card,
     promo_code_is_voucher,
+    promo_code_is_active_voucher,
 )
 from ..discount import DiscountInfo, VoucherType
 from ..discount.models import NotApplicable, Voucher
@@ -126,7 +127,7 @@ def calculate_checkout_quantity(lines: Iterable["CheckoutLineInfo"]):
     return sum([line_info.line.quantity for line_info in lines])
 
 
-def add_variants_to_checkout(checkout, variants, quantities, channel_slug):
+def add_variants_to_checkout(checkout, variants, quantities, option_values, channel_slug):
     """Add variants to checkout.
 
     Suitable for new checkouts as it always creates new checkout lines without checking
@@ -155,7 +156,20 @@ def add_variants_to_checkout(checkout, variants, quantities, channel_slug):
         lines.append(
             CheckoutLine(checkout=checkout, variant=variant, quantity=quantity)
         )
-    checkout.lines.bulk_create(lines)
+    line_instances = checkout.lines.bulk_create(lines)
+
+    # create option value for checkout line
+    for line_instance, option_values_in_line in zip(line_instances, option_values):
+        if option_values_in_line:
+            option_value_list_to_create = []
+            for item in option_values_in_line:
+                _type, option_value_pk = graphene.Node.from_global_id(item["option_value_id"])
+                option_value_instance = product_models.OptionValue.objects.get(pk=option_value_pk)
+                if option_value_instance:
+                    option_value_checkout_line = CheckoutLine.option_values.through(optionvalue_id=option_value_instance.id, checkoutline_id=line_instance.id)
+                    option_value_list_to_create.append(option_value_checkout_line)
+            line_instance.option_values.through.objects.bulk_create(option_value_list_to_create)
+
     return checkout
 
 
@@ -242,7 +256,7 @@ def _get_shipping_voucher_discount_for_checkout(
 
     # check if voucher is limited to specified countries
     if address:
-        if voucher.countries and address.country.code not in voucher.countries:
+        if voucher.countries and address.country not in voucher.countries:
             msg = "This offer is not valid in your country."
             raise NotApplicable(msg)
 
@@ -460,7 +474,7 @@ def add_promo_code_to_checkout(
 
     Raise InvalidPromoCode if promo code does not match to any voucher or gift card.
     """
-    if promo_code_is_voucher(promo_code):
+    if promo_code_is_active_voucher(promo_code):
         add_voucher_code_to_checkout(
             manager, checkout_info, lines, promo_code, discounts
         )

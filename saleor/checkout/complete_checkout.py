@@ -1,11 +1,22 @@
+import decimal
+import json
 from datetime import date
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 
+import graphene
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.encoding import smart_text
+from django_multitenant.utils import get_current_tenant
 from prices import TaxedMoney
+from prices.money import Money
+
+from saleor.core.prices import quantize_price
+from saleor.core.utils.logging import log_info
+from saleor.graphql.notifications.schema import LiveNotification
+from saleor.views import sio
 
 from ..account.error_codes import AccountErrorCode
 from ..account.models import User
@@ -16,17 +27,14 @@ from ..core.exceptions import InsufficientStock
 from ..core.taxes import TaxError, zero_taxed_money
 from ..core.tracing import traced_atomic_transaction
 from ..core.utils.url import validate_storefront_url
+from ..delivery.models import Delivery
 from ..discount import DiscountInfo, DiscountValueType, OrderDiscountType
 from ..discount.models import NotApplicable
-from ..discount.utils import (
-    add_voucher_usage_by_customer,
-    decrease_voucher_usage,
-    increase_voucher_usage,
-    remove_voucher_usage_by_customer,
-)
-from ..graphql.checkout.utils import (
-    prepare_insufficient_stock_checkout_validation_error,
-)
+from ..discount.utils import (add_voucher_usage_by_customer,
+                              decrease_voucher_usage, increase_voucher_usage,
+                              remove_voucher_usage_by_customer)
+from ..graphql.checkout.utils import \
+    prepare_insufficient_stock_checkout_validation_error
 from ..order import OrderLineData, OrderOrigin, OrderStatus
 from ..order.actions import order_created
 from ..order.models import Order, OrderLine
@@ -35,12 +43,21 @@ from ..payment import PaymentError, gateway
 from ..payment.models import Payment, Transaction
 from ..payment.utils import fetch_customer_id, store_customer_id
 from ..product.models import ProductTranslation, ProductVariantTranslation
+from ..store.models import Store
 from ..warehouse.availability import check_stock_quantity_bulk
 from ..warehouse.management import allocate_stocks
 from . import AddressType
 from .checkout_cleaner import clean_checkout_payment, clean_checkout_shipping
 from .models import Checkout
 from .utils import get_voucher_for_checkout
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return float(o)
+        super(DecimalEncoder, self).default(o)
+
 
 if TYPE_CHECKING:
     from ..plugins.manager import PluginsManager
@@ -108,9 +125,10 @@ def _process_user_data_for_order(checkout_info: "CheckoutInfo", manager):
         if checkout_info.user.addresses.filter(pk=billing_address.pk).exists():
             billing_address = billing_address.get_copy()
 
+    user_email = checkout_info.get_customer_email()
     return {
         "user": checkout_info.user,
-        "user_email": checkout_info.get_customer_email(),
+        "user_email": user_email if user_email else '',
         "billing_address": billing_address,
         "customer_note": checkout_info.checkout.note,
     }
@@ -143,6 +161,8 @@ def _create_line_for_order(
     quantity = checkout_line.quantity
     variant = checkout_line_info.variant
     product = checkout_line_info.product
+    # handle product option
+    option_values = checkout_line_info.line.option_values
     address = (
         checkout_info.shipping_address or checkout_info.billing_address
     )  # FIXME: check which address we need here
@@ -192,8 +212,8 @@ def _create_line_for_order(
         total_price=total_line_price,
         tax_rate=tax_rate,
     )
-
-    line_info = OrderLineData(line=line, quantity=quantity, variant=variant)
+    line_info = OrderLineData(line=line, quantity=quantity,
+                              variant=variant, option_values=option_values)
 
     return line_info
 
@@ -284,6 +304,67 @@ def _prepare_order_data(
     taxed_total = max(taxed_total, zero_taxed_money(checkout.currency))
     undiscounted_total = taxed_total + checkout.discount
 
+    # implement delivery fee
+    delivery_setting = Delivery.objects.all().first()
+    current_strore = Store.objects.all().first()
+    undiscount_checkout_total_amount = taxed_total.gross.amount + checkout.discount.amount
+    if delivery_setting and checkout.order_type == "delivery":
+        delivery_fee_by_postal_code = delivery_setting.delivery_fee
+        min_order_by_postal_code = delivery_setting.min_order
+        
+        # implement delivery fee when enable custom delivery fee
+        if delivery_setting.enable_custom_delivery_fee and (checkout_info.billing_address.postal_code is not None): 
+            current_postal_code = (checkout_info.billing_address.postal_code)[0:4]
+            delivery_areas = [] 
+            delivery_areas.extend(delivery_setting.delivery_area['areas'])
+            delivery_areas.sort(key=lambda area: area['from'] + area['to'])
+                
+            for x in delivery_areas:
+                if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
+                    delivery_fee_by_postal_code = round(x["customDeliveryFee"], 2)
+                    break
+            # delivery_fee = delivery_fee_by_postal_code   
+        # implement min order when enable custom delivery fee
+        if delivery_setting.enable_minimum_delivery_order_value and (checkout_info.billing_address.postal_code is not None):
+            current_postal_code = (checkout_info.billing_address.postal_code)[0:4]
+            delivery_areas = [] 
+            delivery_areas.extend(delivery_setting.delivery_area['areas'])
+            delivery_areas.sort(key=lambda area: area['from'] + area['to'])
+                
+            for x in delivery_areas:
+                if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
+                    min_order_by_postal_code = x["customMinOrder"] if x["customMinOrder"] != "" else delivery_setting.min_order
+                    break
+                
+
+        if min_order_by_postal_code > undiscount_checkout_total_amount and checkout.order_type == settings.ORDER_TYPES[0][0]:
+            raise ValidationError(
+                {
+                    "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=min_order_by_postal_code)
+                }
+            )
+        if checkout.order_type == settings.ORDER_TYPES[0][0] and \
+           (undiscount_checkout_total_amount < delivery_setting.from_delivery or (undiscount_checkout_total_amount >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
+            delivery_fee = Money(amount=delivery_fee_by_postal_code,
+                                 currency=checkout.currency)
+            # print("dlf", delivery_fee)
+            taxed_total = taxed_total + TaxedMoney(net=delivery_fee, gross=delivery_fee)
+            order_data["delivery_fee"] = delivery_fee_by_postal_code
+
+    # implement transaction fee
+    payment_gateway = checkout.get_last_active_payment().gateway
+    if current_strore.enable_transaction_fee:
+        if payment_gateway == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
+            contant_cost = Money(amount=current_strore.contant_cost,
+                                 currency=checkout.currency)
+            taxed_total = taxed_total + TaxedMoney(net=contant_cost, gross=contant_cost)
+            order_data["transaction_cost"] = current_strore.contant_cost
+        if payment_gateway == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
+            stripe_cost = Money(amount=current_strore.stripe_cost,
+                                currency=checkout.currency)
+            taxed_total = taxed_total + TaxedMoney(net=stripe_cost, gross=stripe_cost)
+            order_data["transaction_cost"] = current_strore.stripe_cost
+
     shipping_total = manager.calculate_checkout_shipping(
         checkout_info, lines, address, discounts
     )
@@ -355,6 +436,7 @@ def _create_order(
 
     total_price_left = order_data.pop("total_price_left")
     order_lines_info = order_data.pop("lines")
+    
 
     if site_settings is None:
         site_settings = Site.objects.get_current().settings
@@ -364,12 +446,18 @@ def _create_order(
         if site_settings.automatically_confirm_all_new_orders
         else OrderStatus.UNCONFIRMED
     )
+
     order = Order.objects.create(
         **order_data,
         checkout_token=checkout.token,
         status=status,
         origin=OrderOrigin.CHECKOUT,
         channel=checkout_info.channel,
+        order_type=checkout.order_type,
+        expected_date=checkout.expected_date,
+        expected_time=checkout.expected_time,
+        table_name=checkout.table_name,
+        store=checkout.store,
     )
     if checkout.discount:
         # store voucher as a fixed value as it this the simplest solution for now.
@@ -391,7 +479,32 @@ def _create_order(
         line.order_id = order.pk
         order_lines.append(line)
 
-    OrderLine.objects.bulk_create(order_lines)
+    order_line_instances = OrderLine.objects.bulk_create(order_lines)
+
+    # add option values to order line
+    for order_line_instance, line_info in zip(order_line_instances, order_lines_info):
+        option_values = line_info.option_values.all()
+        if option_values:
+            option_values_list = []
+            option_values_dict_list = []
+            for option_values_in_line in option_values:
+                option_value_order_line = OrderLine.option_values.through(
+                    optionvalue_id=option_values_in_line.id, orderline_id=order_line_instance.id)
+                option_values_list.append(option_value_order_line)
+                option_values_dict = {}
+                option_values_dict["price"] = option_values_in_line.get_price_amount_by_channel(
+                    order.channel.slug)
+                option_values_dict["id"] = option_values_in_line.id
+                option_values_dict["name"] = option_values_in_line.name
+                option_values_dict["currency"] = order.channel.currency_code
+                option_values_dict["type"] = option_values_in_line.option.type
+                option_values_dict["option_id"] = option_values_in_line.option_id
+                option_values_dict_list.append(option_values_dict)
+            order_line_instance.option_items = json.dumps(
+                option_values_dict_list, cls=DecimalEncoder)
+            order_line_instance.save()
+            order_line_instance.option_values.through.objects.bulk_create(
+                option_values_list)
 
     country_code = checkout_info.get_country()
     allocate_stocks(order_lines_info, country_code, checkout_info.channel.slug)
@@ -519,6 +632,7 @@ def _process_payment(
     order_data: dict,
     manager: "PluginsManager",
     channel_slug: str,
+    checkout: Checkout = None
 ) -> Transaction:
     """Process the payment assigned to checkout."""
     try:
@@ -538,6 +652,7 @@ def _process_payment(
                 store_source=store_source,
                 additional_data=payment_data,
                 channel_slug=channel_slug,
+                checkout=checkout
             )
         payment.refresh_from_db()
         if not txn.is_success:
@@ -559,6 +674,7 @@ def complete_checkout(
     site_settings=None,
     tracking_code=None,
     redirect_url=None,
+    txn: "dict" = None
 ) -> Tuple[Optional[Order], bool, dict]:
     """Logic required to finalize the checkout and convert it to order.
 
@@ -588,17 +704,17 @@ def complete_checkout(
     customer_id = None
     if store_source and payment:
         customer_id = fetch_customer_id(user=user, gateway=payment.gateway)
-
-    txn = _process_payment(
-        payment=payment,  # type: ignore
-        customer_id=customer_id,
-        store_source=store_source,
-        payment_data=payment_data,
-        order_data=order_data,
-        manager=manager,
-        channel_slug=channel_slug,
-    )
-
+    if txn is None:
+        txn = _process_payment(
+            payment=payment,  # type: ignore
+            customer_id=customer_id,
+            store_source=store_source,
+            payment_data=payment_data,
+            order_data=order_data,
+            manager=manager,
+            channel_slug=channel_slug,
+            checkout=checkout
+        )
     if txn.customer_id and user.is_authenticated:
         store_customer_id(user, payment.gateway, txn.customer_id)  # type: ignore
 
@@ -617,9 +733,20 @@ def complete_checkout(
             )
             # remove checkout after order is successfully created
             checkout.delete()
+            if order:
+                # emit event create
+                LiveNotification.new_message(
+                    graphene.Node.to_global_id("Store", order.store_id),
+                    graphene.Node.to_global_id("Order", order.id))
+                
+            # write log
+            log_info('Order', 'Order', content={
+                "order": order.__dict__,
+                "address": vars(order.billing_address)})
         except InsufficientStock as e:
             release_voucher_usage(order_data)
             gateway.payment_refund_or_void(payment, manager, channel_slug=channel_slug)
             error = prepare_insufficient_stock_checkout_validation_error(e)
             raise error
-    return order, action_required, action_data
+
+    return order, action_required, action_data, checkout.redirect_url

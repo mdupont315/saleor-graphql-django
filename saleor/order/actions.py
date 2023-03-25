@@ -1,65 +1,50 @@
+import ast
+import json
 import logging
 from collections import defaultdict
 from copy import deepcopy
 from decimal import Decimal
 from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from saleor.core.notify_events import NotifyEventType
+from saleor.product.models import ProductOption
+
 from ..account.models import User
 from ..core import analytics
-from ..core.exceptions import AllocationError, InsufficientStock, InsufficientStockData
+from ..core.exceptions import (AllocationError, InsufficientStock,
+                               InsufficientStockData)
 from ..core.tracing import traced_atomic_transaction
 from ..core.transactions import transaction_with_commit_on_errors
-from ..payment import (
-    ChargeStatus,
-    CustomPaymentChoices,
-    PaymentError,
-    TransactionKind,
-    gateway,
-)
+from ..payment import (ChargeStatus, CustomPaymentChoices, PaymentError,
+                       TransactionKind, gateway)
 from ..payment.models import Payment, Transaction
 from ..payment.utils import create_payment
-from ..warehouse.management import (
-    deallocate_stock,
-    deallocate_stock_for_order,
-    decrease_stock,
-    get_order_lines_with_track_inventory,
-)
+from ..store.models import Store
+from ..warehouse.management import (deallocate_stock,
+                                    deallocate_stock_for_order, decrease_stock,
+                                    get_order_lines_with_track_inventory)
 from ..warehouse.models import Stock
-from . import (
-    FulfillmentLineData,
-    FulfillmentStatus,
-    OrderLineData,
-    OrderOrigin,
-    OrderStatus,
-    events,
-    utils,
-)
+from . import (FulfillmentLineData, FulfillmentStatus, OrderLineData,
+               OrderOrigin, OrderStatus, events, utils)
 from .error_codes import OrderErrorCode
-from .events import (
-    draft_order_created_from_replace_event,
-    fulfillment_refunded_event,
-    fulfillment_replaced_event,
-    order_replacement_created,
-    order_returned_event,
-)
+from .events import (draft_order_created_from_replace_event,
+                     fulfillment_refunded_event, fulfillment_replaced_event,
+                     order_replacement_created, order_returned_event)
 from .models import Fulfillment, FulfillmentLine, Order, OrderLine
-from .notifications import (
-    send_fulfillment_confirmation_to_customer,
-    send_order_canceled_confirmation,
-    send_order_confirmed,
-    send_order_refunded_confirmation,
-    send_payment_confirmation,
-)
-from .utils import (
-    order_line_needs_automatic_fulfillment,
-    recalculate_order,
-    restock_fulfillment_lines,
-    update_order_status,
-)
+from .notifications import (send_fulfillment_confirmation_to_customer,
+                            send_order_canceled_confirmation,
+                            send_order_confirmed,
+                            send_order_refunded_confirmation,
+                            send_payment_confirmation)
+from .utils import (order_line_needs_automatic_fulfillment, recalculate_order,
+                    restock_fulfillment_lines, update_order_status)
+
+from django.templatetags.static import static
 
 if TYPE_CHECKING:
     from ..plugins.manager import PluginsManager
@@ -75,6 +60,8 @@ QuantityType = int
 def order_created(
     order: "Order", user: "User", manager: "PluginsManager", from_draft: bool = False
 ):
+    # print(order.lines.all(),"=========action")
+
     events.order_created_event(order=order, user=user, from_draft=from_draft)
     manager.order_created(order)
     payment = order.get_last_payment()
@@ -98,6 +85,97 @@ def order_created(
     site_settings = Site.objects.get_current().settings
     if site_settings.automatically_confirm_all_new_orders:
         order_confirmed(order, user, manager)
+    # sending email
+    current_store = Store.objects.filter(pk=order.store_id).first()
+    TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
+    protocol = "https" if settings.ENABLE_SSL else "http"
+    # order_url = protocol + "://" + current_store.domain + "order-history"
+    order_url = "{protocol}://{domain}/order-history/{token}".format(
+        protocol=protocol, domain=current_store.domain, token=order.token)
+    discounts = order.discounts.all()
+    total_discount = 0
+    for item in discounts:
+        total_discount += item.amount.amount
+    channel_symbol = order.get_channel_curreny_symbool()
+    is_check_pickup = order.get_order_type_display() == "Pickup"
+    is_check_delivery = order.get_order_type_display() == "Delivery"
+    is_payment_with_stripe = order.get_last_payment(
+    ).gateway != 'mirumee.payments.dummy' if order.get_last_payment() else False
+    full_store_address = "{}, {}, {}".format(
+        current_store.address, current_store.postal_code, current_store.city)
+
+    def get_payment_method():
+        if order.get_last_payment():
+            if order.get_last_payment().gateway == 'mirumee.payments.dummy':
+                return "Cash"
+        return "iDeal"
+
+    # Create lines order
+    lines = []
+    for item in order.lines.all():
+        list_option_item = ast.literal_eval(item.option_items)
+
+        # Find the options item match product options
+        list_option_item_final = []
+        def check_exist_option_id (opt_id):
+            new_list_option = []
+            for option in list_option_item:
+                if option['option_id'] == opt_id:
+                    new_list_option.append(option)
+            return new_list_option
+        # Add the options item into list_option_item_final
+        for option_item in ProductOption.objects.all():
+            checked =check_exist_option_id(option_item.option_id)
+            if checked:
+                for check_item in checked:
+                    list_option_item_final.append(check_item)
+
+        item.option_items = list_option_item_final
+        lines.append(item)
+
+    payload = {
+        "order_num": order.pk,
+        "expected_date": order.expected_date,
+        "expected_time": order.expected_time,
+        "recipient_email": order.user_email,
+        "lines": lines,
+        "full_store_address": full_store_address,
+        "logo": current_store.logo.url if current_store.logo else '',
+        'orderich_logo': static("images/orderich-logo.png"),
+        "store_phone": current_store.phone,
+        "store_name": current_store.name,
+        "store_address": current_store.address,
+        "order_type": order.get_order_type_display() if order.get_order_type_display() != 'Dine-in' else "QR-order",
+        "is_check_pickup": is_check_pickup,
+        "is_check_delivery": is_check_delivery,
+        "table_name": order.table_name,
+        "is_delivery": False,
+        "sub_total": str(order.get_subtotal().net.amount.quantize(TWOPLACES)).replace(".", ","),
+        "place_date": order.created.strftime('%d-%m-%y'),
+        "place_time": order.created.strftime('%H-%M'),
+        "delivery_fee": "{symbol} {price}".format(symbol=channel_symbol, price=str(Decimal(order.delivery_fee).quantize(TWOPLACES)).replace(".", ",")) if order.delivery_fee > 0 else 0,
+        "transaction_cost": "{symbol} {price}".format(symbol=channel_symbol, price=str(Decimal(order.transaction_cost).quantize(TWOPLACES)).replace(".", ",")) if order.transaction_cost > 0 else 0,
+        "total": str(order.total_net_amount.quantize(TWOPLACES)).replace(".", ","),
+        "discount": str(Decimal(total_discount).quantize(TWOPLACES)).replace(".", ",") if total_discount > 0 else 0,
+        "channel": order.channel.slug,
+        "channel_symbol": channel_symbol,
+        "address": vars(order.billing_address),
+        "payment_status": order.get_last_payment().charge_status if order.get_last_payment() else "",
+        "payment_method": get_payment_method(),
+        "order_note": order.customer_note,
+        "order_url": order_url,
+        "is_payment_with_stripe": is_payment_with_stripe,
+        "store_slug": current_store.domain.split(".")[0],
+        "not_qr_order": True if order.get_order_type_display() != 'Dine-in' else False,
+    }
+
+    if order.user_email:
+        event = (NotifyEventType.ORDER_CREATED)
+        manager.notify(event, payload=payload, channel_slug=order.channel.slug)
+    if current_store.email_notifications and current_store.email_address:
+        event = (NotifyEventType.ORDER_ADMIN_CREATED)
+        payload["recipient_email"] = current_store.email_address
+        manager.notify(event, payload=payload, channel_slug=order.channel.slug)
 
 
 def order_confirmed(

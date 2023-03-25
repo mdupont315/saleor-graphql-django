@@ -4,14 +4,11 @@ from ...account import events as account_events
 from ...celeryconf import app
 from ...invoice import events as invoice_events
 from ...order import events as order_events
-from ..email_common import (
-    EmailConfig,
-    get_email_subject,
-    get_email_template_or_default,
-    send_email,
-)
+from ..email_common import (EmailConfig, get_email_subject,
+                            get_email_template_or_default, send_email)
 from ..models import PluginConfiguration
 from . import constants
+import logging
 
 
 def get_plugin_configuration() -> Optional[PluginConfiguration]:
@@ -445,7 +442,6 @@ def send_order_confirmed_email_task(recipient_email, payload, config):
         constants.ORDER_CONFIRMED_SUBJECT_FIELD,
         constants.ORDER_CONFIRMED_DEFAULT_SUBJECT,
     )
-
     send_email(
         config=email_config,
         recipient_list=[recipient_email],
@@ -457,4 +453,26 @@ def send_order_confirmed_email_task(recipient_email, payload, config):
         order_id=payload.get("order", {}).get("id"),
         user_id=payload.get("requester_user_id"),
         customer_email=recipient_email,
+    )
+
+
+@app.task(compression="zlib", serializer='pickle', ignore_result=True)
+def send_order_infomation_email_task(recipient_email, payload, config):
+    email_config = EmailConfig(**config)
+    email_template_str = get_email_template_or_default(
+        None,
+        None,
+        constants.ORDER_CREATED_DEFAULT_TEMPLATE,
+        constants.DEFAULT_EMAIL_TEMPLATES_PATH,
+    )
+    # constants.ORDER_CREATED_DEFAULT_SUBJECT
+    # ,payload.get("store_name"),"!"
+    print("-----------------vaoday")
+    subject = "Thanks for ordering from {}!".format(payload.get("store_name"))
+    send_email(
+        config=email_config,
+        recipient_list=[recipient_email],
+        context=payload,
+        subject=subject,
+        template_str=email_template_str,
     )

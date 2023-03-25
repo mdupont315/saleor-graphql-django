@@ -199,6 +199,7 @@ class Voucher(ChannelContextType, CountableDjangoObjectType):
             "type",
             "usage_limit",
             "used",
+            "active",
         ]
         interfaces = [relay.Node]
         model = models.Voucher
@@ -228,7 +229,7 @@ class Voucher(ChannelContextType, CountableDjangoObjectType):
     @traced_resolver
     def resolve_countries(root: ChannelContext[models.Voucher], *_args, **_kwargs):
         return [
-            types.CountryDisplay(code=country.code, country=country.name)
+            types.CountryDisplay(code=country, country=country.name)
             for country in root.node.countries
         ]
 

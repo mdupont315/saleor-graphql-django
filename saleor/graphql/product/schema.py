@@ -1,7 +1,8 @@
 import graphene
 from graphql.error import GraphQLError
-
+import logging
 from saleor.core.tracing import traced_resolver
+from saleor.graphql.product.types.products import ProductOption
 
 from ...account.utils import requestor_is_staff_member_or_app
 from ...core.permissions import ProductPermissions
@@ -85,6 +86,9 @@ from .mutations.products import (
     ProductVariantReorder,
     ProductVariantSetDefault,
     ProductVariantUpdate,
+    ReorderProductOption,
+    ReorderProducts,
+    ReorderCategories,
     VariantMediaAssign,
     VariantMediaUnassign,
 )
@@ -99,6 +103,7 @@ from .resolvers import (
     resolve_digital_contents,
     resolve_product_by_id,
     resolve_product_by_slug,
+    resolve_product_option,
     resolve_product_type_by_id,
     resolve_product_types,
     resolve_product_variant_by_sku,
@@ -144,6 +149,11 @@ class ProductQueries(graphene.ObjectType):
             description="Filter categories by the nesting level in the category tree.",
         ),
         description="List of the shop's categories.",
+    )
+    product_option = FilterInputConnectionField(
+        ProductOption,
+        product_id=graphene.Argument(graphene.ID, description="ID of the category."),
+        description="Look up a category by ID or slug.",
     )
     category = graphene.Field(
         Category,
@@ -249,6 +259,9 @@ class ProductQueries(graphene.ObjectType):
 
     def resolve_categories(self, info, level=None, **kwargs):
         return resolve_categories(info, level=level, **kwargs)
+  
+    def resolve_product_option(self, info, product_id=None,  **kwargs):
+        return resolve_product_option(self, info, product_id, **kwargs)
 
     @traced_resolver
     def resolve_category(self, info, id=None, slug=None, **kwargs):
@@ -400,6 +413,7 @@ class ProductMutations(graphene.ObjectType):
     category_bulk_delete = CategoryBulkDelete.Field()
     category_update = CategoryUpdate.Field()
     category_translate = CategoryTranslate.Field()
+    reorder_categories = ReorderCategories.Field()
 
     collection_add_products = CollectionAddProducts.Field()
     collection_create = CollectionCreate.Field()
@@ -416,6 +430,10 @@ class ProductMutations(graphene.ObjectType):
     product_bulk_delete = ProductBulkDelete.Field()
     product_update = ProductUpdate.Field()
     product_translate = ProductTranslate.Field()
+    reorder_products = ReorderProducts.Field()
+    reorder_product_option = ReorderProductOption.Field()
+
+
 
     product_channel_listing_update = ProductChannelListingUpdate.Field()
 

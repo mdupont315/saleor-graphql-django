@@ -1,4 +1,5 @@
 from django.db.models import Exists, OuterRef, Sum
+from graphql_relay.node.node import from_global_id
 
 from ...account.utils import requestor_is_staff_member_or_app
 from ...channel.models import Channel
@@ -19,6 +20,10 @@ def resolve_category_by_id(id):
 def resolve_category_by_slug(slug):
     return models.Category.objects.filter(slug=slug).first()
 
+def resolve_product_option(self, info, product_id, **kwargs):
+    _, id = from_global_id(product_id)
+
+    return models.ProductOption.objects.all().filter(product_id=id)
 
 @traced_resolver
 def resolve_categories(_info, level=None, **_kwargs):
@@ -26,7 +31,6 @@ def resolve_categories(_info, level=None, **_kwargs):
     if level is not None:
         qs = qs.filter(level=level)
     return qs.distinct()
-
 
 @traced_resolver
 def resolve_collection_by_id(info, id, channel_slug, requestor):
@@ -65,6 +69,8 @@ def resolve_digital_contents(_info):
 
 @traced_resolver
 def resolve_product_by_id(info, id, channel_slug, requestor):
+    product = models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug).filter(id=id).first()
+    product.options.all()
     return (
         models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug)
         .filter(id=id)

@@ -28,11 +28,13 @@ class ShopQueries(graphene.ObjectType):
 
     def resolve_shop(self, _info):
         return Shop()
+    
+    def resolve_notification_settings(self, info, *args, **_kwargs):
+        return info.context.site.settings
 
     @permission_required(OrderPermissions.MANAGE_ORDERS)
     def resolve_order_settings(self, info, *args, **_kwargs):
         return info.context.site.settings
-
 
 class ShopMutations(graphene.ObjectType):
     staff_notification_recipient_create = StaffNotificationRecipientCreate.Field()
@@ -44,5 +46,4 @@ class ShopMutations(graphene.ObjectType):
     shop_fetch_tax_rates = ShopFetchTaxRates.Field()
     shop_settings_translate = ShopSettingsTranslate.Field()
     shop_address_update = ShopAddressUpdate.Field()
-
     order_settings_update = OrderSettingsUpdate.Field()

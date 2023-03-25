@@ -57,7 +57,7 @@ class Payment(models.Model):
         Checkout, null=True, related_name="payments", on_delete=models.SET_NULL
     )
     order = models.ForeignKey(
-        "order.Order", null=True, related_name="payments", on_delete=models.PROTECT
+        "order.Order", null=True, related_name="payments", on_delete=models.CASCADE
     )
 
     billing_email = models.EmailField(blank=True)
@@ -209,7 +209,7 @@ class Transaction(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     payment = models.ForeignKey(
-        Payment, related_name="transactions", on_delete=models.PROTECT
+        Payment, related_name="transactions", on_delete=models.CASCADE
     )
     token = models.CharField(max_length=512, blank=True, default="")
     kind = models.CharField(max_length=25, choices=TransactionKind.CHOICES)

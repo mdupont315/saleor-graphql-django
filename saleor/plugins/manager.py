@@ -680,10 +680,10 @@ class PluginsManager(PaymentInterface):
         )
 
     def process_payment(
-        self, gateway: str, payment_information: "PaymentData", channel_slug: str
+        self, gateway: str, payment_information: "PaymentData", channel_slug: str, checkout: "Checkout"
     ) -> "GatewayResponse":
         return self.__run_payment_method(
-            gateway, "process_payment", payment_information, channel_slug=channel_slug
+            gateway, "process_payment", payment_information, channel_slug=channel_slug, checkout=checkout
         )
 
     def token_is_required_as_payment_input(
@@ -934,6 +934,17 @@ class PluginsManager(PaymentInterface):
         default_value = None
         return self.__run_method_on_plugins(
             "notify", default_value, event, payload, channel_slug=channel_slug
+        )
+    
+    def user_notify(
+        self,
+        event: "NotifyEventTypeChoice",
+        payload: dict,
+        channel_slug: Optional[str] = None,
+    ):
+        default_value = None
+        return self.__run_method_on_plugins(
+            "user_notify", default_value, event, payload, channel_slug=channel_slug
         )
 
     def external_obtain_access_tokens(

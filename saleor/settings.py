@@ -2,7 +2,7 @@ import ast
 import os.path
 import warnings
 from datetime import timedelta
-
+import urllib
 import dj_database_url
 import dj_email_url
 import django_cache_url
@@ -18,9 +18,11 @@ from pytimeparse import parse
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
-
+from dotenv import load_dotenv
 from . import patched_print_object
-
+# import dnspython as dns
+    
+load_dotenv()
 
 def get_list(text):
     return [item.strip() for item in text.split(",")]
@@ -44,16 +46,16 @@ PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 
 ROOT_URLCONF = "saleor.urls"
 
-WSGI_APPLICATION = "saleor.wsgi.application"
-
+# WSGI_APPLICATION = "saleor.wsgi.application"
+ASGI_APPLICATION = "saleor.routing.application"
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
+
 MANAGERS = ADMINS
 
-_DEFAULT_CLIENT_HOSTS = "localhost,127.0.0.1"
-
-ALLOWED_CLIENT_HOSTS = os.environ.get("ALLOWED_CLIENT_HOSTS")
+_DEFAULT_CLIENT_HOSTS = "*"
+ALLOWED_CLIENT_HOSTS = os.environ.get("ALLOWED_CLIENT_HOSTS", "*")
 if not ALLOWED_CLIENT_HOSTS:
     if DEBUG:
         ALLOWED_CLIENT_HOSTS = _DEFAULT_CLIENT_HOSTS
@@ -66,10 +68,13 @@ ALLOWED_CLIENT_HOSTS = get_list(ALLOWED_CLIENT_HOSTS)
 
 INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+# if not DATABASE_URL:
+#     DATABASE_URL="postgres://postgres:thangprohoian123@localhost:5432/orderich"
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://saleor:saleor@localhost:5432/saleor", conn_max_age=600
-    )
+        default=DATABASE_URL,
+    ),
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -77,56 +82,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 TIME_ZONE = "UTC"
 LANGUAGE_CODE = "en"
 LANGUAGES = [
-    ("ar", "Arabic"),
-    ("az", "Azerbaijani"),
-    ("bg", "Bulgarian"),
-    ("bn", "Bengali"),
-    ("ca", "Catalan"),
-    ("cs", "Czech"),
-    ("da", "Danish"),
-    ("de", "German"),
-    ("el", "Greek"),
     ("en", "English"),
-    ("es", "Spanish"),
-    ("es-co", "Colombian Spanish"),
-    ("et", "Estonian"),
-    ("fa", "Persian"),
-    ("fi", "Finnish"),
-    ("fr", "French"),
-    ("hi", "Hindi"),
-    ("hu", "Hungarian"),
-    ("hy", "Armenian"),
-    ("id", "Indonesian"),
-    ("is", "Icelandic"),
-    ("it", "Italian"),
-    ("ja", "Japanese"),
-    ("ka", "Georgian"),
-    ("km", "Khmer"),
-    ("ko", "Korean"),
-    ("lt", "Lithuanian"),
-    ("mn", "Mongolian"),
-    ("my", "Burmese"),
-    ("nb", "Norwegian"),
     ("nl", "Dutch"),
-    ("pl", "Polish"),
-    ("pt", "Portuguese"),
-    ("pt-br", "Brazilian Portuguese"),
-    ("ro", "Romanian"),
-    ("ru", "Russian"),
-    ("sk", "Slovak"),
-    ("sl", "Slovenian"),
-    ("sq", "Albanian"),
-    ("sr", "Serbian"),
-    ("sv", "Swedish"),
-    ("sw", "Swahili"),
-    ("ta", "Tamil"),
-    ("th", "Thai"),
-    ("tr", "Turkish"),
-    ("uk", "Ukrainian"),
-    ("vi", "Vietnamese"),
-    ("zh-hans", "Simplified Chinese"),
-    ("zh-hant", "Traditional Chinese"),
 ]
+ORDER_TYPE_DEFAULT = "pickup"
+ORDER_TYPES = [
+    ("delivery", "Delivery"),
+    ("pickup", "Pickup"),
+    ("dinein", "Dine-in"),
+]
+DUMMY_GATEWAY = 'mirumee.payments.dummy'
+STRIPE_GATEWAY = 'mirumee.payments.stripe'
 LOCALE_PATHS = [os.path.join(PROJECT_ROOT, "locale")]
 USE_I18N = True
 USE_L10N = True
@@ -144,6 +110,7 @@ if not EMAIL_URL and SENDGRID_USERNAME and SENDGRID_PASSWORD:
     )
 email_config = dj_email_url.parse(
     EMAIL_URL or "console://demo@example.com:console@example/"
+    # EMAIL_URL or "smtp://thiennccsoft@gmail.com:gwnvhbhlcmmymmwr@smtp.gmail.com:587/"
 )
 
 EMAIL_FILE_PATH = email_config["EMAIL_FILE_PATH"]
@@ -152,12 +119,12 @@ EMAIL_HOST_PASSWORD = email_config["EMAIL_HOST_PASSWORD"]
 EMAIL_HOST = email_config["EMAIL_HOST"]
 EMAIL_PORT = email_config["EMAIL_PORT"]
 EMAIL_BACKEND = email_config["EMAIL_BACKEND"]
-EMAIL_USE_TLS = email_config["EMAIL_USE_TLS"]
+EMAIL_USE_TLS = True
 EMAIL_USE_SSL = email_config["EMAIL_USE_SSL"]
 
 # If enabled, make sure you have set proper storefront address in ALLOWED_CLIENT_HOSTS.
 ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL = get_bool_from_env(
-    "ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL", True
+    "ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL", False
 )
 
 ENABLE_SSL = get_bool_from_env("ENABLE_SSL", False)
@@ -171,7 +138,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, "media")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
-STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+
 STATICFILES_DIRS = [
     ("images", os.path.join(PROJECT_ROOT, "saleor", "static", "images"))
 ]
@@ -217,16 +184,21 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "saleor.core.middleware.request_time",
+    "saleor.core.middleware.request_set_tenant",
     "saleor.core.middleware.discounts",
     "saleor.core.middleware.google_analytics",
     "saleor.core.middleware.site",
     "saleor.core.middleware.plugins",
     "saleor.core.middleware.jwt_refresh_token_middleware",
+    # "corsheaders.middleware.CorsMiddleware"
+    # "saleor.core.middleware.multitenant_middleware",
 ]
 
 INSTALLED_APPS = [
     # External apps that need to go before django's
+    "boto3",
     "storages",
+    'channels',
     # Django modules
     "django.contrib.contenttypes",
     "django.contrib.sites",
@@ -257,6 +229,10 @@ INSTALLED_APPS = [
     "saleor.webhook",
     "saleor.wishlist",
     "saleor.app",
+    "saleor.delivery",
+    "saleor.store",
+    "saleor.servicetime",
+    "saleor.table_service",
     # External apps
     "versatileimagefield",
     "django_measurement",
@@ -268,6 +244,7 @@ INSTALLED_APPS = [
     "django_countries",
     "django_filters",
     "phonenumber_field",
+    # "corsheaders"
 ]
 
 ENABLE_DJANGO_EXTENSIONS = get_bool_from_env("ENABLE_DJANGO_EXTENSIONS", False)
@@ -300,62 +277,103 @@ if ENABLE_DEBUG_TOOLBAR:
             "debug_toolbar.panels.profiling.ProfilingPanel",
         ]
         DEBUG_TOOLBAR_CONFIG = {"RESULTS_CACHE_SIZE": 100}
-
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "root": {"level": "INFO", "handlers": ["default"]},
+    'version': 1,
+    'disable_existing_loggers': False,
     "formatters": {
-        "django.server": {
+        "django": {
             "()": "django.utils.log.ServerFormatter",
             "format": "[{server_time}] {message}",
             "style": "{",
         },
-        "json": {
-            "()": "saleor.core.logging.JsonFormatter",
-            "datefmt": "%Y-%m-%dT%H:%M:%SZ",
-            "format": (
-                "%(asctime)s %(levelname)s %(lineno)s %(message)s %(name)s "
-                + "%(pathname)s %(process)d %(threadName)s"
-            ),
-        },
-        "verbose": {
-            "format": (
-                "%(levelname)s %(name)s %(message)s [PID:%(process)d:%(threadName)s]"
-            )
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'logs/debug.log',
+            'when': 'D', # this specifies the interval
+            'interval': 1, # defaults to 1, only necessary for other values
+            'backupCount': 10, # how many backup file to keep, 10 days
+            'formatter': 'django',
+            'encoding':'utf8',
         },
     },
-    "handlers": {
-        "default": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose" if DEBUG else "json",
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
         },
-        "django.server": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "django.server" if DEBUG else "json",
-        },
-        "null": {
-            "class": "logging.NullHandler",
-        },
-    },
-    "loggers": {
-        "django": {"level": "INFO", "propagate": True},
-        "django.server": {
-            "handlers": ["django.server"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "saleor": {"level": "DEBUG", "propagate": True},
-        "saleor.graphql.errors.handled": {
-            "handlers": ["default"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "graphql.execution.utils": {"propagate": False, "handlers": ["null"]},
     },
 }
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+REDIS_CHANNEL = os.environ.get("REDIS_CHANNEL")
+if REDIS_CHANNEL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(REDIS_CHANNEL, 6379)],
+            },
+        },
+    }
+
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "root": {"level": "INFO", "handlers": ["default"]},
+#     "formatters": {
+#         "django.server": {
+#             "()": "django.utils.log.ServerFormatter",
+#             "format": "[{server_time}] {message}",
+#             "style": "{",
+#         },
+#         "json": {
+#             "()": "saleor.core.logging.JsonFormatter",
+#             "datefmt": "%Y-%m-%dT%H:%M:%SZ",
+#             "format": (
+#                 "%(asctime)s %(levelname)s %(lineno)s %(message)s %(name)s "
+#                 + "%(pathname)s %(process)d %(threadName)s"
+#             ),
+#         },
+#         "verbose": {
+#             "format": (
+#                 "%(levelname)s %(name)s %(message)s [PID:%(process)d:%(threadName)s]"
+#             )
+#         },
+#     },
+#     "handlers": {
+#         "default": {
+#             "level": "DEBUG",
+#             "class": "logging.StreamHandler",
+#             "formatter": "verbose" if DEBUG else "json",
+#         },
+#         "django.server": {
+#             "level": "INFO",
+#             "class": "logging.StreamHandler",
+#             "formatter": "django.server" if DEBUG else "json",
+#         },
+#         "null": {
+#             "class": "logging.NullHandler",
+#         },
+#     },
+#     "loggers": {
+#         # "django": {"level": "INFO", "propagate": True},
+#         "django.server": {
+#             "handlers": ["django.server"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "saleor": {"level": "DEBUG", "propagate": True},
+#         "saleor.graphql.errors.handled": {
+#             "handlers": ["default"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "graphql.execution.utils": {"propagate": False, "handlers": ["null"]},
+#     },
+# }
 
 AUTH_USER_MODEL = "account.User"
 
@@ -397,28 +415,32 @@ MAX_CHECKOUT_LINE_QUANTITY = int(os.environ.get("MAX_CHECKOUT_LINE_QUANTITY", 50
 
 TEST_RUNNER = "saleor.tests.runner.PytestTestRunner"
 
-
 PLAYGROUND_ENABLED = get_bool_from_env("PLAYGROUND_ENABLED", True)
 
-ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1"))
+ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS","*"))
+# ALLOWED_HOSTS = ["*"]
 ALLOWED_GRAPHQL_ORIGINS = get_list(os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*"))
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Amazon S3 configuration
 # See https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_LOCATION = os.environ.get("AWS_LOCATION", "")
-AWS_MEDIA_BUCKET_NAME = os.environ.get("AWS_MEDIA_BUCKET_NAME")
+AWS_MEDIA_BUCKET_NAME = os.environ.get("AWS_MEDIA_BUCKET_NAME", "")
+
 AWS_MEDIA_CUSTOM_DOMAIN = os.environ.get("AWS_MEDIA_CUSTOM_DOMAIN")
 AWS_QUERYSTRING_AUTH = get_bool_from_env("AWS_QUERYSTRING_AUTH", False)
 AWS_QUERYSTRING_EXPIRE = get_bool_from_env("AWS_QUERYSTRING_EXPIRE", 3600)
-AWS_S3_CUSTOM_DOMAIN = os.environ.get("AWS_STATIC_CUSTOM_DOMAIN")
-AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
-AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", None)
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
+AWS_S3_CUSTOM_DOMAIN = os.environ.get("AWS_STATIC_CUSTOM_DOMAIN", f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com')
+AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-AWS_DEFAULT_ACL = os.environ.get("AWS_DEFAULT_ACL", None)
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+APP_QUEUE = 'orderich-%s-' % os.environ.get('APP_ENV', 'dev')
+# AWS_DEFAULT_ACL = os.environ.get("AWS_DEFAULT_ACL", None)
+AWS_DEFAULT_ACL = "public-read"
 AWS_S3_FILE_OVERWRITE = get_bool_from_env("AWS_S3_FILE_OVERWRITE", True)
 
 # Google Cloud Storage configuration
@@ -437,7 +459,9 @@ GS_FILE_OVERWRITE = get_bool_from_env("GS_FILE_OVERWRITE", True)
 if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
     GS_CREDENTIALS = os.environ.get("GS_CREDENTIALS")
 
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
 if AWS_STORAGE_BUCKET_NAME:
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 elif GS_BUCKET_NAME:
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
@@ -488,11 +512,26 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_URL = (
     os.environ.get("CELERY_BROKER_URL", os.environ.get("CLOUDAMQP_URL")) or ""
 )
+
+BROKER_TRANSPORT_OPTIONS = {
+    'polling_interval': 3,
+    'visibility_timeout': 3600,
+    'queue_name_prefix': APP_QUEUE,
+}
+
+CELERY_EVENT_QUEUE_PREFIX=APP_QUEUE
 CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
-CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_ACCEPT_CONTENT = ["json", "pickle", "application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", None)
+
+CELERY_DEFAULT_QUEUE = APP_QUEUE
+CELERY_CONTENT_ENCODING = "utf-8"
+CELERY_ENABLE_REMOTE_CONTROL = False
+CELERY_SEND_EVENTS = False
+# Reason why we need the above is explained in Configuration Gotchas section.
+SQS_QUEUE_NAME = APP_QUEUE
 
 # Change this value if your application is running behind a proxy,
 # e.g. HTTP_CF_Connecting_IP for Cloudflare or X_FORWARDED_FOR
@@ -503,7 +542,6 @@ DEFAULT_MENUS = {"top_menu_name": "navbar", "bottom_menu_name": "footer"}
 
 # Slug for channel precreated in Django migrations
 DEFAULT_CHANNEL_SLUG = os.environ.get("DEFAULT_CHANNEL_SLUG", "default-channel")
-
 
 #  Sentry
 sentry_sdk.utils.MAX_STRING_LENGTH = 4096
@@ -521,6 +559,7 @@ GRAPHENE = {
         "saleor.graphql.middleware.JWTMiddleware",
         "saleor.graphql.middleware.app_middleware",
     ],
+    "SUBSCRIPTION_PATH": "/graphql"
 }
 
 PLUGINS = [
@@ -602,6 +641,22 @@ JWT_TTL_REFRESH = timedelta(seconds=parse(os.environ.get("JWT_TTL_REFRESH", "30 
 JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
     seconds=parse(os.environ.get("JWT_TTL_REQUEST_EMAIL_CHANGE", "1 hour")),
 )
+
+
+# Verify SSL API_URL
+VERIFY_SSL_API = os.environ.get("VERIFY_SSL_API")
+
+# Main site
+MAIN_SITE = os.environ.get("MAIN_SITE")
+
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:3000',
+#     'https://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'https://127.0.0.1:3000',
+# ]
+
+# CORS_ALLOW_CREDENTIALS = True
 
 # Support multiple interface notation in schema for Apollo tooling.
 

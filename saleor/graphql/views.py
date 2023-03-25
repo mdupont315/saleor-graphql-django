@@ -106,7 +106,7 @@ class GraphQLView(View):
                     response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
                     response[
                         "Access-Control-Allow-Headers"
-                    ] = "Origin, Content-Type, Accept, Authorization"
+                    ] = "Origin, Content-Type, Accept, Authorization, FROMDB"
                     response["Access-Control-Allow-Credentials"] = "true"
                     break
         return response

@@ -1,5 +1,6 @@
 """Checkout-related ORM models."""
 from operator import attrgetter
+from saleor.store.models import Store
 from typing import TYPE_CHECKING, Iterable, Optional
 from uuid import uuid4
 
@@ -12,7 +13,7 @@ from django_prices.models import MoneyField
 from prices import Money
 
 from ..channel.models import Channel
-from ..core.models import ModelWithMetadata
+from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata
 from ..core.permissions import CheckoutPermissions
 from ..core.taxes import zero_money
 from ..core.weight import zero_weight
@@ -32,9 +33,16 @@ def get_default_country():
     return settings.DEFAULT_COUNTRY
 
 
-class Checkout(ModelWithMetadata):
+class Checkout(MultitenantModelWithMetadata):
     """A shopping checkout."""
-
+    store = models.ForeignKey(
+        Store,
+        related_name="checkouts",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     created = models.DateTimeField(auto_now_add=True)
     last_change = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(
@@ -44,7 +52,7 @@ class Checkout(ModelWithMetadata):
         related_name="checkouts",
         on_delete=models.CASCADE,
     )
-    email = models.EmailField()
+    # email = models.EmailField()
     token = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     channel = models.ForeignKey(
         Channel,
@@ -97,8 +105,20 @@ class Checkout(ModelWithMetadata):
     language_code = models.CharField(
         max_length=35, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
     )
+    order_type = models.CharField(
+        max_length=35, choices=settings.ORDER_TYPES, default=settings.ORDER_TYPE_DEFAULT
+    )
+    expected_date = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    expected_time = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    table_name = models.CharField(
+        max_length=100, null=True, blank=True
+    )
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("-last_change", "pk")
         permissions = (
             (CheckoutPermissions.MANAGE_CHECKOUTS.codename, "Manage checkouts"),
@@ -108,7 +128,8 @@ class Checkout(ModelWithMetadata):
         return iter(self.lines.all())
 
     def get_customer_email(self) -> str:
-        return self.user.email if self.user else self.email
+        email = self.billing_address.email if self.billing_address else ''
+        return self.user.email if self.user else email
 
     def is_shipping_required(self) -> bool:
         """Return `True` if any of the lines requires shipping."""
@@ -153,10 +174,10 @@ class Checkout(ModelWithMetadata):
         address = self.shipping_address or self.billing_address
         saved_country = self.country
         if address is None or not address.country:
-            return saved_country.code
+            return saved_country
 
-        country_code = address.country.code
-        if not country_code == saved_country.code:
+        country_code = address.country
+        if not country_code == saved_country:
             self.set_country(country_code, commit=True)
         return country_code
 

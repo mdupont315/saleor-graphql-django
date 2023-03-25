@@ -1,4 +1,5 @@
 import os
+from saleor.graphql.core.connection import CountableDjangoObjectType
 import secrets
 from itertools import chain
 from typing import Iterable, Tuple, Union
@@ -26,7 +27,6 @@ from .utils import from_global_id_or_error, snake_to_camel_case
 from .utils.error_codes import get_error_code_from_error
 
 registry = get_global_registry()
-
 
 def get_model_name(model):
     """Return name of the model with first letter lowercase."""
@@ -414,7 +414,6 @@ class ModelMutation(BaseMutation):
         Override this method to provide custom transformations of incoming
         data.
         """
-
         def is_list_of_ids(field):
             if isinstance(field.type, graphene.List):
                 of_type = field.type.of_type
@@ -520,6 +519,7 @@ class ModelMutation(BaseMutation):
         """
         instance = cls.get_instance(info, **data)
         data = data.get("input")
+        
         cleaned_input = cls.clean_input(info, instance, data)
         instance = cls.construct_instance(instance, cleaned_input)
         cls.clean_instance(info, instance)

@@ -1,7 +1,11 @@
+from logging import Logger
+from django.core.handlers.wsgi import WSGIRequest
+from django.http.response import HttpResponse, HttpResponseNotFound, JsonResponse
+from saleor.checkout.models import Checkout
 from typing import TYPE_CHECKING, List
 
 from saleor.plugins.base_plugin import BasePlugin, ConfigurationTypeField
-
+from .webhooks import handle_webhook
 from ..utils import get_supported_currencies, require_active_plugin
 from . import (
     GatewayConfig,
@@ -14,7 +18,7 @@ from . import (
 )
 
 GATEWAY_NAME = "Stripe"
-
+WEBHOOK_PATH = "webhooks/"
 if TYPE_CHECKING:
     # flake8: noqa
     from ...interface import CustomerSource
@@ -24,9 +28,11 @@ if TYPE_CHECKING:
 class StripeGatewayPlugin(BasePlugin):
     PLUGIN_NAME = GATEWAY_NAME
     PLUGIN_ID = "mirumee.payments.stripe"
+    CONFIGURATION_PER_CHANNEL = False
     DEFAULT_CONFIGURATION = [
         {"name": "Public API key", "value": None},
         {"name": "Secret API key", "value": None},
+        {"name": "Weebhook secret", "value": None},
         {"name": "Store customers card", "value": False},
         {"name": "Automatic payment capture", "value": True},
         {"name": "Supported currencies", "value": ""},
@@ -42,6 +48,11 @@ class StripeGatewayPlugin(BasePlugin):
             "type": ConfigurationTypeField.SECRET,
             "help_text": "Provide Stripe secret API key.",
             "label": "Secret API key",
+        },
+        "Weebhook secret": {
+            "type": ConfigurationTypeField.SECRET,
+            "help_text": "Provide Stripe webhook secret.",
+            "label": "Weebhook secret",
         },
         "Store customers card": {
             "type": ConfigurationTypeField.BOOLEAN,
@@ -72,6 +83,7 @@ class StripeGatewayPlugin(BasePlugin):
             connection_params={
                 "public_key": configuration["Public API key"],
                 "private_key": configuration["Secret API key"],
+                "webhook_secret": configuration["Weebhook secret"]
             },
             store_customer=configuration["Store customers card"],
         )
@@ -105,9 +117,9 @@ class StripeGatewayPlugin(BasePlugin):
 
     @require_active_plugin
     def process_payment(
-        self, payment_information: "PaymentData", previous_value
+        self, payment_information: "PaymentData", checkout: Checkout, previous_value
     ) -> "GatewayResponse":
-        return process_payment(payment_information, self._get_gateway_config())
+        return process_payment(payment_information, self._get_gateway_config(), checkout=checkout)
 
     @require_active_plugin
     def list_payment_sources(
@@ -129,3 +141,14 @@ class StripeGatewayPlugin(BasePlugin):
             {"field": "api_key", "value": config.connection_params["public_key"]},
             {"field": "store_customer_card", "value": config.store_customer},
         ]
+
+    @require_active_plugin  
+    def webhook(self, request: WSGIRequest, path: str, previous_value) -> HttpResponse:
+        config = self._get_gateway_config()
+        if path.startswith(WEBHOOK_PATH, 1):  # 1 as we don't check the '/'
+            # return JsonResponse(data={"sucess": True})
+            return handle_webhook(request, config)
+        Logger.warning(
+            "Received request to incorrect stripe path", extra={"path": path}
+        )
+        return HttpResponseNotFound()

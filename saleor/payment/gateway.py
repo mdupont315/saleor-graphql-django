@@ -1,5 +1,6 @@
 import logging
 from decimal import Decimal
+from saleor.checkout.models import Checkout
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 from ..core.tracing import traced_atomic_transaction
@@ -78,7 +79,9 @@ def process_payment(
     customer_id: str = None,
     store_source: bool = False,
     additional_data: Optional[dict] = None,
+    checkout: Checkout = None
 ) -> Transaction:
+
     payment_data = create_payment_information(
         payment=payment,
         payment_token=token,
@@ -86,12 +89,12 @@ def process_payment(
         store_source=store_source,
         additional_data=additional_data,
     )
-
     response, error = _fetch_gateway_response(
         manager.process_payment,
         payment.gateway,
         payment_data,
         channel_slug=channel_slug,
+        checkout=checkout,
     )
     action_required = response is not None and response.action_required
     if response and response.payment_method_info:
@@ -142,7 +145,6 @@ def authorize(
     )
 
 
-@payment_postprocess
 @raise_payment_error
 @require_active_payment
 @with_locked_payment

@@ -23,7 +23,7 @@ from .mutations import (
     VoucherRemoveCatalogues,
     VoucherUpdate,
 )
-from .resolvers import resolve_sale, resolve_sales, resolve_voucher, resolve_vouchers
+from .resolvers import resolve_sale, resolve_sales, resolve_voucher, resolve_vouchers, resolve_voucher_will_applied
 from .sorters import SaleSortingInput, VoucherSortingInput
 from .types import Sale, Voucher
 
@@ -77,6 +77,13 @@ class DiscountQueries(graphene.ObjectType):
         ),
         description="List of the shop's vouchers.",
     )
+    voucher_will_applied = graphene.Field(
+        Voucher,
+        channel=graphene.String(
+            description="Slug of a channel for which the data should be returned."
+        ),
+        description="Look up a voucher by ID.",
+    )
 
     @permission_required(DiscountPermissions.MANAGE_DISCOUNTS)
     @traced_resolver
@@ -93,9 +100,12 @@ class DiscountQueries(graphene.ObjectType):
         _, id = from_global_id_or_error(id, Voucher)
         return resolve_voucher(id, channel)
 
-    @permission_required(DiscountPermissions.MANAGE_DISCOUNTS)
+    # @permission_required(DiscountPermissions.MANAGE_DISCOUNTS)
     def resolve_vouchers(self, info, channel=None, **kwargs):
         return resolve_vouchers(info, channel_slug=channel, **kwargs)
+
+    def resolve_voucher_will_applied(self, info, channel=None):
+        return resolve_voucher_will_applied(channel)
 
 
 class DiscountMutations(graphene.ObjectType):
