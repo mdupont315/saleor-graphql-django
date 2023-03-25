@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, List, Union
-
+from saleor.store.models import Store
 from django.conf import settings
 from django.db import models
 from django.db.models import OuterRef, Q, Subquery
@@ -11,7 +11,7 @@ from prices import Money
 
 from ..channel.models import Channel
 from ..core.db.fields import SanitizedJSONField
-from ..core.models import ModelWithMetadata
+from ..core.models import CustomQueryset, ModelWithMetadata, MultitenantModelWithMetadata
 from ..core.permissions import ShippingPermissions
 from ..core.units import WeightUnits
 from ..core.utils.editorjs import clean_editor_js
@@ -73,7 +73,15 @@ def _get_weight_type_display(min_weight, max_weight):
     }
 
 
-class ShippingZone(ModelWithMetadata):
+class ShippingZone(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="shipping_zones",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=100)
     countries = CountryField(multiple=True, default=[], blank=True)
     default = models.BooleanField(default=False)
@@ -83,13 +91,13 @@ class ShippingZone(ModelWithMetadata):
     def __str__(self):
         return self.name
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         permissions = (
             (ShippingPermissions.MANAGE_SHIPPING.codename, "Manage shipping."),
         )
 
 
-class ShippingMethodQueryset(models.QuerySet):
+class ShippingMethodQueryset(CustomQueryset):
     def price_based(self):
         return self.filter(type=ShippingMethodType.PRICE_BASED)
 
@@ -158,7 +166,7 @@ class ShippingMethodQueryset(models.QuerySet):
             return None
         if not country_code:
             # TODO: country_code should come from argument
-            country_code = instance.shipping_address.country.code  # type: ignore
+            country_code = instance.shipping_address.country  # type: ignore
         if lines is None:
             # TODO: lines should comes from args in get_valid_shipping_methods_for_order
             lines = instance.lines.prefetch_related("variant__product").all()
@@ -169,7 +177,7 @@ class ShippingMethodQueryset(models.QuerySet):
             price=price,
             channel_id=channel_id,
             weight=instance.get_total_weight(lines),
-            country_code=country_code or instance.shipping_address.country.code,
+            country_code=country_code or instance.shipping_address.country,
             product_ids=instance_product_ids,
         ).prefetch_related("postal_code_rules")
 
@@ -178,7 +186,15 @@ class ShippingMethodQueryset(models.QuerySet):
         )
 
 
-class ShippingMethod(ModelWithMetadata):
+class ShippingMethod(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="shipping_methods",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=30, choices=ShippingMethodType.CHOICES)
     shipping_zone = models.ForeignKey(
@@ -207,7 +223,7 @@ class ShippingMethod(ModelWithMetadata):
     objects = ShippingMethodQueryset.as_manager()
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("pk",)
 
     def __str__(self):

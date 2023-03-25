@@ -1,19 +1,28 @@
+from saleor.store.models import Store
 from django.db import models
 from mptt.managers import TreeManager
 from mptt.models import MPTTModel
 
-from ..core.models import ModelWithMetadata, SortableModel
+from ..core.models import ModelWithMetadata, MultitenantModelWithMetadata, SortableModel
 from ..core.permissions import MenuPermissions
 from ..core.utils.translations import TranslationProxy
 from ..page.models import Page
 from ..product.models import Category, Collection
 
 
-class Menu(ModelWithMetadata):
+class Menu(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="menus",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=250)
     slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("pk",)
         permissions = ((MenuPermissions.MANAGE_MENUS.codename, "Manage navigation."),)
 
@@ -21,7 +30,15 @@ class Menu(ModelWithMetadata):
         return self.name
 
 
-class MenuItem(ModelWithMetadata, MPTTModel, SortableModel):
+class MenuItem(MultitenantModelWithMetadata, MPTTModel, SortableModel):
+    store = models.ForeignKey(
+        Store,
+        related_name="items",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     menu = models.ForeignKey(Menu, related_name="items", on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
     parent = models.ForeignKey(
@@ -38,11 +55,10 @@ class MenuItem(ModelWithMetadata, MPTTModel, SortableModel):
     )
     page = models.ForeignKey(Page, blank=True, null=True, on_delete=models.CASCADE)
 
-    objects = models.Manager()
     tree = TreeManager()
     translated = TranslationProxy()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("sort_order", "pk")
         app_label = "menu"
 

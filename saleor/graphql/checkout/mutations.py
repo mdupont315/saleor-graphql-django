@@ -1,4 +1,6 @@
 import datetime
+from saleor.core.utils.logging import log_info
+from saleor.table_service.error_codes import TableServiceErrorCode
 from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple
 
 import graphene
@@ -40,11 +42,12 @@ from ...warehouse.availability import check_stock_quantity_bulk
 from ..account.i18n import I18nMixin
 from ..account.types import AddressInput
 from ..channel.utils import clean_channel
-from ..core.enums import LanguageCodeEnum
+from ..core.enums import LanguageCodeEnum, OrderTypeEnum
 from ..core.mutations import BaseMutation, ModelMutation
 from ..core.types.common import CheckoutError
 from ..core.validators import validate_variants_available_in_channel
 from ..order.types import Order
+from ...table_service.models import TableService
 from ..product.types import ProductVariant
 from ..shipping.types import ShippingMethod
 from ..utils import get_user_country_context
@@ -195,10 +198,16 @@ def validate_variants_available_for_purchase(variants_id: set, channel_id: int):
             }
         )
 
+class ProductOptionValue(graphene.InputObjectType):
+    option_value_id = graphene.ID(required=True, description="The number of items purchased.")
 
 class CheckoutLineInput(graphene.InputObjectType):
     quantity = graphene.Int(required=True, description="The number of items purchased.")
     variant_id = graphene.ID(required=True, description="ID of the product variant.")
+    option_values = graphene.List(
+        ProductOptionValue,
+        required=False, description="option values"
+    )
 
 
 class CheckoutCreateInput(graphene.InputObjectType):
@@ -213,7 +222,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
         ),
         required=True,
     )
-    email = graphene.String(description="The customer's email address.")
+    # email = graphene.String(description="The customer's email address.")
     shipping_address = AddressInput(
         description=(
             "The mailing address to where the checkout will be shipped. "
@@ -225,7 +234,18 @@ class CheckoutCreateInput(graphene.InputObjectType):
     language_code = graphene.Argument(
         LanguageCodeEnum, required=False, description="Checkout language code."
     )
-
+    order_type = graphene.Argument(
+        OrderTypeEnum, description="Checkout type."
+    )
+    expected_date = graphene.String(
+        description="Expected date to receive order."
+    )
+    expected_time = graphene.String(
+        description="Expected date to receive order."
+    )
+    table_name = graphene.String(
+        description="Table name"
+    )
 
 class CheckoutCreate(ModelMutation, I18nMixin):
     created = graphene.Field(
@@ -255,23 +275,35 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         cls, lines, country, channel
     ) -> Tuple[List[product_models.ProductVariant], List[int]]:
         variant_ids = [line["variant_id"] for line in lines]
-        variants = cls.get_nodes_or_error(
-            variant_ids,
-            "variant_id",
-            ProductVariant,
-            qs=product_models.ProductVariant.objects.prefetch_related(
-                "product__product_type"
-            ),
-        )
+
+        # variants = cls.get_nodes_or_error(
+        #     variant_ids,
+        #     "variant_id",
+        #     ProductVariant,
+        #     qs=product_models.ProductVariant.objects.prefetch_related(
+        #         "product__product_type"
+        #     ),
+        # )
+        variants = []
+        for id in variant_ids:
+            variants.append(cls.get_nodes_or_error(
+                [id],
+                "variant_id",
+                ProductVariant,
+                qs=product_models.ProductVariant.objects.prefetch_related(
+                    "product__product_type"
+                ),
+            )[0])
 
         quantities = [line["quantity"] for line in lines]
+        option_values = [line.get("option_values", []) for line in lines]
         variant_db_ids = {variant.id for variant in variants}
-        validate_variants_available_for_purchase(variant_db_ids, channel.id)
+        # validate_variants_available_for_purchase(variant_db_ids, channel.id)
         validate_variants_available_in_channel(
             variant_db_ids, channel.id, CheckoutErrorCode.UNAVAILABLE_VARIANT_IN_CHANNEL
         )
         check_lines_quantity(variants, quantities, country, channel.slug)
-        return variants, quantities
+        return variants, quantities, option_values
 
     @classmethod
     def retrieve_shipping_address(cls, user, data: dict) -> Optional["Address"]:
@@ -315,12 +347,13 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             (
                 cleaned_input["variants"],
                 cleaned_input["quantities"],
+                cleaned_input["option_values"],
             ) = cls.clean_checkout_lines(lines, country, cleaned_input["channel"])
 
         # Use authenticated user's email as default email
-        if user.is_authenticated:
-            email = data.pop("email", None)
-            cleaned_input["email"] = email or user.email
+        # if user.is_authenticated:
+        #     email = data.pop("email", None)
+        #     cleaned_input["email"] = email or user.email
 
         language_code = data.get("language_code", settings.LANGUAGE_CODE)
         cleaned_input["language_code"] = language_code
@@ -328,6 +361,20 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         cleaned_input["shipping_address"] = shipping_address
         cleaned_input["billing_address"] = billing_address
         cleaned_input["country"] = country
+
+        # validate the table name if have table name
+        table_name = cleaned_input.get("table_name")
+        if table_name:
+            table = TableService.objects.filter(table_name=table_name).first()
+            if not table:
+                raise ValidationError(
+                {
+                    "table_name": ValidationError(
+                        "table name doesn't exists.",
+                        code=TableServiceErrorCode.NOT_EXISTS,
+                    )
+                }
+            )
         return cleaned_input
 
     @classmethod
@@ -337,6 +384,8 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         # Create the checkout object
         instance.save()
 
+        log_info('Checkout', 'Create Checkout', content=instance.__dict__)
+
         # Set checkout country
         country = cleaned_input["country"]
         instance.set_country(country)
@@ -344,9 +393,10 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         # Create checkout lines
         variants = cleaned_input.get("variants")
         quantities = cleaned_input.get("quantities")
+        option_values = cleaned_input.get("option_values")
         if variants and quantities:
             try:
-                add_variants_to_checkout(instance, variants, quantities, channel.slug)
+                add_variants_to_checkout(instance, variants, quantities, option_values, channel.slug)
             except InsufficientStock as exc:
                 error = prepare_insufficient_stock_checkout_validation_error(exc)
                 raise ValidationError({"lines": error})
@@ -388,6 +438,68 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         response.created = True
         return response
 
+class CheckoutUpdateInput(graphene.InputObjectType):
+    channel = graphene.String(
+        description="Slug of a channel in which to create a checkout."
+    )
+    note = graphene.String(
+        description="Slug of a channel in which to create a checkout."
+    )
+    language_code = graphene.Argument(
+        LanguageCodeEnum, required=False, description="Checkout language code."
+    )
+    order_type = graphene.Argument(
+        OrderTypeEnum, description="Checkout type."
+    )
+    expected_date = graphene.String(
+        description="Expected date to receive order."
+    )
+    expected_time = graphene.String(
+        description="Expected date to receive order."
+    )
+    table_name = graphene.String(
+        description="Table name."
+    )
+
+class CheckoutInfoUpdate(BaseMutation):
+    checkout = graphene.Field(Checkout, description="An updated checkout.")
+    class Arguments:
+        checkout_id = graphene.ID(description="The ID of the checkout.", required=True)
+        input = CheckoutUpdateInput(
+            required=True, description="Fields required to create checkout."
+        )
+
+    class Meta:
+        description = "Create a new checkout."
+        model = models.Checkout
+        return_field_name = "checkout"
+        error_type_class = CheckoutError
+        error_type_field = "checkout_errors"
+    
+    @classmethod
+    def perform_mutation(cls, _root, info, checkout_id, **data):
+        checkout = cls.get_node_or_error(
+            info, checkout_id, only_type=Checkout, field="checkout_id"
+        )
+        input = data.get("input", {})
+        if input.get("channel"):
+            checkout.channel = input.get("channel")
+        if input.get("order_type"):
+            checkout.order_type = input.get("order_type")
+        if input.get("language_code"):
+            checkout.language_code = input.get("language_code")
+        if input.get("expected_date"):
+            checkout.expected_date = input.get("expected_date")
+        if input.get("expected_time"):
+            checkout.expected_time = input.get("expected_time")
+        if input.get("note"):
+            checkout.note = input.get("note")
+        if input.get("table_name"):
+            checkout.note = input.get("table_name")
+        checkout.save()
+        info.context.plugins.checkout_updated(checkout)
+        log_info('Checkout', 'Update Checkout', content=checkout.__dict__)
+        return CheckoutLanguageCodeUpdate(checkout=checkout)
 
 class CheckoutLinesAdd(BaseMutation):
     checkout = graphene.Field(Checkout, description="An updated checkout.")
@@ -456,6 +568,7 @@ class CheckoutLinesAdd(BaseMutation):
         )
         discounts = info.context.discounts
         manager = info.context.plugins
+        print(lines,"======lines")
 
         variant_ids = [line.get("variant_id") for line in lines]
         variants = cls.get_nodes_or_error(variant_ids, "variant_id", ProductVariant)
@@ -855,6 +968,12 @@ class CheckoutComplete(BaseMutation):
             "Confirmation data used to process additional authorization steps."
         ),
     )
+    redirect_url = graphene.String(
+        required=False,
+        description=(
+            "Redirect URL"
+        ),
+    )
 
     class Arguments:
         checkout_id = graphene.ID(description="Checkout ID.", required=True)
@@ -931,7 +1050,7 @@ class CheckoutComplete(BaseMutation):
             checkout_info = fetch_checkout_info(
                 checkout, lines, info.context.discounts, manager
             )
-            order, action_required, action_data = complete_checkout(
+            order, action_required, action_data, redirect_url = complete_checkout(
                 manager=manager,
                 checkout_info=checkout_info,
                 lines=lines,
@@ -943,12 +1062,17 @@ class CheckoutComplete(BaseMutation):
                 tracking_code=tracking_code,
                 redirect_url=data.get("redirect_url"),
             )
+        # write log
+        log_info('Checkout', 'Checkout Lines', content=lines)
+
+
         # If gateway returns information that additional steps are required we need
         # to inform the frontend and pass all required data
         return CheckoutComplete(
             order=order,
             confirmation_needed=action_required,
             confirmation_data=action_data,
+            redirect_url=redirect_url
         )
 
 

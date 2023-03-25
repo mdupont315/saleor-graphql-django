@@ -3,14 +3,14 @@ from typing import Set
 from django.contrib.auth.models import Permission
 from django.db import models
 from oauthlib.common import generate_token
-
-from ..core.models import Job, ModelWithMetadata
+from saleor.store.models import Store
+from ..core.models import CustomQueryset, Job, MultitenantModelWithMetadata
 from ..core.permissions import AppPermission
 from ..webhook.event_types import WebhookEventType
 from .types import AppType
 
 
-class AppQueryset(models.QuerySet):
+class AppQueryset(CustomQueryset):
     def for_event_type(self, event_type: str):
         permissions = {}
         required_permission = WebhookEventType.PERMISSIONS.get(event_type)
@@ -26,7 +26,15 @@ class AppQueryset(models.QuerySet):
         )
 
 
-class App(ModelWithMetadata):
+class App(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="apps",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     name = models.CharField(max_length=60)
     created = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
@@ -52,7 +60,7 @@ class App(ModelWithMetadata):
 
     objects = AppQueryset.as_manager()
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("name", "pk")
         permissions = (
             (

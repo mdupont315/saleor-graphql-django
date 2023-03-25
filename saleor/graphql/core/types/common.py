@@ -38,6 +38,11 @@ from ..enums import (
     WebhookErrorCode,
     WeightUnitsEnum,
     WishlistErrorCode,
+    DeliveryErrorCode,
+    StoreErrorCode,
+    ServiceTimeErrorCode,
+    OptionErrorCode,
+    TableServiceErrorCode,
 )
 from .money import VAT
 
@@ -165,7 +170,6 @@ class MenuError(Error):
 class OrderSettingsError(Error):
     code = OrderSettingsErrorCode(description="The error code.", required=True)
 
-
 class MetadataError(Error):
     code = MetadataErrorCode(description="The error code.", required=True)
 
@@ -225,6 +229,7 @@ class ProductError(Error):
 
 class CollectionError(ProductWithoutVariantError):
     code = CollectionErrorCode(description="The error code.", required=True)
+
 
 
 class ProductChannelListingError(ProductError):
@@ -295,7 +300,9 @@ class PageError(Error):
         required=False,
     )
 
-
+class DeliveryError(Error):
+    code = DeliveryErrorCode(description="The error code.", required=True)
+    
 class PaymentError(Error):
     code = PaymentErrorCode(description="The error code.", required=True)
 
@@ -337,6 +344,17 @@ class WishlistError(ProductWithoutVariantError):
 class TranslationError(Error):
     code = TranslationErrorCode(description="The error code.", required=True)
 
+class StoreError(Error):
+    code = StoreErrorCode(description="The error code.", required=True)
+
+class ServiceTimeError(Error):
+    code = ServiceTimeErrorCode(description="The error code.", required=True)
+
+class TableServiceError(Error):
+    code = TableServiceErrorCode(description="The error code.", required=True)
+
+class OptionError(Error):
+    code = OptionErrorCode(description="The error code.", required=True)
 
 class SeoInput(graphene.InputObjectType):
     title = graphene.String(description="SEO title.")

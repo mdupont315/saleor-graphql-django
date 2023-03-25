@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from saleor.graphql.option.types import Option
 from typing import Optional
 
 import graphene
@@ -6,6 +7,7 @@ from django.conf import settings
 from django_countries.fields import Country
 from graphene import relay
 from graphene_federation import key
+from saleor.graphql.product.resolvers import resolve_product_option
 
 from ....account.utils import requestor_is_staff_member_or_app
 from ....attribute import models as attribute_models
@@ -525,6 +527,9 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
         address=destination_address_argument,
         description="Whether the product is in stock and visible or not.",
     )
+    enable = graphene.Boolean(
+        description="Whether the product is visible or not.",
+    )
     tax_type = graphene.Field(
         TaxType, description="A type of tax. Assigned by enabled tax gateway"
     )
@@ -553,6 +558,9 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     variants = graphene.List(
         ProductVariant, description="List of variants for the product."
     )
+    options = graphene.List(
+        Option, description="List of variants for the product."
+    )
     media = graphene.List(
         graphene.NonNull(lambda: ProductMedia),
         description="List of media for the product.",
@@ -578,6 +586,7 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     is_available_for_purchase = graphene.Boolean(
         description="Whether the product is available for purchase."
     )
+    # sort_order = graphene.
 
     class Meta:
         default_resolver = ChannelContextType.resolver_with_context
@@ -590,6 +599,7 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
             "description",
             "id",
             "name",
+            "enable",
             "slug",
             "product_type",
             "seo_description",
@@ -815,6 +825,13 @@ class Product(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     @traced_resolver
     def resolve_channel_listings(root: ChannelContext[models.Product], info, **_kwargs):
         return ProductChannelListingByProductIdLoader(info.context).load(root.node.id)
+    
+    @staticmethod
+    @traced_resolver
+    def resolve_options(root: ChannelContext[models.Product], info, **_kwargs):
+        if root.channel_slug:
+            return root.node.options.visible_to_user(root.channel_slug)
+        return root.node.options.all()
 
     @staticmethod
     @traced_resolver
@@ -1105,7 +1122,31 @@ class Collection(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
         description = root.node.description
         return description if description is not None else {}
 
+class ProductOption(CountableDjangoObjectType):
+    product_id = graphene.String(description="product_id")
+    option_id = graphene.String(description="option_id")
+    sort_order = graphene.Int(description="sort_order")
+    
+    class Meta:
+        description = (
+            "ProductOption"
+        )
+        only_fields = [
+            "option",
+            "id",
+            "sort_order"
+        ]
+        interfaces = [graphene.relay.Node]
+        model = models.ProductOption
 
+    # @traced_resolver
+    # def resolve_product_option(self, info,product_id=None, level=None, **kwargs):
+    #     print("SELF", self)
+    #     print("INFO", info)
+    #     print("product_id", product_id)
+    #     if product_id:
+    #         _, id = from_global_id_or_error(product_id, ProductOption)
+    #         return resolve_product_option(id)
 @key(fields="id")
 class Category(CountableDjangoObjectType):
     description_json = graphene.JSONString(
@@ -1122,6 +1163,7 @@ class Category(CountableDjangoObjectType):
         channel=graphene.String(
             description="Slug of a channel for which the data should be returned."
         ),
+        sort_by=ProductOrder(description="Sort products."),
         description="List of products in the category.",
     )
     children = PrefetchingConnectionField(
@@ -1131,7 +1173,9 @@ class Category(CountableDjangoObjectType):
         Image, size=graphene.Int(description="Size of the image.")
     )
     translation = TranslationField(CategoryTranslation, type_name="category")
-
+    enable = graphene.Boolean(
+        description="Whether the category is visible or not.",
+    )
     class Meta:
         description = (
             "Represents a single category of products. Categories allow to organize "
@@ -1143,6 +1187,7 @@ class Category(CountableDjangoObjectType):
             "id",
             "level",
             "name",
+            "enable",
             "parent",
             "seo_description",
             "seo_title",
@@ -1191,14 +1236,14 @@ class Category(CountableDjangoObjectType):
         if channel is None and not is_staff:
             channel = get_default_channel_slug_or_graphql_error()
         qs = models.Product.objects.all()
-        if not is_staff:
-            qs = (
-                qs.published(channel)
-                .annotate_visible_in_listings(channel)
-                .exclude(
-                    visible_in_listings=False,
-                )
-            )
+        # if not is_staff:
+        #     qs = (
+        #         qs.published(channel)
+        #         .annotate_visible_in_listings(channel)
+        #         .exclude(
+        #             visible_in_listings=False,
+        #         )
+        #     )
         if channel and is_staff:
             qs = qs.filter(channel_listings__channel__slug=channel)
         qs = qs.filter(category__in=tree)

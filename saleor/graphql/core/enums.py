@@ -31,6 +31,10 @@ from ...warehouse import error_codes as warehouse_error_codes
 from ...webhook import error_codes as webhook_error_codes
 from ...wishlist import error_codes as wishlist_error_codes
 from ..shop import error_codes as shop_error_codes
+from ...delivery import error_codes as delivery_error_codes
+from ...store import error_codes as store_error_codes
+from ...servicetime import error_codes as service_time_error_codes
+from ...table_service import error_codes as table_service_error_codes
 from .utils import str_to_enum
 
 
@@ -86,6 +90,11 @@ LanguageCodeEnum = graphene.Enum(
     [(lang[0].replace("-", "_").upper(), lang[0]) for lang in settings.LANGUAGES],
 )
 
+OrderTypeEnum = graphene.Enum(
+    "OrderTypeEnum",
+    [(order_type[0].replace("-", "_").upper(), order_type[0]) for order_type in settings.ORDER_TYPES],
+)
+
 
 JobStatusEnum = to_enum(JobStatus)
 PermissionEnum = graphene.Enum("PermissionEnum", get_permissions_enum_list())
@@ -111,6 +120,7 @@ MenuErrorCode = graphene.Enum.from_enum(menu_error_codes.MenuErrorCode)
 OrderSettingsErrorCode = graphene.Enum.from_enum(
     shop_error_codes.OrderSettingsErrorCode
 )
+
 MetadataErrorCode = graphene.Enum.from_enum(core_error_codes.MetadataErrorCode)
 OrderErrorCode = graphene.Enum.from_enum(order_error_codes.OrderErrorCode)
 InvoiceErrorCode = graphene.Enum.from_enum(invoice_error_codes.InvoiceErrorCode)
@@ -129,3 +139,8 @@ WarehouseErrorCode = graphene.Enum.from_enum(warehouse_error_codes.WarehouseErro
 WebhookErrorCode = graphene.Enum.from_enum(webhook_error_codes.WebhookErrorCode)
 WishlistErrorCode = graphene.Enum.from_enum(wishlist_error_codes.WishlistErrorCode)
 TranslationErrorCode = graphene.Enum.from_enum(core_error_codes.TranslationErrorCode)
+DeliveryErrorCode = graphene.Enum.from_enum(delivery_error_codes.DeliveryErrorCode)
+StoreErrorCode = graphene.Enum.from_enum(store_error_codes.StoreErrorCode)
+ServiceTimeErrorCode = graphene.Enum.from_enum(service_time_error_codes.ServiceTimeErrorCode)
+OptionErrorCode = graphene.Enum.from_enum(product_error_codes.OptionErrorCode)
+TableServiceErrorCode = graphene.Enum.from_enum(table_service_error_codes.TableServiceErrorCode)

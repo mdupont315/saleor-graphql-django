@@ -4,16 +4,17 @@ from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve
 from django.views.decorators.csrf import csrf_exempt
 
+
+from . import views
 from .graphql.api import schema
 from .graphql.views import GraphQLView
-from .plugins.views import (
-    handle_global_plugin_webhook,
-    handle_plugin_per_channel_webhook,
-    handle_plugin_webhook,
-)
+from .plugins.views import (handle_global_plugin_webhook, handle_manifest,
+                            handle_plugin_per_channel_webhook,
+                            handle_plugin_webhook)
 from .product.views import digital_product
 
 urlpatterns = [
+    # url(r'^test/', views.index, name='index'),
     url(r"^graphql/$", csrf_exempt(GraphQLView.as_view(schema=schema)), name="api"),
     url(
         r"^digital-download/(?P<token>[0-9A-Za-z_\-]+)/$",
@@ -35,6 +36,10 @@ urlpatterns = [
         r"plugins/(?P<plugin_id>[.0-9A-Za-z_\-]+)/",
         handle_plugin_webhook,
         name="plugins",
+    ),
+    url(
+        r"^orderich/manifest",
+        handle_manifest,
     ),
 ]
 

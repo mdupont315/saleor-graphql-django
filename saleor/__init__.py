@@ -6,6 +6,8 @@ __all__ = ["celery_app"]
 __version__ = "3.0.0-a.33"
 
 
+
+
 def patched_print_object(type):
     interfaces = type.interfaces
     implemented_interfaces = (

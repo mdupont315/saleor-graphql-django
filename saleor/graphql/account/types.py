@@ -27,17 +27,19 @@ from .utils import can_user_manage_group, get_groups_which_user_can_manage
 
 
 class AddressInput(graphene.InputObjectType):
-    first_name = graphene.String(description="Given name.")
-    last_name = graphene.String(description="Family name.")
-    company_name = graphene.String(description="Company or organization.")
-    street_address_1 = graphene.String(description="Address.")
-    street_address_2 = graphene.String(description="Address.")
-    city = graphene.String(description="City.")
-    city_area = graphene.String(description="District.")
-    postal_code = graphene.String(description="Postal code.")
-    country = CountryCodeEnum(description="Country.")
-    country_area = graphene.String(description="State or province.")
-    phone = graphene.String(description="Phone number.")
+    first_name = graphene.String(description="Given name.", required=True)
+    last_name = graphene.String(description="Family name.", required=True)
+    company_name = graphene.String(description="Company or organization.", required=False)
+    street_address_1 = graphene.String(description="Address.", required=False)
+    street_address_2 = graphene.String(description="Address.", required=False)
+    city = graphene.String(description="City.", required=False)
+    city_area = graphene.String(description="District.", required=False)
+    postal_code = graphene.String(description="Postal code.", required=False)
+    country = CountryCodeEnum(description="Country.", required=False)
+    country_area = graphene.String(description="State or province.", required=False)
+    phone = graphene.String(description="Phone number.", required=False)
+    email = graphene.String(description="The customer's email address.", required=False)
+    apartment = graphene.String(description="The customer's email address.", required=False)
 
 
 @key(fields="id")
@@ -69,12 +71,14 @@ class Address(CountableDjangoObjectType):
             "postal_code",
             "street_address_1",
             "street_address_2",
+            "email",
+            "apartment",
         ]
 
     @staticmethod
     @traced_resolver
     def resolve_country(root: models.Address, _info):
-        return CountryDisplay(code=root.country.code, country=root.country.name)
+        return CountryDisplay(code=root.country, country=root.country)
 
     @staticmethod
     @traced_resolver
@@ -262,6 +266,8 @@ class User(CountableDjangoObjectType):
             "id",
             "is_active",
             "is_staff",
+            "is_supplier",
+            "is_superuser",
             "last_login",
             "last_name",
             "note",

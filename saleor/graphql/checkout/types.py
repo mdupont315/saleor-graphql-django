@@ -221,6 +221,10 @@ class Checkout(CountableDjangoObjectType):
             "user",
             "voucher_code",
             "discount",
+            "order_type",
+            "expected_date",
+            "expected_time",
+            "table_name",
         ]
         description = "Checkout object."
         model = models.Checkout
@@ -393,7 +397,7 @@ class Checkout(CountableDjangoObjectType):
                 checkout_info,
                 lines,
                 subtotal=subtotal,
-                country_code=address.country.code,
+                country_code=address.country,
             )
             if available is None:
                 return []

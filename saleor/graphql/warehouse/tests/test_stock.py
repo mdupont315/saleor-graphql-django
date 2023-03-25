@@ -212,7 +212,7 @@ def test_stock_quantities_in_different_warehouses(
     stock_map = {}
     for stock in variant.stocks.all():
         country = stock.warehouse.shipping_zones.get().countries[0]
-        stock_map[country.code] = stock.quantity
+        stock_map[country] = stock.quantity
 
     variables = {
         "id": graphene.Node.to_global_id("ProductVariant", variant.pk),

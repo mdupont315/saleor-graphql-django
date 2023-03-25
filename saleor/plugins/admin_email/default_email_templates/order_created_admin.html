@@ -1,0 +1,228 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>
+
+  </title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700" rel="stylesheet" type="text/css">
+  <style type="text/css">
+    @import url(https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700);
+  </style>
+
+</head>
+
+<body>
+  <div style="margin:0px auto;max-width:450px; border: 1px solid #000;">
+
+    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+      <tbody>
+        <tr>
+          <td style="direction: ltr; font-size: 0px; text-align: center;" align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix">
+
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
+
+                <tr>
+                  <td align="left"
+                    style="font-size: 0px; padding: 8px; word-break: break-word; border-bottom: 1px solid black; ">
+                    {{#if table_name}}
+                      <div
+                      style="font-family:Inter ;font-size:14px;line-height:16px;text-align:left;color:#000; font-weight: bold;text-align: center;">
+                        {{table_name}}
+                    </div>
+                    {{else}}
+                    <div
+                      style="font-family:Inter ;font-size:14px;line-height:16px;text-align:left;color:#000; font-weight: bold;text-align: center;">
+                      {{order_type}} #{{order_num}}
+                    </div>
+                    {{/if}}
+
+                    <div
+                      style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-align: center;">
+                      Order {{order_num}} placed on {{place_date}} at {{place_time}}
+                    </div>
+
+                  </td>
+                </tr>
+
+              </table>
+
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="direction: ltr; font-size: 0px; text-align: center;" align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix">
+
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
+
+                <tr>
+                  <td align="left"
+                  style="font-size: 0px; padding: 8px; word-break: break-word;border-right: 1px solid black; width: 50%; vertical-align: top;">
+                  {{#if not_qr_order }}
+                    <div
+                      style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                      CUSTOMER INFORMATION
+                    </div>
+                      {{#address_customer address}}{{/address_customer}}
+                  {{/if}}
+                  </td>
+
+                  <td align="left"
+                    style="font-size: 0px; padding: 8px; word-break: break-word;width: 50%; vertical-align: top;">
+                    <div
+                      style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                      ORDER TYPE
+                    </div>
+                    <div
+                      style="font-family:Inter ;font-size:12px;line-height:14px;text-align:left;color:#000;font-weight: bold; margin-bottom: 4px;">
+                      {{order_type}}
+
+                    </div>
+
+                    {{#if not_qr_order }}
+                      <div
+                        style="font-family:Inter ;font-size:10px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                        PREFERRED TIME
+                      </div>
+                      <div
+                        style="font-family:Inter ;font-size:12px;line-height:14px;text-align:left;color:#000;font-weight: bold; margin-bottom: 4px;">
+                        {{expected_date}} {{expected_time}}
+                      </div>
+                    {{/if}}
+
+                    <div
+                      style="font-family:Inter ;font-size:8px;line-height:12px;text-align:left;color:#000; text-decoration: underline;">
+                      PAYMENT STATUS
+                    </div>
+                    <div style="font-family:Inter ;font-size:12px;line-height:14px;text-align:left;color:#000;">
+                      {{payment_status}} ({{payment_method}})
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="direction: ltr; font-size: 0px;" align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix">
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
+
+                <tr>
+                  <td align="left"
+                    style="font-size: 0px; padding: 8px; word-break: break-word; border-top: 1px solid black; ">
+                    <div style="font-family:Inter ;font-size:12px;line-height:1;text-align:left;color:#000;">
+                      ORDER NOTE
+                    </div>
+
+                    <div style="font-family:Inter ;font-size:12px;line-height:1;text-align:left;color:#000;">
+                      {{order_note}}
+                    </div>
+
+                  </td>
+                </tr>
+
+              </table>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="direction: ltr; font-size: 0px; text-align: center; border-top: 1px solid black; padding-top: 8px;"
+            align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix">
+
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;"
+                width="100%">
+                <tbody>
+                  {{#product_customer_admin items=lines channel=channel
+                  channel_symbol=channel_symbol}}{{/product_customer_admin}}
+                </tbody>
+
+
+              </table>
+
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="direction: ltr; font-size: 0px; text-align: center; " align="center">
+            <div class="mj-column-per-100 mj-outlook-group-fix" style="text-align:left;direction:ltr;width:100%;">
+
+              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+
+                <td align="left" style="font-size: 0px; word-break: break-word; width: 40%;">
+                </td>
+
+                <td align="left" style="font-size: 0px; padding:0 8px 8px 8px; word-break: break-word;width: 60%;">
+                  
+				        <table style="width: 100%">
+                	<tr>
+                    <td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">DISCOUNT</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">
+                      -
+                      {{channel_symbol}} {{discount}}</p>
+                    </td>
+                  </tr>
+             
+                    
+                    <tr>
+                    	<td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">DELIVERY FEE</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">
+                            {{delivery_fee}}</p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                    	<td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">TRANSACTION COST</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">
+                            {{transaction_cost}}
+                          </p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                    	<td style="width:60%;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px;">TOTAL</p>
+                        </td>
+                        <td style="width:40%; text-align: right;">
+                        	<p style="font-family:Inter ;margin: 0; font-size: 12px;line-height: 14px; font-weight: bold">
+                            {{channel_symbol}}
+                            {{total}}</p>
+                        </td>
+                    </tr>
+                </table>
+                </td>
+
+              </table>
+
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</body>
+
+</html>

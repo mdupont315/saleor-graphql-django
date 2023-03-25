@@ -15,9 +15,9 @@ from django.utils.timezone import now
 from django_measurement.models import MeasurementField
 from django_prices.models import MoneyField, TaxedMoneyField
 from measurement.measures import Weight
-
+from saleor.store.models import Store
 from ..channel.models import Channel
-from ..core.models import ModelWithMetadata
+from ..core.models import CustomQueryset, ModelWithMetadata, MultitenantModelWithMetadata
 from ..core.permissions import OrderPermissions
 from ..core.units import WeightUnits
 from ..core.utils.json_serializer import CustomJsonEncoder
@@ -32,7 +32,7 @@ from ..shipping.models import ShippingMethod
 from . import FulfillmentStatus, OrderEvents, OrderOrigin, OrderStatus
 
 
-class OrderQueryset(models.QuerySet):
+class OrderQueryset(CustomQueryset):
     def get_by_checkout_token(self, token):
         """Return non-draft order with matched checkout token."""
         return self.non_draft().filter(checkout_token=token).first()
@@ -82,7 +82,15 @@ class OrderQueryset(models.QuerySet):
         return self.filter(status=OrderStatus.UNCONFIRMED)
 
 
-class Order(ModelWithMetadata):
+class Order(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="orders",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     created = models.DateTimeField(default=now, editable=False)
     status = models.CharField(
         max_length=32, default=OrderStatus.UNFULFILLED, choices=OrderStatus.CHOICES
@@ -92,7 +100,7 @@ class Order(ModelWithMetadata):
         blank=True,
         null=True,
         related_name="orders",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT
     )
     language_code = models.CharField(
         max_length=35, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
@@ -111,10 +119,15 @@ class Order(ModelWithMetadata):
         editable=False,
         null=True,
         on_delete=models.SET_NULL,
+
+        # on_delete=models.SET_NULL,
     )
     user_email = models.EmailField(blank=True, default="")
     original = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.SET_NULL
+        "self", null=True, blank=True,
+        on_delete=models.SET_NULL,
+
+        # on_delete=models.SET_NULL
     )
     origin = models.CharField(max_length=32, choices=OrderOrigin.CHOICES)
 
@@ -128,6 +141,8 @@ class Order(ModelWithMetadata):
         null=True,
         related_name="orders",
         on_delete=models.SET_NULL,
+
+        # on_delete=models.SET_NULL,
     )
     shipping_method_name = models.CharField(
         max_length=255, null=True, default=None, blank=True, editable=False
@@ -135,7 +150,9 @@ class Order(ModelWithMetadata):
     channel = models.ForeignKey(
         Channel,
         related_name="orders",
+        # on_delete=models.PROTECT,
         on_delete=models.PROTECT,
+
     )
     shipping_price_net_amount = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
@@ -235,6 +252,33 @@ class Order(ModelWithMetadata):
         default=zero_weight,
     )
     redirect_url = models.URLField(blank=True, null=True)
+
+    order_type = models.CharField(
+        max_length=35, choices=settings.ORDER_TYPES, default=settings.ORDER_TYPE_DEFAULT
+    )
+    expected_date = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    expected_time = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+
+    delivery_fee = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
+    )
+
+    transaction_cost = models.DecimalField(
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=0,
+    )
+
+    table_name = models.CharField(
+        max_length=100, null=True, blank=True
+    )
+
     objects = OrderQueryset.as_manager()
 
     class Meta:
@@ -307,6 +351,18 @@ class Order(ModelWithMetadata):
 
     def get_total_quantity(self):
         return sum([line.quantity for line in self.lines.all()])
+
+    def get_discount_amout(self):
+        return self.undiscounted_total_net_amount - self.total_net_amount
+
+    def get_order_type_display(self):
+        order_type = self.order_type
+        for code, display in settings.ORDER_TYPES:
+            if code == order_type:
+                return display
+
+    def get_channel_curreny_symbool(self):
+        return '€' if self.currency == 'EUR' else '$'
 
     def is_draft(self):
         return self.status == OrderStatus.DRAFT
@@ -519,6 +575,10 @@ class OrderLine(models.Model):
         max_digits=5, decimal_places=4, default=Decimal("0.0")
     )
 
+    option_items = models.JSONField(
+        blank=True, null=True
+    )
+
     objects = OrderLineQueryset.as_manager()
 
     class Meta:
@@ -545,7 +605,15 @@ class OrderLine(models.Model):
         return is_digital and has_digital
 
 
-class Fulfillment(ModelWithMetadata):
+class Fulfillment(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="fulfillments",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     fulfillment_order = models.PositiveIntegerField(editable=False)
     order = models.ForeignKey(
         Order, related_name="fulfillments", editable=False, on_delete=models.CASCADE
@@ -571,7 +639,7 @@ class Fulfillment(ModelWithMetadata):
         blank=True,
     )
 
-    class Meta(ModelWithMetadata.Meta):
+    class Meta(MultitenantModelWithMetadata.Meta):
         ordering = ("pk",)
 
     def __str__(self):
@@ -621,7 +689,15 @@ class FulfillmentLine(models.Model):
     )
 
 
-class OrderEvent(models.Model):
+class OrderEvent(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="events",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id = 'store_id'
     """Model used to store events that happened during the order lifecycle.
 
     Args:

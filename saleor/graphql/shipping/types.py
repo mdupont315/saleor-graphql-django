@@ -256,7 +256,7 @@ class ShippingZone(ChannelContextTypeWithMetadata, CountableDjangoObjectType):
     @traced_resolver
     def resolve_countries(root: ChannelContext[models.ShippingZone], *_args):
         return [
-            CountryDisplay(code=country.code, country=country.name)
+            CountryDisplay(code=country, country=country.name)
             for country in root.node.countries
         ]
 

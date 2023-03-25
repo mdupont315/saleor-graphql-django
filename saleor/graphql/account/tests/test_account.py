@@ -219,7 +219,7 @@ def test_query_customer_user(
     assert address["city"] == user_address.city
     assert address["cityArea"] == user_address.city_area
     assert address["postalCode"] == user_address.postal_code
-    assert address["country"]["code"] == user_address.country.code
+    assert address["country"]["code"] == user_address.country
     assert address["countryArea"] == user_address.country_area
     assert address["phone"] == user_address.phone.as_e164
     assert address["isDefaultShippingAddress"] is None
@@ -235,7 +235,7 @@ def test_query_customer_user(
     assert address["city"] == user_address.city
     assert address["cityArea"] == user_address.city_area
     assert address["postalCode"] == user_address.postal_code
-    assert address["country"]["code"] == user_address.country.code
+    assert address["country"]["code"] == user_address.country
     assert address["countryArea"] == user_address.country_area
     assert address["phone"] == user_address.phone.as_e164
     assert address["isDefaultShippingAddress"] is None
@@ -4691,7 +4691,7 @@ def test_address_query_as_owner(user_api_client, customer_user):
     response = user_api_client.post_graphql(ADDRESS_QUERY, variables)
     content = get_graphql_content(response)
     data = content["data"]["address"]
-    assert data["country"]["code"] == address.country.code
+    assert data["country"]["code"] == address.country
 
 
 def test_address_query_as_not_owner(
@@ -4715,7 +4715,7 @@ def test_address_query_as_app_with_permission(
     )
     content = get_graphql_content(response)
     data = content["data"]["address"]
-    assert data["country"]["code"] == address_other_country.country.code
+    assert data["country"]["code"] == address_other_country.country
 
 
 def test_address_query_as_app_without_permission(

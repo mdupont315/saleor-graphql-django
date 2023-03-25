@@ -1474,7 +1474,7 @@ def test_order_created(api_post_request_task_mock, order, plugin_configuration):
                     "line2": address.street_address_2,
                     "city": address.city,
                     "region": address.city_area or "",
-                    "country": address.country.code,
+                    "country": address.country,
                     "postalCode": address.postal_code,
                 },
             },

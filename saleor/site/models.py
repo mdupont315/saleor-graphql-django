@@ -1,7 +1,8 @@
 from email.headerregistry import Address
 from email.utils import parseaddr
 from typing import Optional
-
+from saleor.store.models import Store
+from saleor.core.models import MultitenantModelWithMetadata
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.exceptions import ImproperlyConfigured
@@ -29,7 +30,15 @@ def email_sender_name_validators():
     ]
 
 
-class SiteSettings(models.Model):
+class SiteSettings(MultitenantModelWithMetadata):
+    store = models.ForeignKey(
+        Store,
+        related_name="settings",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    tenant_id='store_id'
     site = models.OneToOneField(Site, related_name="settings", on_delete=models.CASCADE)
     header_text = models.CharField(max_length=200, blank=True)
     description = models.CharField(max_length=500, blank=True)

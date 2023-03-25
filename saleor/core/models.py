@@ -8,7 +8,7 @@ from django.db.models import F, Max, Q
 
 from . import JobStatus
 from .utils.json_serializer import CustomJsonEncoder
-
+from django_multitenant.models import TenantManager, TenantModel
 
 class SortableModel(models.Model):
     sort_order = models.IntegerField(editable=False, db_index=True, null=True)
@@ -116,6 +116,9 @@ class ModelWithMetadata(models.Model):
         if key in self.metadata:
             del self.metadata[key]
 
+class MultitenantModelWithMetadata(TenantModel, ModelWithMetadata):
+    class Meta(ModelWithMetadata.Meta):
+        abstract = True
 
 class Job(models.Model):
     status = models.CharField(
@@ -125,5 +128,23 @@ class Job(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        abstract = True
+        
+class CustomQueryset(models.QuerySet):
+    def as_manager(cls):
+        manager = TenantManager.from_queryset(cls)()
+        manager._built_with_as_manager = True
+        return manager
+    as_manager.queryset_only = True
+    as_manager = classmethod(as_manager)
+
+class PublishedQuerySetMT(CustomQueryset, PublishedQuerySet):
+    pass
+
+
+class PublishableModelMT(PublishableModel):
+
+    objects = PublishedQuerySetMT.as_manager()
     class Meta:
         abstract = True

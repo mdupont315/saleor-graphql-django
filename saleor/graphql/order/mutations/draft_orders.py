@@ -389,19 +389,18 @@ class DraftOrderComplete(BaseMutation):
             if order.shipping_address:
                 order.shipping_address.delete()
                 order.shipping_address = None
-
         order.save()
-
-        for line in order.lines.all():
-            if line.variant.track_inventory:
-                line_data = OrderLineData(
-                    line=line, quantity=line.quantity, variant=line.variant
-                )
-                try:
-                    allocate_stocks([line_data], country, order.channel.slug)
-                except InsufficientStock as exc:
-                    errors = prepare_insufficient_stock_order_validation_errors(exc)
-                    raise ValidationError({"lines": errors})
+        # for line in order.lines.all():
+        #     if line.variant.track_inventory:
+        #         line_data = OrderLineData(
+        #             line=line, quantity=line.quantity, variant=line.variant
+        #         )
+        #         try:
+        #             allocate_stocks([line_data], country, order.channel.slug)
+        #         except InsufficientStock as exc:
+        #             errors = prepare_insufficient_stock_order_validation_errors(exc)
+        #             raise ValidationError({"lines": errors})
+        # print(order.lines.all())
         order_created(
             order, user=info.context.user, manager=info.context.plugins, from_draft=True
         )

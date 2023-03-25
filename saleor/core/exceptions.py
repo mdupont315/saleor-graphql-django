@@ -51,3 +51,11 @@ class PermissionDenied(Exception):
         if message is None:
             message = default_message
         super().__init__(message)
+
+class DomainIsExist(Exception):
+    def __init__(self, message=None):
+        default_message = "This domain already exists"
+        if message is None:
+            message = default_message
+        super().__init__(message)
+

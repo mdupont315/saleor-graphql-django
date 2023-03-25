@@ -389,7 +389,7 @@ def test_order_query(
     expected_methods = ShippingMethod.objects.applicable_shipping_methods(
         price=order.get_subtotal().gross,
         weight=order.get_total_weight(),
-        country_code=order.shipping_address.country.code,
+        country_code=order.shipping_address.country,
         channel_id=order.channel_id,
     )
     assert len(order_data["availableShippingMethods"]) == (expected_methods.count())
@@ -560,7 +560,7 @@ def test_order_query_in_pln_channel(
     expected_methods = ShippingMethod.objects.applicable_shipping_methods(
         price=order.get_subtotal().gross,
         weight=order.get_total_weight(),
-        country_code=order.shipping_address.country.code,
+        country_code=order.shipping_address.country,
         channel_id=order.channel_id,
     )
     assert len(order_data["availableShippingMethods"]) == (expected_methods.count())
@@ -2575,7 +2575,7 @@ def test_validate_draft_order_wrong_shipping(draft_order):
     shipping_zone = order.shipping_method.shipping_zone
     shipping_zone.countries = ["DE"]
     shipping_zone.save()
-    assert order.shipping_address.country.code not in shipping_zone.countries
+    assert order.shipping_address.country not in shipping_zone.countries
     with pytest.raises(ValidationError) as e:
         validate_draft_order(order, "US")
     msg = "Shipping method is not valid for chosen shipping address"
@@ -4536,7 +4536,7 @@ def test_order_update_shipping_incorrect_shipping_method(
     zone = shipping_method.shipping_zone
     zone.countries = ["DE"]
     zone.save()
-    assert order.shipping_address.country.code not in zone.countries
+    assert order.shipping_address.country not in zone.countries
     query = ORDER_UPDATE_SHIPPING_QUERY
     order_id = graphene.Node.to_global_id("Order", order.id)
     method_id = graphene.Node.to_global_id("ShippingMethod", shipping_method.id)

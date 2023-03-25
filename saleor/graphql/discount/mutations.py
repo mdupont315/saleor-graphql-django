@@ -156,6 +156,9 @@ class VoucherInput(graphene.InputObjectType):
     usage_limit = graphene.Int(
         description="Limit number of times this voucher can be used in total."
     )
+    active = graphene.Boolean(
+        description="Voucher is active or not"
+    )
 
 
 class VoucherCreate(ModelMutation):

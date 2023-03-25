@@ -1,3 +1,6 @@
+from decimal import Decimal
+from saleor.core.utils.logging import log_info
+from django.conf import settings
 import graphene
 from django.core.exceptions import ValidationError
 
@@ -18,7 +21,8 @@ from ..core.mutations import BaseMutation
 from ..core.scalars import PositiveDecimal
 from ..core.types import common as common_types
 from .types import Payment, PaymentInitialized
-
+from ...delivery.models import Delivery
+from ...store.models import Store
 
 class PaymentInput(graphene.InputObjectType):
     gateway = graphene.Field(
@@ -68,7 +72,10 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
 
     @classmethod
     def clean_payment_amount(cls, info, checkout_total, amount):
-        if amount != checkout_total.gross.amount:
+        log_info('Payment', '-------Payment Price Error--------')
+
+
+        if amount != round(checkout_total.gross.amount, 2):
             raise ValidationError(
                 {
                     "amount": ValidationError(
@@ -154,9 +161,82 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             address=address,
             discounts=info.context.discounts,
         )
+        undiscount_checkout_total = checkout_total.gross.amount + checkout_info.checkout.discount.amount
+        delivery_setting = Delivery.objects.all().first()
+        current_strore = Store.objects.all().first()
+        
+
+        
+        # implement delivery fee
+        delivery_fee = 0
+        min_order=0
+        
+        if delivery_setting and checkout.order_type == "delivery":
+            delivery_fee = delivery_setting.delivery_fee
+            # implement delivery fee when enable custom delivery fee
+            if delivery_setting.enable_custom_delivery_fee and (checkout_info.billing_address.postal_code is not None):
+                global delivery_fee_by_postal_code
+                current_postal_code = (checkout_info.billing_address.postal_code)[0:4]
+                delivery_areas = [] 
+                delivery_areas.extend(delivery_setting.delivery_area['areas'])
+                delivery_areas.sort(key=lambda area: area['from'] + area['to'])
+                
+                for x in delivery_areas:
+
+                    if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
+                        delivery_fee_by_postal_code = round(x["customDeliveryFee"], 2)
+                        break
+                delivery_fee = delivery_fee_by_postal_code
+
+            # implement min order when enable custom delivery fee
+            if delivery_setting.enable_minimum_delivery_order_value and (checkout_info.billing_address.postal_code is not None):
+                global min_order_by_postal_code
+                current_postal_code = (checkout_info.billing_address.postal_code)[0:4]
+                delivery_areas = [] 
+                delivery_areas.extend(delivery_setting.delivery_area['areas'])
+                delivery_areas.sort(key=lambda area: area['from'] + area['to'])
+                
+                for x in delivery_areas:
+                    if int(current_postal_code) >= x['from'] and int(current_postal_code) <= x['to']:
+                        min_order_by_postal_code = x["customMinOrder"]
+                        break
+                min_order = min_order_by_postal_code if min_order_by_postal_code != "" else delivery_setting.min_order
+
+            if min_order > undiscount_checkout_total and checkout.order_type == settings.ORDER_TYPES[0][0]:
+                raise ValidationError(
+                {
+                    "min_order": "The subtotal must be equal or greater than {min_order}".format(min_order=min_order)
+                }
+            )
+            if checkout.order_type == settings.ORDER_TYPES[0][0] and \
+               (undiscount_checkout_total < delivery_setting.from_delivery or (undiscount_checkout_total >= delivery_setting.from_delivery and not delivery_setting.enable_for_big_order)):
+                checkout_total.gross.amount = checkout_total.gross.amount + round(Decimal(delivery_fee), 2)
+        
+        # implement transaction fee
+        transaction_fee = 0
+        if current_strore.enable_transaction_fee:
+            if data["gateway"] == settings.DUMMY_GATEWAY and current_strore.contant_enable and current_strore.contant_cost:
+                transaction_fee = current_strore.contant_cost
+            if data["gateway"] == settings.STRIPE_GATEWAY and current_strore.stripe_enable and current_strore.stripe_cost:
+                transaction_fee = current_strore.stripe_cost
+            checkout_total.gross.amount = checkout_total.gross.amount + round(transaction_fee, 2)
+
         amount = data.get("amount", checkout_total.gross.amount)
         clean_checkout_shipping(checkout_info, lines, PaymentErrorCode)
         clean_billing_address(checkout_info, PaymentErrorCode)
+
+        if amount != round(checkout_total.gross.amount, 2):
+            print("======================ERROR============================")
+            print("checkout_token", checkout.pk)
+            print("sub_total", undiscount_checkout_total)
+            print("discount", checkout_info.checkout.discount.amount)
+            print("gateway", data["gateway"])
+            print("transaction_fee", transaction_fee)
+            print("delivery_fee", delivery_fee)
+            print("total_from_caculated", checkout_total.gross.amount)
+            print("total_from_fe", amount)
+            print("lines", lines)
+
         cls.clean_payment_amount(info, checkout_total, amount)
         extra_data = {
             "customer_user_agent": info.context.META.get("HTTP_USER_AGENT"),

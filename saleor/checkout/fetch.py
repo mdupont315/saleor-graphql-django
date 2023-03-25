@@ -43,11 +43,12 @@ class CheckoutInfo:
     def get_country(self) -> str:
         address = self.shipping_address or self.billing_address
         if address is None or not address.country:
-            return self.checkout.country.code
-        return address.country.code
+            return self.checkout.country
+        return address.country
 
     def get_customer_email(self) -> str:
-        return self.user.email if self.user else self.checkout.email
+        email = self.checkout.billing_address.email
+        return self.user.email if self.user else email
 
 
 def fetch_checkout_lines(checkout: "Checkout") -> Iterable[CheckoutLineInfo]:
@@ -143,7 +144,7 @@ def get_valid_shipping_method_list_for_checkout_info(
 ):
     from .utils import get_valid_shipping_methods_for_checkout
 
-    country_code = shipping_address.country.code if shipping_address else None
+    country_code = shipping_address.country if shipping_address else None
     subtotal = manager.calculate_checkout_subtotal(
         checkout_info, lines, checkout_info.shipping_address, discounts
     )

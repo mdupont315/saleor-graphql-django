@@ -27,19 +27,19 @@ class I18nMixin:
     ):
         phone = address_data.get("phone", None)
         params = {"address_type": address_type} if address_type else {}
-        if phone:
-            try:
-                validate_possible_number(phone, address_data.get("country"))
-            except ValidationError as exc:
-                raise ValidationError(
-                    {
-                        "phone": ValidationError(
-                            f"'{phone}' is not a valid phone number.",
-                            code=exc.code,
-                            params=params,
-                        )
-                    }
-                ) from exc
+        # if phone:
+        #     try:
+        #         validate_possible_number(phone, address_data.get("country"))
+        #     except ValidationError as exc:
+        #         raise ValidationError(
+        #             {
+        #                 "phone": ValidationError(
+        #                     f"'{phone}' is not a valid phone number.",
+        #                     code=exc.code,
+        #                     params=params,
+        #                 )
+        #             }
+        #         ) from exc
 
         address_form, _ = get_address_form(
             address_data, address_data.get("country"), instance=instance
@@ -69,19 +69,20 @@ class I18nMixin:
         instance: Optional[Address] = None,
         info=None
     ):
-        if address_data.get("country") is None:
-            params = {"address_type": address_type} if address_type else {}
-            raise ValidationError(
-                {
-                    "country": ValidationError(
-                        "This field is required.", code="required", params=params
-                    )
-                }
-            )
-        address_form = cls.validate_address_form(address_data, address_type)
+        # if address_data.get("country") is None:
+        #     params = {"address_type": address_type} if address_type else {}
+        #     raise ValidationError(
+        #         {
+        #             "country": ValidationError(
+        #                 "This field is required.", code="required", params=params
+        #             )
+        #         }
+        #     )
+        # address_form = cls.validate_address_form(address_data, address_type)
+        cleaned_data = {k: v for k, v in address_data.items() if v}
         if not instance:
             instance = Address()
 
-        cls.construct_instance(instance, address_form.cleaned_data)
+        cls.construct_instance(instance, cleaned_data)
         cls.clean_instance(info, instance)
         return instance

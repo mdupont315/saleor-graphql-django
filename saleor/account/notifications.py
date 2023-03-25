@@ -2,11 +2,13 @@ from typing import Optional
 from urllib.parse import urlencode
 
 from django.contrib.auth.tokens import default_token_generator
+from django_multitenant.utils import get_current_tenant
 
 from ..core.notifications import get_site_context
 from ..core.notify_events import NotifyEventType
 from ..core.utils.url import prepare_url
 from .models import User
+from django.templatetags.static import static
 
 
 def get_default_user_payload(user: User):
@@ -30,15 +32,32 @@ def send_password_reset_notification(
     token = default_token_generator.make_token(user)
     params = urlencode({"email": user.email, "token": token})
     reset_url = prepare_url(params, redirect_url)
-
-    payload = {
-        "user": get_default_user_payload(user),
-        "recipient_email": user.email,
-        "token": token,
-        "reset_url": reset_url,
-        "channel_slug": channel_slug,
-        **get_site_context(),
-    }
+    store = get_current_tenant()
+    orderich_logo = static("images/orderich-logo.png")
+    if staff:
+        payload = {
+            # "logo": store.logo.url,
+            # "store_name": store.name,
+            "user": get_default_user_payload(user),
+            "recipient_email": user.email,
+            "token": token,
+            "reset_url": reset_url,
+            "channel_slug": channel_slug,
+            "orderich_logo": orderich_logo,
+            **get_site_context(),
+        }
+    else:
+        payload = {
+            "logo": store.logo.url,
+            "store_name": store.name,
+            "user": get_default_user_payload(user),
+            "recipient_email": user.email,
+            "token": token,
+            "reset_url": reset_url,
+            "channel_slug": channel_slug,
+            "orderich_logo": orderich_logo,
+            **get_site_context(),
+        }
 
     event = (
         NotifyEventType.ACCOUNT_STAFF_RESET_PASSWORD
@@ -143,4 +162,5 @@ def send_set_password_notification(
         event = NotifyEventType.ACCOUNT_SET_STAFF_PASSWORD
     else:
         event = NotifyEventType.ACCOUNT_SET_CUSTOMER_PASSWORD
+
     manager.notify(event, payload=payload, channel_slug=channel_slug)

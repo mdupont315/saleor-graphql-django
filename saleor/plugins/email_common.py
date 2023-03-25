@@ -6,8 +6,9 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from email.headerregistry import Address
 from typing import List, Optional
-
+from saleor.core.utils.logging import log_info
 import dateutil.parser
+from django_multitenant.utils import get_current_tenant
 import html2text
 import i18naddress
 import pybars
@@ -17,10 +18,14 @@ from django.core.mail import send_mail
 from django.core.mail.backends.smtp import EmailBackend
 from django_prices.utils.locale import get_locale_data
 
+from saleor.core.prices import quantize_price
+from saleor.order.utils import formatComma
+
 from ..product.product_images import get_thumbnail_size
 from .base_plugin import ConfigurationTypeField
 from .error_codes import PluginErrorCode
 from .models import PluginConfiguration
+from ..product import models as product_models
 
 logger = logging.getLogger(__name__)
 
@@ -178,13 +183,341 @@ def price(this, net_amount, gross_amount, currency, display_gross=False):
     return pybars.strlist([formatted_price])
 
 
-def send_email(
-    config: EmailConfig, recipient_list, context, subject="", template_str=""
-):
-    sender_name = config.sender_name or ""
+def list_product_customer(this, options, items, channel, channel_symbol):
+    TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
+    result = [u'<table class="product-table">']
+    for thing in items:
+        result.append(u'<tr>')
+        result.append(u'<td class="td-number">')
+        result.append(str(thing.quantity))
+        result.append(u' x </td>')
+        result.append(u'<td class="td-name">')
+        result.append(thing.product_name)
+        result.append(u'</td>')
+        result.append(u'<td class="td-price">')
+        # result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
+        result.append("{curency} {price}".format(
+            curency=channel_symbol,
+            price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
+            # quantize_price(thing.total_price_net.amount, channel)
+           
+        ))
+
+        logging.getLogger('django').info('---price----{sender_name}------'.format(sender_name=thing.total_price_net.amount) )
+
+
+        result.append(u'</td>')
+        result.append(u'</tr>')
+        option_values = thing.option_items
+        if option_values:
+            for option_value in option_values:
+                result.append(u'<tr>')
+                result.append(u'<td class="td-option" colspan="3">')
+                result.append(option_value["name"])
+                result.append(u'</td>')
+                result.append(u'</tr>')
+
+            
+                
+    result.append(u'</table>')
+    return result
+
+def list_product_customer_admin(this, options, items, channel, channel_symbol):
+    TWOPLACES = Decimal(10) ** -2       # same as Decimal('0.01')
+    result = [u'']
+    logging.getLogger('django').info('---line----{line}------'.format(line="heloooooooo") )
+
+    for thing in items:
+        logging.getLogger('django').info('---line----{line}------'.format(line=thing.__dict__) )
+        option_values = thing.option_values.all()
+
+        result.append(u'<tr style="font-family:Inter;">')
+        result.append(u'<td align="left" style="vertical-align: top;word-break: break-word; width: 30px; padding-left:8px;">')
+        result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;white-space:no-wrap;">')
+        result.append('{quantity}x'.format(quantity = str(thing.quantity)))
+        result.append(u'</p>')
+        result.append(u'</td>')
+        
+        result.append(u'<td align="left" style="word-break: break-word; min-width: 200px;">')
+        result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
+        product_name = thing.product_name if not thing.product_sku else '{} ({})'.format(thing.product_name,thing.product_sku)
+        result.append(product_name)
+        result.append(u'</p>')
+
+        #  option 
+        if option_values:
+            logging.getLogger('django').info('---optionm----{sender_name}------'.format(sender_name="asdasdasd") )
+
+            for option_value in option_values:
+                result.append(u'<p style="font-family:Inter;margin: 0; font-size: 12px;line-height: 14px;font-weight: 400;">')
+                result.append("{name}".format(
+                    name=option_value.name,
+                ))
+                result.append(u'</p>')
+
+        result.append(u'</td>')
+
+        result.append(u'<td align="right" style="font-family:Inter;white-space:no-wrap; vertical-align: top; padding-right:8px;font-size: 12px;line-height: 14px;font-weight: bold;word-break: break-word; min-width:58px;">')
+        result.append("{curency} {price}".format(
+            curency=channel_symbol,
+            price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
+            # quantize_price(thing.total_price_net.amount, channel)
+           
+        ))
+        result.append(u'</td>')
+        result.append(u'</tr>')
+
+
+# # product info
+#         result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;text-align:left;color:#000; display: flex">')
+#         result.append(u'<p style="margin: 0; margin-right: 8px; font-size: 12px;line-height: 14px;font-weight: bold;width: 5%;">')
+#         result.append('{quantity}x'.format(quantity = str(thing.quantity)))
+#         result.append(u'</p>')
+#         result.append(u'<div style="width:70%;">')
+#         result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold;">')
+#         result.append(thing.product_name)
+#         result.append(u'</p>')
+# #  option 
+#         if option_values:
+#             logging.getLogger('django').info('---optionm----{sender_name}------'.format(sender_name="asdasdasd") )
+
+#             for option_value in option_values:
+#                 result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: 400;">')
+#                 result.append("{option} : {name} ({curency} {price})".format(
+#                     option=option_value.option.name,
+#                     name=option_value.name,
+#                     curency=channel_symbol,
+#                     price=formatComma((quantize_price(option_value.get_price_amount_by_channel(
+#                         channel), channel)).quantize(TWOPLACES))
+#                 ))
+#                 result.append(u'</p>')
+#         result.append(u'</div>')
+# # price
+#         result.append(u'<p style="margin: 0; font-size: 12px;line-height: 14px;font-weight: bold; text-align: right; flex: 1;width:25%;">')
+#         # result.append(str((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)))
+#         result.append("{curency} {price}".format(
+#             curency=channel_symbol,
+#             price=  formatComma((quantize_price(thing.total_price_net.amount, channel)).quantize(TWOPLACES)) 
+#             # quantize_price(thing.total_price_net.amount, channel)
+           
+#         ))
+
+#         logging.getLogger('django').info('---price----{sender_name}------'.format(sender_name=thing.total_price_net.amount) )
+
+#         result.append(u'</p></div></td></tr>')
+        
+
+    return result
+
+def get_full_address1(address, city, postal_code, apartment):
+    result = ''
+    if address:
+        result = result + address
+    # if city:
+    #     result = result +","+ city
+    # if postal_code:
+    #     result = result +","+ postal_code
+    if apartment:
+        result = result +" "+ apartment
+    return result
+
+def get_full_address2(address, city, postal_code, apartment):
+    result = ''
+    # if address:
+    #     result = result + address
+    if postal_code:
+        result = result + postal_code
+    if city:
+        result = result +", "+ city
+    # if apartment:
+    #     result = result +","+ apartment
+    return result
+def customer_list_address(this, options, items):
+    result = [u'']
+    dict_items = items.items()
+    email = ''
+    phone = ''
+    company = ''
+    city=''
+    apartment=''
+    postal_code=''
+    address=''
+    for key, value in dict_items:
+        if key == 'street_address_1': #or key == 'city' or key == 'postal_code' or key == 'apartment':
+            if value:
+                address = value
+        if key == 'email':
+            if value:
+                email = value
+        if key == 'phone':
+            if value:
+                phone = value
+        if key == 'company_name':
+            if value:
+                company = value
+        if key == 'city':
+            if value:
+                city = value
+        if key == 'apartment':
+            if value:
+                apartment = value
+        if key == 'postal_code':
+            if value:
+                postal_code = value
+    ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
+    logging.getLogger('django').info('---ctm_name----{ctm_name}------'.format(ctm_name=ctm_name) )
+    print(ctm_name,"=========================ctm_name")
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(str(ctm_name)),
+    result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(get_full_address1(address,city,postal_code,apartment)),
+    result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(get_full_address2(address,city,postal_code,apartment)),
+    result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(email),
+    result.append(u'</div>')
+
+    result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+    result.append(phone),
+    result.append(u'</div>')
+
+    if company:
+        result.append(u'<div style="font-family:Inter;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+        result.append(company),
+        result.append(u'</div>')
+
+    for key, value in dict_items:
+        logging.getLogger('django').info('---keyyyyy----{key}------'.format(key=key) )
+        logging.getLogger('django').info('---valueeee----{value}------'.format(value=value) )
+
+        # if key == 'id' or key == '_state' or key == 'last_name' or key == 'first_name' or key == 'country':
+        #     continue
+        # if value:
+        #     result.append(u'<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;text-align:left;color:#000;">')
+        #     result.append(str(value)),
+        #     result.append(u'</div>')
+    # result.append(u'</ul>')
+    return result
+
+
+def customer_list_address_delivery(this, options, items):
+    result = [u'<ul>']
+    dict_items = items.items()
+    ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
+    result.append(u'<li>')
+    result.append(str(ctm_name)),
+    result.append(u'</li>') 
+
+    email = ''
+    phone = ''
+    company = ''
+    city=''
+    apartment=''
+    postal_code=''
+    address=''
+    for key, value in dict_items:
+        if key == 'street_address_1': #or key == 'city' or key == 'postal_code' or key == 'apartment':
+            if value:
+                address = value
+        if key == 'email':
+            if value:
+                email = value
+        if key == 'phone':
+            if value:
+                phone = value
+        if key == 'company_name':
+            if value:
+                company = value
+        if key == 'city':
+            if value:
+                city = value
+        if key == 'apartment':
+            if value:
+                apartment = value
+        if key == 'postal_code':
+            if value:
+                postal_code = value
+    
+    result.append(u'<li>')
+    result.append(get_full_address1(address,city,postal_code,apartment)),
+    result.append(u'</li>')
+    result.append(u'<li>')
+    result.append(get_full_address2(address,city,postal_code,apartment)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(email)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(phone)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(company)),
+    result.append(u'</li>')
+
+    result.append(u'</ul>')
+    return result
+
+
+def customer_list_address_pickup(this, options, items):
+    result = [u'<ul>']
+    dict_items = items.items()
+    ctm_name = items.get('first_name', "") + " " + items.get('last_name', "")
+    result.append(u'<li>')
+    result.append(str(ctm_name)),
+    result.append(u'</li>')
+    email = ''
+    phone = ''
+    company = ''
+    for key, value in dict_items:
+        if key == 'email':
+            if value:
+                email = value
+        if key == 'phone':
+            if value:
+                phone = value
+        if key == 'company_name':
+            if value:
+                company = value
+
+    result.append(u'<li>')
+    result.append(str(email)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(phone)),
+    result.append(u'</li>')
+
+    result.append(u'<li>')
+    result.append(str(company)),
+    result.append(u'</li>')
+
+    result.append(u'</ul>')
+
+    return result
+
+
+def send_email(config: EmailConfig, recipient_list, context, subject="", template_str=""):
+    store = get_current_tenant()
+    sender_name = '{} {}'.format(context.get("store_name"),
+                                 config.sender_name) if config.sender_name else ""
+    #
+    logging.getLogger('django').info(
+        '---sender_name----{sender_name}------'.format(sender_name=sender_name))
     sender_address = config.sender_address
+    # logging.getLogger('django').info('---sender_name----{sender_name}------'.format(sender_name=sender_name))
 
     from_email = str(Address(sender_name, addr_spec=sender_address))
+    if not config.host or not config.port or not config.username or not config.password:
+        return
 
     email_backend = EmailBackend(
         host=config.host,
@@ -204,6 +537,12 @@ def send_email(
         "format_datetime": format_datetime,
         "get_product_image_thumbnail": get_product_image_thumbnail,
         "compare": compare,
+        "product_customer": list_product_customer,
+        "product_customer_admin": list_product_customer_admin,
+        "address_customer": customer_list_address,
+        "address_customer_delivery": customer_list_address_delivery,
+        "address_customer_pickup": customer_list_address_pickup,
+
     }
     message = template(context, helpers=helpers)
     subject_message = subject_template(context, helpers)
@@ -269,7 +608,6 @@ def validate_default_email_configuration(
         use_tls=configuration["use_tls"],
         use_ssl=configuration["use_ssl"],
     )
-
     if not config.sender_address:
         raise ValidationError(
             {
@@ -280,22 +618,25 @@ def validate_default_email_configuration(
             }
         )
 
-    try:
-        validate_email_config(config)
-    except Exception as e:
-        logger.warning("Unable to connect to email backend.", exc_info=e)
-        error_msg = (
-            "Unable to connect to email backend. Make sure that you provided "
-            "correct values."
-        )
-        raise ValidationError(
-            {
-                c: ValidationError(
-                    error_msg, code=PluginErrorCode.PLUGIN_MISCONFIGURED.value
-                )
-                for c in configuration.keys()
-            }
-        )
+    # try:
+    #     # validate_email_config(config)
+    #     print("hêrerererer")
+    # except Exception as e:
+    #     logger.warning("Unable to connect to email backend.", exc_info=e)
+    #     error_msg = (
+    #         "Unable to connect to email backend. Make sure that you provided "
+    #         "correct values."
+    #     )
+    #     print("erorsorosrosrosor")
+
+    #     raise ValidationError(
+    #         {
+    #             c: ValidationError(
+    #                 error_msg, code=PluginErrorCode.PLUGIN_MISCONFIGURED.value
+    #             )
+    #             for c in configuration.keys()
+    #         }
+    #     )
 
 
 def validate_format_of_provided_templates(
