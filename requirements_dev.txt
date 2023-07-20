@@ -167,7 +167,7 @@ pyxb==1.2.5
 pyyaml==5.4.1; python_full_version >= "3.6.1" and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.6") and (python_version >= "3.5" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.5")
 razorpay==1.2.0
 redis==3.5.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
-regex==2021.4.4; python_full_version >= "3.6.2"
+regex==2023.6.3; python_full_version >= "3.6.2"
 requests==2.25.1; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 rsa==4.7.2; python_version >= "3.5" and python_version < "4" and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.6")
 rx==1.6.1
