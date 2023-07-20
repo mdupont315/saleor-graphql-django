@@ -105,7 +105,7 @@ markdown==3.3.4; python_version >= "3.6"
 markupsafe==1.1.1; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 maxminddb==2.0.3; python_version >= "3.6"
 mccabe==0.6.1; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4.0" or python_version >= "3.6" and python_version < "4.0" and python_full_version >= "3.5.0"
-measurement==3.2.0
+measurement==3.2.2
 micawber==0.5.3
 mpmath==1.2.1; python_version >= "3.6"
 multidict==5.1.0; python_version >= "3.6"
