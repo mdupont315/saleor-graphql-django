@@ -216,4 +216,4 @@ channels==3.0.4
 django-channels-graphql-ws==0.9.0
 boto3==1.17.93
 botocore==1.20.93
-channels-redis==3.3.1
+channels-redis==4.1.0
