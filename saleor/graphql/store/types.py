@@ -55,6 +55,8 @@ class Store(CountableDjangoObjectType):
         description="Enable notification", required=False)
     email_address = graphene.String(
         description="Email for notification", required=False)
+    sound_notifications = graphene.Boolean(
+        description="Enable notification", required=False)
 
     # New order notifications
     enable_transaction_fee = graphene.Boolean(
